@@ -9,12 +9,12 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 @ISA = qw(Exporter DynaLoader);
 
 %EXPORT_TAGS = ( 
-    all => [ qw(any all none notall true false firstidx lastidx insert_after insert_after_string) ],
+    all => [ qw(any all none notall true false firstidx lastidx insert_after insert_after_string apply) ],
 );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -117,6 +117,12 @@ sub insert_after_string ($$\@) {
     @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
     return 0;
 }
+
+sub apply (&@) {
+    my $action = shift;
+    &$action for my @values = @_;
+    wantarray ? @values : $values[-1];
+}
 EOP
 
 1;
@@ -129,17 +135,18 @@ List::MoreUtils - Provide the stuff missing in List::Util
 =head1 SYNOPSIS
 
     use List::MoreUtils qw(any all none notall true false firstidx 
-                           lastidx insert_after insert_after_string);
+                           lastidx insert_after insert_after_string
+			   apply);
 
 =head1 DESCRIPTION
 
 C<List::MoreUtils> provides some trivial but commonly needed functionality on lists
 which is not going to go into C<List::Util>.
 
-All of the below functions are implementable in one line of Perl code. Using
-the functions from this module however should give slightly better performance
-as everything is implemented in C. The pure-Perl implementation of these
-functions only serves as a fallback in case the C portions of this module
+All of the below functions are implementable in only a couple of lines of Perl
+code. Using the functions from this module however should give slightly better
+performance as everything is implemented in C. The pure-Perl implementation of
+these functions only serves as a fallback in case the C portions of this module
 couldn't be compiled on this machine.
 
 =over 4
@@ -242,7 +249,26 @@ Inserts VALUE after the first item in LIST which is equal to STRING.
     print "@list";
     __END__
     This is a longer list
-   
+
+=item apply BLOCK LIST
+
+Applies BLOCK to each item in LIST and returns a list of the values after BLOCK
+has been applied. In scalar context, the last element is returned.  This
+function is similar to C<map> but will not modify the elements of the input
+list:
+
+    my @list = (1 .. 4);
+    my @mult = apply { $_ *= 2 } @list;
+    print "\@list = @list\n";
+    print "\@mult = @mult\n";
+    __END__
+    @list = 1 2 3 4
+    @mult = 2 4 6 8
+
+Think of it as syntactic sugar for
+
+    for (my @mult = @list) { $_ *= 2 }
+
 =back
 
 =head1 EXPORTS
@@ -251,13 +277,13 @@ Nothing by default. To import all of this module's symbols, do the conventional
 
     use List::MoreUtils qw/:all/;
 
-It may make more sense though to only import the stuff your programs actually needs:
+It may make more sense though to only import the stuff your program actually needs:
 
     use List::MoreUtils qw/any firstidx/;
 
 =head1 VERSION
 
-This is version 0.05.
+This is version 0.06.
 
 =head1 BUGS
 
@@ -266,6 +292,15 @@ No known ones.
 If you have a functionality that you could imagine being in this module, please
 drop me a line. This module's policy will be less strict than C<List::Util>'s when
 it comes to additions as it isn't a core module.
+
+=head1 THANKS
+
+Credits go to a number of people: Steve Purkis for giving me namespace advice
+and James Keenan and Terrence Branno for their effort of keeping the CPAN
+tidier by making List::Utils obsolete. 
+
+Brian McCauley suggested the includsion of C<apply> and provided the pure-Perl
+implementation for it.
 
 =head1 SEE ALSO
 

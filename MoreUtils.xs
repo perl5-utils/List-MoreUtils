@@ -664,3 +664,56 @@ insert_after_string (string, val, avref)
     }
     OUTPUT:
 	RETVAL
+	
+void
+apply (code, ...)
+	SV *code;
+    PROTOTYPE: &@
+    CODE:
+    {
+	register int i;
+	HV *stash;
+	CV *cv;
+	OP *applyop;
+	PERL_CONTEXT *cx;
+	GV *gv;
+	SV **newsp;
+	I32 gimme = G_SCALAR;
+	U8 hasargs = 0;
+	bool oldcatch = CATCH_GET;
+	I32 count = 0;
+	
+	if (items <= 1)
+	    XSRETURN_EMPTY;
+
+	SAVESPTR(GvSV(PL_defgv));
+	cv = sv_2cv(code, &stash, &gv, 0);
+	applyop = CvSTART(cv);
+	SAVESPTR(CvROOT(cv)->op_ppaddr);
+	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
+#ifdef PAD_SET_CUR
+	PAD_SET_CUR(CvPADLIST(cv),1);
+#else
+	SAVESPTR(PL_curpad);
+	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
+#endif
+	SAVETMPS;
+	SAVESPTR(PL_op);
+	CATCH_SET(TRUE);
+	PUSHBLOCK(cx, CXt_SUB, SP);
+	PUSHSUB(cx);
+	if (!CvDEPTH(cv))
+	    SvREFCNT_inc(cv);
+		
+	for(i = 1 ; i < items ; i++) {
+	    GvSV(PL_defgv) = newSVsv(ST(i));
+	    PL_op = applyop;
+	    CALLRUNOPS(aTHX);
+	    ST(i-1) =  GvSV(PL_defgv);
+	}
+	POPBLOCK(cx,PL_curpm)
+	CATCH_SET(oldcatch);
+	
+	done:
+	XSRETURN(items-1);
+    }

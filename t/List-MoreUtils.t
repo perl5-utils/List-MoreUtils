@@ -1,5 +1,5 @@
 use Test;
-BEGIN { plan tests => 42 };
+BEGIN { plan tests => 72 };
 
 use List::MoreUtils qw/:all/;
 
@@ -106,4 +106,28 @@ ok(1);
     @list = ("This\0", "is\0", "a\0", "list\0");
     insert_after_string "a\0", "longer\0", @list;
     ok(join(' ', @list), "This\0 is\0 a\0 longer\0 list\0");
+}
+
+# apply
+{
+    my @list  = (0 .. 9);
+    my @list1 = apply { $_++ } @list;
+    ok($list[$_], $_) for 0 .. 9;
+    ok($list1[$_], $_+1) for 0 .. 9;
+
+    @list = (" foo ", " bar ", "     ", "foobar");
+    @list1 = apply { s/^\s+|\s+$//g } @list;
+    ok($list[0], " foo ");
+    ok($list[1], " bar ");
+    ok($list[2], "     ");
+    ok($list[3], "foobar");
+    ok($list1[0], "foo");
+    ok($list1[1], "bar");
+    ok($list1[2], "");
+    ok($list1[3], "foobar");
+
+    my $item = apply { s/^\s+|\s+$//g } @list;
+    ok($item, "foobar");
+
+    ok(! defined apply {});
 }

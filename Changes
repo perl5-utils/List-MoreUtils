@@ -1,5 +1,9 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.06  Sun Nov 14 06:33:52 CET 2004
+	- new function 'apply' on behalf of Brian McCauley
+	  (<nobull AT mail DOT com>)
+
 0.05  Sat Sep 18 09:06:22 CEST 2004
 	- merged in insert_after() and insert_after_string() from
 	  List::Utils which is now obsolete
