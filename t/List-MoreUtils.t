@@ -1,8 +1,23 @@
 use Test;
-BEGIN { plan tests => 72 };
+BEGIN { plan tests => 97 };
 
 use List::MoreUtils qw/:all/;
 
+sub arrayeq {
+    local $^W = 0;
+    my ($ary1, $ary2) = @_;
+    #warn "(@$ary1) != (@$ary2)\n";
+    return 0 if @$ary1 != @$ary2;
+    for (0 .. $#$ary1) {
+	if ($ary1->[$_] ne $ary2->[$_]) {
+	    local $" = ", ";
+	    warn "(@$ary1) != (@$ary2)\n";
+	    return 0;
+	}
+    }
+    return 1;
+}
+    
 ok(1); 
 
 # any
@@ -16,7 +31,7 @@ ok(1);
     ok(!defined(any { }));
 }
 
-# all
+# all (8...)
 {
     my @list = (1 .. 10000);
     ok(all { defined } @list);
@@ -25,7 +40,7 @@ ok(1);
     ok(!defined all { } );
 }
 
-# none
+# none (12...)
 {
     my @list = (1 .. 10000);
     ok(none { !defined } @list);
@@ -34,7 +49,7 @@ ok(1);
     ok(!defined none { });
 }
 
-# notall
+# notall (16...)
 {
     my @list = (1 .. 10000);
     ok(notall { !defined } @list);
@@ -43,7 +58,7 @@ ok(1);
     ok(!defined notall { });
 }
 
-# true
+# true (20...)
 {
     my @list = (1 .. 10000);
     ok(10000, true { defined } @list);
@@ -52,7 +67,7 @@ ok(1);
     ok(!true { });
 }
 
-# false
+# false (24...)
 {
     my @list = (1 .. 10000);
     ok(10000, false { !defined } @list);
@@ -61,7 +76,7 @@ ok(1);
     ok(!false { });
 }
 
-# firstidx
+# firstidx (28...)
 {
     my @list = (1 .. 10000);
     ok(4999, firstidx { $_ >= 5000 } @list);
@@ -70,16 +85,22 @@ ok(1);
     ok(-1, firstidx { });
 }
 
-# lastidx
+# lastidx (32...)
 {
     my @list = (1 .. 10000);
     ok(9999, lastidx { $_ >= 5000 } @list);
     ok(-1, lastidx { !defined } @list);
     ok(9999, lastidx { defined } @list);
     ok(-1, lastidx { });
+
+    # test aliases
+    ok(9999, last_index { $_ >= 5000 } @list);
+    ok(-1, last_index { !defined } @list);
+    ok(9999, last_index { defined } @list);
+    ok(-1, last_index { });
 }
 
-# insert_after
+# insert_after (40...)
 {
     my @list = qw/This is a list/;
     insert_after { $_ eq "a" } "longer" => @list;
@@ -94,7 +115,7 @@ ok(1);
     ok(join(' ', @list), "This is a longer list");
 }
 
-# insert_after_string
+# insert_after_string (44...)
 {
     my @list = qw/This is a list/;
     insert_after_string "a", "longer" => @list;
@@ -108,26 +129,267 @@ ok(1);
     ok(join(' ', @list), "This\0 is\0 a\0 longer\0 list\0");
 }
 
-# apply
+# apply (47...)
 {
     my @list  = (0 .. 9);
     my @list1 = apply { $_++ } @list;
-    ok($list[$_], $_) for 0 .. 9;
-    ok($list1[$_], $_+1) for 0 .. 9;
+    ok(arrayeq(\@list, [0..9]));
+    ok(arrayeq(\@list1, [1..10]));
 
     @list = (" foo ", " bar ", "     ", "foobar");
     @list1 = apply { s/^\s+|\s+$//g } @list;
-    ok($list[0], " foo ");
-    ok($list[1], " bar ");
-    ok($list[2], "     ");
-    ok($list[3], "foobar");
-    ok($list1[0], "foo");
-    ok($list1[1], "bar");
-    ok($list1[2], "");
-    ok($list1[3], "foobar");
+    ok(arrayeq(\@list, [" foo ", " bar ", "     ", "foobar"]));
+    ok(arrayeq(\@list1, ["foo", "bar", "", "foobar"]));
 
     my $item = apply { s/^\s+|\s+$//g } @list;
     ok($item, "foobar");
 
     ok(! defined apply {});
 }
+
+#after (53...)
+{
+    my @x = after { $_ % 5 == 0 } (1..9);
+    ok(arrayeq(\@x, [6,7,8,9]));
+    @x = after { /foo/ } qw/bar baz/;
+    ok(!@x);
+    @x = after { /b/ } qw/bar baz foo/;
+    ok(arrayeq(\@x, [ qw/baz foo/ ]));
+}
+
+#after_incl (56...)
+{
+    my @x = after_incl {$_ % 5 == 0} (1..9);
+    ok(arrayeq(\@x, [5, 6, 7, 8, 9]));
+    @x = after_incl { /foo/ } qw/bar baz/;
+    ok(!@x);
+    @x = after_incl { /b/ } qw/bar baz foo/;
+    ok(arrayeq(\@x, [ qw/bar baz foo/ ]));
+}
+
+#before (59...)
+{
+    my @x = before {$_ % 5 == 0} (1..9);    
+    ok(arrayeq(\@x, [1, 2, 3, 4]));
+    @x = before { /b/ } qw/bar baz/;
+    ok(!@x);
+    @x = before { /f/ } qw/bar baz foo/;
+    ok(arrayeq(\@x, [  qw/bar baz/ ]));
+}
+
+#before_incl (62...)
+{
+    my @x = before_incl {$_ % 5 == 0} (1..9);
+    ok(arrayeq(\@x, [1, 2, 3, 4, 5]));
+    @x = before_incl { /foo/ } qw/bar baz/;
+    ok(arrayeq(\@x, [ qw/bar baz/ ]));
+    @x = before_incl { /f/ } qw/bar baz foo/;
+    ok(arrayeq(\@x, [ qw/bar baz foo/ ]));
+}
+
+#indexes (65...)
+{
+    my @x = indexes {$_ > 5}  (4..9);
+    ok(arrayeq(\@x, [2..5]));
+    @x = indexes {$_ > 5}  (1..4);  
+    ok(!@x);
+}
+
+#lastval/last_value (68...)
+{
+    my $x = last_value {$_ > 5}  (4..9);  
+    ok($x, 9);
+    $x = last_value {$_ > 5}  (1..4);
+    ok(!defined $x);
+
+    $x = lastval {$_ > 5}  (4..9);
+    ok($x, 9);
+    $x = lastval {$_ > 5}  (1..4);
+    ok(!defined $x);
+}
+
+#firstval/first_value (72...)
+{
+    my $x = first_value {$_ > 5}  (4..9); 
+    ok($x, 6);
+    $x = first_value {$_ > 5}  (1..4);
+    ok(!defined $x);
+
+    $x = firstval {$_ > 5}  (4..9); 
+    ok($x, 6);
+    $x = firstval {$_ > 5}  (1..4);
+    ok(!defined $x);
+    
+}
+
+#each_array (76...)
+{
+    my @a = (7, 3, 'a', undef, 'r');
+    my @b = qw/a 2 -1 x/;
+
+    my $it = each_array @a, @b;
+    my (@r, @idx);
+    while (my ($a, $b) = $it->())
+    {
+	push @r, $a, $b;
+	push @idx, $it->('index');
+    }
+    
+    $it->(); # do I segfault? I shouldn't. 
+
+    ok(arrayeq(\@r, [7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef]));
+    ok(arrayeq(\@idx, [0..4]));
+
+    # testing two iterators on the same arrays in parallel
+    @a = (1, 3, 5);
+    @b = (2, 4, 6);
+    my $i1 = each_array @a, @b;
+    my $i2 = each_array @a, @b;
+    @r = ();
+    while (my ($a, $b) = $i1->() and my ($c, $d) = $i2->()) {
+	push @r, $a, $b, $c, $d;
+    }
+    ok(arrayeq(\@r, [1,2,1,2,3,4,3,4,5,6,5,6]));
+
+    # input arrays must not be modified
+    ok(arrayeq(\@a, [1,3,5]));
+    ok(arrayeq(\@b, [2,4,6]));
+
+}
+
+#pairwise (81...)
+{
+    my @a = (1, 2, 3, 4, 5);
+    my @b = (2, 4, 6, 8, 10);
+    @c = pairwise {$a + $b} @a, @b;
+    ok(arrayeq(\@c, [3, 6, 9, 12, 15]), 1, "pw1");
+
+    @c = pairwise {$a * $b} @a, @b;   # returns (2, 8, 18)
+    ok(arrayeq(\@c, [2, 8, 18, 32, 50]), 1, "pw2");
+
+    # did we modify the input arrays?
+    ok(arrayeq(\@a, [1, 2, 3, 4, 5]), 1, "pw3");
+    ok(arrayeq(\@b, [2, 4, 6, 8, 10]), 1, "pw4");
+   
+    # $a and $b should be aliases: test
+    @b = @a = (1, 2, 3);
+    @c = pairwise { $a++; $b *= 2 } @a, @b;
+    ok(arrayeq(\@a, [2, 3, 4]), 1, "pw5");
+    ok(arrayeq(\@b, [2, 4, 6]), 1, "pw6");
+    ok(arrayeq(\@c, [2, 4, 6]), 1, "pw7");
+
+    # test this one more thoroughly: the XS code looks flakey
+    # correctness of pairwise_perl proved by human auditing. :-)
+    
+    sub pairwise_perl (&\@\@)
+    {
+	my $op = shift;
+	local (*A, *B) = @_;    # syms for caller's input arrays
+
+	# Localise $a, $b
+	my ($caller_a, $caller_b) = do
+	{
+	    my $pkg = caller();
+	    no strict 'refs';
+	    \*{$pkg.'::a'}, \*{$pkg.'::b'};
+	};
+
+	my $limit = $#A > $#B? $#A : $#B;    # loop iteration limit
+
+	local(*$caller_a, *$caller_b);
+	map    # This map expression is also the return value.
+	{
+	    # assign to $a, $b as refs to caller's array elements
+	    (*$caller_a, *$caller_b) = \($A[$_], $B[$_]);
+	    $op->();    # perform the transformation
+	}  0 .. $limit;
+    }
+	
+    (@a, @b) = ();
+    push @a, int rand(10000) for 0 .. rand(10000);
+    push @b, int rand(10000) for 0 .. rand(10000);
+    local $^W = 0;
+    my @res1 = pairwise {$a+$b} @a, @b;
+    my @res2 = pairwise_perl {$a+$b} @a, @b;
+    ok(arrayeq(\@res1, \@res2));
+
+    @a = qw/a b c/;
+    @b = qw/1 2 3/;
+    @c = pairwise { ($a, $b) } @a, @b;
+    ok(arrayeq(\@c, [qw/a 1 b 2 c 3/]));  # 88
+}
+
+#natatime (90...)
+{
+    my @x = ('a'..'g');
+    my $it = natatime 3, @x;
+    my @r;
+    local $" = " ";
+    while (my @vals = $it->())
+    {
+	push @r, "@vals";
+    }
+    ok(arrayeq(\@r, ['a b c', 'd e f', 'g']), 1, "natatime1");
+
+    @a = (1 .. 10000);
+    $it = natatime 1, @a;
+    @r = ();
+    while (my @vals = &$it) {
+	push @r, @vals;
+    }
+    ok(arrayeq(\@r, \@a), 1, "natatime2");
+}
+
+#mesh (92...)
+{
+    my @x = qw/a b c d/;
+    my @y = qw/1 2 3 4/;
+    @z = mesh @x, @y;
+    ok(arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]));
+
+    my @a = ('x');
+    my @b = ('1', '2');
+    my @c = qw/zip zap zot/;
+    @z = mesh @a, @b, @c;
+    ok(arrayeq(\@z, ['x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot']));
+
+    @a = (1 .. 10);
+    my @d; $#d = 9; # make array with holes
+    @z = mesh @a, @d;
+    ok(arrayeq(\@z, [1, undef, 2, undef, 3, undef, 4, undef, 5, undef, 
+		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
+}
+
+#zip (just an alias for mesh) (95...)
+{
+    my @x = qw/a b c d/;
+    my @y = qw/1 2 3 4/;
+    @z = zip @x, @y;
+    ok(arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]));
+
+    my @a = ('x');
+    my @b = ('1', '2');
+    my @c = qw/zip zap zot/;
+    @z = zip @a, @b, @c;
+    ok(arrayeq(\@z, ['x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot']));
+
+    @a = (1 .. 10);
+    my @d; $#d = 9; # make array with holes
+    @z = zip @a, @d;
+    ok(arrayeq(\@z, [1, undef, 2, undef, 3, undef, 4, undef, 5, undef, 
+		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
+}
+
+#uniq
+{
+    my @a = map { int rand(10) } 0 .. rand(1000);
+    my %hash;
+    my (@uniqp, @uniqxs);
+    for (@a) {
+	next if $hash{$_}++ > 0;
+	push @uniqp, $_;
+    }
+    @uniqxs = uniq @a;
+    ok(arrayeq(\@uniqxs, \@uniqp));
+}
+	    

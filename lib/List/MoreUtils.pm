@@ -9,18 +9,21 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 @ISA = qw(Exporter DynaLoader);
 
 %EXPORT_TAGS = ( 
-    all => [ qw(any all none notall true false firstidx lastidx insert_after insert_after_string apply) ],
+    all => [ qw(any all none notall true false firstidx lastidx last_index insert_after insert_after_string apply
+		after after_incl before before_incl indexes firstval first_value lastval last_value each_array
+		pairwise natatime mesh zip uniq) ],
 );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
     bootstrap List::MoreUtils $VERSION;
     1;
 };
+
 
 eval <<'EOP' if not defined &any;
 
@@ -80,8 +83,9 @@ sub false (&@) {
 
 sub firstidx (&@) {
     my $f = shift;
+    local *_;
     for my $i (0 .. $#_) {
-	local *_ = \$_[$i];	# Necessary for cases where $_[$i] holds a tied value
+	$_ = $_[$i];	
 	return $i if $f->();
     }
     return -1;
@@ -89,8 +93,9 @@ sub firstidx (&@) {
 
 sub lastidx (&@) {
     my $f = shift;
+    local *_;
     for my $i (reverse 0 .. $#_) {
-	local *_ = \$_[$i];
+	$_ = $_[$i];
 	return $i if $f->();
     }
     return -1;
@@ -99,8 +104,9 @@ sub lastidx (&@) {
 sub insert_after (&$\@) {
     my ($code, $val, $list) = @_;
     my $c = -1;
+    local *_;
     for my $i (0 .. $#$list) {
-	local *_ = \$list->[$i];
+	$_ = $list->[$i];
 	$c = $i, last if $code->();
     }
     @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
@@ -123,7 +129,165 @@ sub apply (&@) {
     &$action for my @values = @_;
     wantarray ? @values : $values[-1];
 }
+
+sub after (&@)
+{
+    my $test = shift;
+    my $started;
+    my $lag;
+    grep $started ||= do { my $x=$lag; $lag=$test->(); $x},  @_;
+}
+
+sub after_incl (&@)
+{
+    my $test = shift;
+    my $started;
+    grep $started ||= $test->(), @_;
+}
+
+sub before (&@)
+{
+    my $test = shift;
+    my $keepgoing=1;
+    grep $keepgoing &&= !$test->(),  @_;
+}
+
+sub before_incl (&@)
+{
+    my $test = shift;
+    my $keepgoing=1;
+    my $lag=1;
+    grep $keepgoing &&= do { my $x=$lag; $lag=!$test->(); $x},  @_;
+}
+
+sub indexes (&@)
+{
+    my $test = shift;
+    local *_;
+    grep {local $_=$_[$_]; $test->()} 0..$#_;
+}
+
+sub lastval (&@)
+{
+    my $test = shift;
+    local *_;
+    my $ix;
+    for ($ix=$#_; $ix>=0; $ix--)
+    {
+        $_ = $_[$ix];
+        my $testval = $test->();
+        $_[$ix] = $_;    # simulate $_ as alias
+        return $_ if $testval;
+    }
+    return undef;
+}
+
+sub firstval (&@)
+{
+    my $test = shift;
+    foreach (@_)
+    {
+        return $_ if $test->();
+    }
+    return undef;
+}
+
+sub pairwise(&\@\@)
+{
+    my $op = shift;
+    use vars qw/@A @B/;
+    local (*A, *B) = @_;    # syms for caller's input arrays
+
+    # Localise $a, $b
+    my ($caller_a, $caller_b) = do
+    {
+        my $pkg = caller();
+        no strict 'refs';
+        \*{$pkg.'::a'}, \*{$pkg.'::b'};
+    };
+
+    my $limit = $#A > $#B? $#A : $#B;    # loop iteration limit
+
+    local(*$caller_a, *$caller_b);
+    map    # This map expression is also the return value.
+    {
+        # assign to $a, $b as refs to caller's array elements
+        (*$caller_a, *$caller_b) = \($A[$_], $B[$_]);
+        $op->();    # perform the transformation
+    }  0 .. $limit;
+}
+
+sub each_array (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
+{
+    return each_arrayref(@_);
+}
+
+sub each_arrayref
+{
+    my @arr_list  = @_;     # The list of references to the arrays
+    my $index     = 0;      # Which one the caller will get next
+    my $max_num   = 0;      # Number of elements in longest array
+
+    # Get the length of the longest input array
+    foreach (@arr_list)
+    {
+        unless (ref($_) eq 'ARRAY')
+        {
+            require Carp;
+            Carp::croak "each_arrayref: argument is not an array reference\n";
+        }
+        $max_num = @$_  if @$_ > $max_num;
+    }
+
+    # Return the iterator as a closure wrt the above variables.
+    return sub
+    {
+        if (@_)
+        {
+            my $method = shift;
+            if ($method eq 'index')
+            {
+                # Return current (last fetched) index
+                return undef if $index == 0  ||  $index > $max_num;
+                return $index-1;
+            }
+            else
+            {
+                require Carp;
+                Carp::croak "each_array: unknown argument '$method' passed to iterator.";
+            }
+        }
+
+        return if $index >= $max_num;     # No more elements to return
+        my $i = $index++;
+        return map $_->[$i], @arr_list;   # Return ith elements
+    }
+}
+
+sub natatime ($@)
+{
+    my $n = shift;
+    my @list = @_;
+
+    return sub
+    {
+        return splice @list, 0, $n;
+    }
+}
+
+sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
+    my $max = -1;
+    $max < $#$_  &&  ($max = $#$_)  for @_;
+
+    map { my $ix = $_; map $_->[$ix], @_; } 0..$max; 
+}
 EOP
+
+*first_index = \&firstidx;
+*last_index = \&lastidx;
+*first_value = \&firstval;
+*last_value = \&lastval;
+*zip = \&mesh;
 
 1;
 __END__
@@ -136,7 +300,9 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
     use List::MoreUtils qw(any all none notall true false firstidx 
                            lastidx insert_after insert_after_string
-			   apply);
+			   apply after after_incl before before_incl
+			   indexes lastval firstval pairwise each_array
+			   natatime mesh);
 
 =head1 DESCRIPTION
 
@@ -207,6 +373,8 @@ each item in LIST in turn:
 
 =item firstidx BLOCK LIST
 
+=item first_index BLOCK LIST
+
 Returns the index of the first element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
 
@@ -217,7 +385,11 @@ for each item in LIST in turn:
     
 Returns C<-1> if no such item could be found.
 
+C<first_index> is an alias for C<firstidx>.
+
 =item lastidx BLOCK LIST
+
+=item list_index BLOCK LIST
 
 Returns the index of the last element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
@@ -228,6 +400,8 @@ for each item in LIST in turn:
     item with index 4 in list is 4
 
 Returns C<-1> if no such item could be found.
+
+C<last_index> is an alias for C<lastidx>.
 
 =item insert_after BLOCK VALUE LIST
 
@@ -269,6 +443,128 @@ Think of it as syntactic sugar for
 
     for (my @mult = @list) { $_ *= 2 }
 
+=item after BLOCK LIST
+
+Returns a list of the values of LIST after (and not including) the point
+where CODE returns a true value. Sets C<$_> for each element in LIST in turn.
+
+    @x = after { $_ % 5 == 0 } (1..9);    # returns 6, 7, 8, 9
+
+=item after_incl BLOCK LIST
+
+Same as C<after> but also inclues the element for which BLOCK is true.
+
+=item before BLOCK LIST
+
+Returns a list of values of LIST upto (and not including) the point where CODE
+returns a true value. Sets C<$_> for each element in LIST in turn.
+
+=item before_incl BLOCK LIST
+
+Same as C<before> but also includes the element for which BLOCK is true.
+
+=item indexes BLOCK LIST
+
+Evaluates BLOCK for each element in LIST (assigned to C<$_>) and returns a list
+of the indices of those elements for which BLOCK returned a true value. This is
+just like C<grep> only that it returns indices instead of values:
+
+    @x = indexes { $_ % 2 == 0 } (1..10);   # returns 1, 3, 5, 7, 9
+
+=item firstval BLOCK LIST
+
+=item first_val BLOCK LIST
+
+Returns the first element in LIST for which BLOCK evaluates to true. Each
+element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
+has been found.
+
+C<first_val> is an alias for C<firstval>.
+
+=item lastval BLOCK LIST
+
+=item last_val BLOCK LIST
+
+Returns the last value in LIST for which BLOCK evaluates to true. Each element
+of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
+found.
+
+C<last_val> is an alias for C<lastval>.
+
+=item pairwise BLOCK ARRAY1 ARRAY2
+
+Evaluates BLOCK for each pair of elements in ARRAY1 and ARRAY2 and returns a
+new list consisting of BLOCK's return values. The two elements are set to C<$a>
+and C<$b>.  Note that those two are aliases to the original value so changing
+them will modify the input arrays.
+
+    @a = (1 .. 5);
+    @b = (10 .. 15);
+    @x = pairwise { $a + $b } @a, @b;	# returns 11, 13, 15, 17, 20
+
+    # mesh with pairwise
+    @a = qw/a b c/;
+    @b = qw/1 2 3/;
+    @x = pairwise { ($a, $b) } @a, @b;	# returns a, 1, b, 2, c, 3
+
+=item each_array ARRAY1 ARRAY2 ...
+
+Creates an array iterator to return the elements of the list of arrays ARRAY1,
+ARRAY2 throughout ARRAYn in turn.  That is, the first time it is called, it
+returns the first element of each array.  The next time, it returns the second
+elements.  And so on, until all elements are exhausted.
+
+This is useful for looping over more than one array at once:
+
+    my $ea = each_array(@a, @b, @c);
+    while ( ($a,$b,$c) = $ea->() )   { .... }
+
+The iterator returns the empty list when it reached the end of all arrays.
+
+If the iterator is passed an argument of 'C<index>', then it retuns
+the index of the last fetched set of values, as a scalar.
+
+=item natatime BLOCK LIST
+
+Creates an array iterator, for looping over an array in chunks of
+C<$n> items at a time.  (n at a time, get it?).  An example is
+probably a better explanation than I could give in words.
+
+Example:
+
+    my @x = ('a' .. 'g');
+    my $it = natatime 3, @x;
+    while (my @vals = $it->())
+    {
+        print "@vals\n";
+    }
+
+This prints
+
+    a b c
+    d e f
+    g
+
+=item mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
+
+=item zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
+
+Returns a list consisting of the first elements of each array, then
+the second, then the third, etc, until all arrays are exhausted.
+
+Examples:
+
+    @x = qw/a b c d/;
+    @y = qw/1 2 3 4/;
+    @z = mesh @x, @y;	    # returns a, 1, b, 2, c, 3, d, 4
+
+    @a = ('x');
+    @b = ('1', '2');
+    @c = qw/zip zap zot/;
+    @d = mesh @a, @b, @c;   # x, 1, zip, undef, 2, zap, undef, undef, zot
+
+C<zip> is an alias for C<mesh>.
+
 =back
 
 =head1 EXPORTS
@@ -283,7 +579,7 @@ It may make more sense though to only import the stuff your program actually nee
 
 =head1 VERSION
 
-This is version 0.06.
+This is version 0.07.
 
 =head1 BUGS
 
@@ -301,6 +597,10 @@ tidier by making List::Utils obsolete.
 
 Brian McCauley suggested the includsion of C<apply> and provided the pure-Perl
 implementation for it.
+
+Eric J. Roode asked me to add all functions from his module C<List::MoreUtil>
+into this one. With minor modifications, the pure-Perl implementations of those
+are by him.
 
 =head1 SEE ALSO
 
