@@ -9,12 +9,12 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 @ISA = qw(Exporter DynaLoader);
 
 %EXPORT_TAGS = ( 
-    all => [ qw(any all none notall true false firstidx lastidx) ],
+    all => [ qw(any all none notall true false firstidx lastidx insert_after insert_after_string) ],
 );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -95,6 +95,28 @@ sub lastidx (&@) {
     }
     return -1;
 }
+
+sub insert_after (&$\@) {
+    my ($code, $val, $list) = @_;
+    my $c = -1;
+    for my $i (0 .. $#$list) {
+	local *_ = \$list->[$i];
+	$c = $i, last if $code->();
+    }
+    @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
+    return 0;
+}
+
+sub insert_after_string ($$\@) {
+    my ($string, $val, $list) = @_;
+    my $c = -1;
+    for my $i (0 .. $#$list) {
+	local $^W = 0;
+	$c = $i, last if $string eq $list->[$i];
+    }
+    @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
+    return 0;
+}
 EOP
 
 1;
@@ -106,7 +128,8 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
 =head1 SYNOPSIS
 
-    use List::MoreUtils qw(any all none notall true false firstidx lastidx);
+    use List::MoreUtils qw(any all none notall true false firstidx 
+                           lastidx insert_after insert_after_string);
 
 =head1 DESCRIPTION
 
@@ -164,21 +187,21 @@ Returns false otherwise, or C<undef> if LIST is empty.
 =item true BLOCK LIST
 
 Counts the number of elements in LIST for which the criterion in BLOCK is true. Sets C<$_> for 
-each item in list in turn:
+each item in LIST in turn:
 
     printf "%i item(s) are defined", true { defined($_) } @list;
 
 =item false BLOCK LIST
 
 Counts the number of elements in LIST for which the criterion in BLOCK is false. Sets C<$_> for
-each item in list in turn:
+each item in LIST in turn:
 
     printf "%i item(s) are not defined", false { defined($_) } @list;
 
 =item firstidx BLOCK LIST
 
 Returns the index of the first element in LIST for which the criterion in BLOCK is true. Sets C<$_>
-for each item in list in turn:
+for each item in LIST in turn:
 
     my @list = (1, 4, 3, 2, 4, 6);
     printf "item with index %i in list is 4", firstidx { $_ == 4 } @list;
@@ -190,7 +213,7 @@ Returns C<-1> if no such item could be found.
 =item lastidx BLOCK LIST
 
 Returns the index of the last element in LIST for which the criterion in BLOCK is true. Sets C<$_>
-for each item in list in turn:
+for each item in LIST in turn:
 
     my @list = (1, 4, 3, 2, 4, 6);
     printf "item with index %i in list is 4", lastidx { $_ == 4 } @list;
@@ -199,19 +222,42 @@ for each item in list in turn:
 
 Returns C<-1> if no such item could be found.
 
+=item insert_after BLOCK VALUE LIST
+
+Inserts VALUE after the first item in LIST for which the criterion in BLOCK is true. Sets C<$_> for
+each item in LIST in turn.
+
+    my @list = qw/This is a list/;
+    insert_after { $_ eq "a" } "longer" => @list;
+    print "@list";
+    __END__
+    This is a longer list
+
+=item insert_after_string STRING VALUE LIST
+
+Inserts VALUE after the first item in LIST which is equal to STRING. 
+
+    my @list = qw/This is a list/;
+    insert_after_string "a", "longer" => @list;
+    print "@list";
+    __END__
+    This is a longer list
+   
+=back
+
 =head1 EXPORTS
 
 Nothing by default. To import all of this module's symbols, do the conventional
 
     use List::MoreUtils qw/:all/;
 
-It may make more sense though to only import the stuff your programs actually need:
+It may make more sense though to only import the stuff your programs actually needs:
 
     use List::MoreUtils qw/any firstidx/;
 
 =head1 VERSION
 
-This is version 0.04.
+This is version 0.05.
 
 =head1 BUGS
 

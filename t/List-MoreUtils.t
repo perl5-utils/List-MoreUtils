@@ -1,5 +1,5 @@
 use Test;
-BEGIN { plan tests => 35 };
+BEGIN { plan tests => 42 };
 
 use List::MoreUtils qw/:all/;
 
@@ -77,4 +77,33 @@ ok(1);
     ok(-1, lastidx { !defined } @list);
     ok(9999, lastidx { defined } @list);
     ok(-1, lastidx { });
+}
+
+# insert_after
+{
+    my @list = qw/This is a list/;
+    insert_after { $_ eq "a" } "longer" => @list;
+    ok(join(' ', @list), "This is a longer list");
+    insert_after { 0 } "bla" => @list;
+    ok(join(' ', @list), "This is a longer list");
+    insert_after { $_ eq "list" } "!" => @list;
+    ok(join(' ', @list), "This is a longer list !");
+    @list = (qw/This is/, undef, qw/list/);
+    insert_after { !defined($_) } "longer" => @list;
+    $list[2] = "a";
+    ok(join(' ', @list), "This is a longer list");
+}
+
+# insert_after_string
+{
+    my @list = qw/This is a list/;
+    insert_after_string "a", "longer" => @list;
+    ok(join(' ', @list), "This is a longer list");
+    @list = (undef, qw/This is a list/);
+    insert_after_string "a", "longer", @list;
+    shift @list;
+    ok(join(' ', @list), "This is a longer list");
+    @list = ("This\0", "is\0", "a\0", "list\0");
+    insert_after_string "a\0", "longer\0", @list;
+    ok(join(' ', @list), "This\0 is\0 a\0 longer\0 list\0");
 }

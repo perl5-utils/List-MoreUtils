@@ -1,5 +1,11 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.05  Sat Sep 18 09:06:22 CEST 2004
+	- merged in insert_after() and insert_after_string() from
+	  List::Utils which is now obsolete
+	  (thanks to James Keenan <jkeen AT verizon DOT net> and
+	  Terrence Brannon <terry AT hcoop DOT net>)
+
 0.04  Sat Jul 10 08:00:11 CEST 2004
 	- renamed to List::MoreUtils on suggestion by
 	  Steve Purkis <spurkis AT quiup DOT com>

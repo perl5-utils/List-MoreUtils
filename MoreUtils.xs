@@ -98,6 +98,21 @@ sv_tainted(SV *sv)
 #  define PTR2UV(ptr) (UV)(ptr)
 #endif
 
+void
+insert_after (int idx, SV *what, AV *av) {
+    register int i, len;
+    av_extend(av, (len = av_len(av) + 1));
+    
+    for (i = len; i > idx+1; i--) {
+	SV **sv = av_fetch(av, i-1, FALSE);
+	SvREFCNT_inc(*sv);
+	av_store(av, i, *sv);
+    }
+    if (!av_store(av, idx+1, what))
+	SvREFCNT_dec(what);
+
+}
+    
 MODULE = List::MoreUtils		PACKAGE = List::MoreUtils		
 
 void
@@ -544,3 +559,108 @@ lastidx (code, ...)
     OUTPUT:
 	RETVAL
 
+int
+insert_after (code, val, avref)
+	SV *code;
+	SV *val;
+	SV *avref;
+    PROTOTYPE: &$\@
+    CODE:
+    {
+	register int i;
+	HV *stash;
+	CV *cv;
+	OP *insertafterop;
+	PERL_CONTEXT *cx;
+	GV *gv;
+	SV **newsp;
+	I32 gimme = G_SCALAR;
+	U8 hasargs = 0;
+	bool oldcatch = CATCH_GET;
+
+	AV *av = (AV*)SvRV(avref);
+	int len = av_len(av);
+	RETVAL = 0;
+	
+	SAVESPTR(GvSV(PL_defgv));
+	cv = sv_2cv(code, &stash, &gv, 0);
+	insertafterop = CvSTART(cv);
+	SAVESPTR(CvROOT(cv)->op_ppaddr);
+	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
+#ifdef PAD_SET_CUR
+	PAD_SET_CUR(CvPADLIST(cv),1);
+#else
+	SAVESPTR(PL_curpad);
+	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
+#endif
+	SAVETMPS;
+	SAVESPTR(PL_op);
+	CATCH_SET(TRUE);
+	PUSHBLOCK(cx, CXt_SUB, SP);
+	PUSHSUB(cx);
+	if (!CvDEPTH(cv))
+	    SvREFCNT_inc(cv);
+	    
+	for (i = 0; i <= len ; i++) {
+	    GvSV(PL_defgv) = *av_fetch(av, i, FALSE);
+	    PL_op = insertafterop;
+	    CALLRUNOPS(aTHX);
+	    if (SvTRUE(*PL_stack_sp)) {
+		RETVAL = 1;
+		break;
+	    }
+	}
+	POPBLOCK(cx,PL_curpm);
+	CATCH_SET(oldcatch);
+	if (RETVAL) {
+	    SvREFCNT_inc(val);
+	    insert_after(i, val, av);
+	}
+
+    }
+    OUTPUT:
+	RETVAL
+
+int
+insert_after_string (string, val, avref)
+	SV *string;
+	SV *val;
+	SV *avref;
+    PROTOTYPE: $$\@
+    CODE:
+    {
+	register int i;
+	AV *av = (AV*)SvRV(avref);
+	int len = av_len(av);
+	register SV **sv;
+	STRLEN slen = 0, alen;
+	register char *str;
+	register char *astr;
+	RETVAL = 0;
+	
+	if (SvTRUE(string))
+	    str = SvPV(string, slen);
+	else 
+	    str = NULL;
+	    
+	for (i = 0; i <= len ; i++) {
+	    sv = av_fetch(av, i, FALSE);
+	    if (SvTRUE(*sv))
+		astr = SvPV(*sv, alen); 
+	    else {
+		astr = NULL;
+		alen = 0;
+	    }
+	    if (slen == alen && memcmp(astr, str, slen) == 0) {
+		RETVAL = 1;
+		break;
+	    }
+	}
+	if (RETVAL) {
+	    SvREFCNT_inc(val);
+	    insert_after(i, val, av);
+	}
+
+    }
+    OUTPUT:
+	RETVAL
