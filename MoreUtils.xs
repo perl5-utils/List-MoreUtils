@@ -1461,7 +1461,7 @@ uniq (...)
 	    if (!hv_exists_ent(hv, ST(i), 0)) {
 		ST(count) = sv_2mortal(newSVsv(ST(i)));
 		count++;
-		hv_store_ent(hv, ST(i), &PL_sv_undef, 0);
+		hv_store_ent(hv, ST(i), &PL_sv_yes, 0);
 	    }
 	}
 	SvREFCNT_dec(hv);

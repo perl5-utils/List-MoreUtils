@@ -1,5 +1,8 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.09  Sat Dec  4 07:17:10 CET 2004
+	- 0.08 only fixed uniq() for scalar context
+
 0.08  Fri Dec  3 17:11:14 CET 2004
 	- uniq() was not mentioned in the perldocs and only had
 	  the XS implementation
