@@ -1,0 +1,20 @@
+Revision history for Perl extension List::Any/List::MoreUtils.
+
+0.04  Sat Jul 10 08:00:11 CEST 2004
+	- renamed to List::MoreUtils on suggestion by
+	  Steve Purkis <spurkis AT quiup DOT com>
+
+0.03  Fri Jul  9 07:54:09 CEST 2004
+	- some compilers don't like the stale goto labels
+	  without any statement following. Fixed.
+	  (Robert Rothenberg <wlkngowl AT i-2000 DOT com>)
+
+0.02  Thu Jul  8 08:07:39 CEST 2004
+	- added Perl implementations of all functions 
+	  as a fallback 
+	  (Adam Kennedy <adam AT phase-n DOT com>)
+
+0.01  Mon Jul  5 07:58:40 2004
+	- original version; created by h2xs 1.23 with options
+		-b 5.5.3 -A -n List::Any
+

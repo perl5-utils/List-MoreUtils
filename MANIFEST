@@ -1,0 +1,8 @@
+MoreUtils.xs
+Changes
+Makefile.PL
+MANIFEST
+README
+t/List-MoreUtils.t
+lib/List/MoreUtils.pm
+META.yml                                 Module meta-data (added by MakeMaker)
