@@ -1,8 +1,8 @@
 use Test;
 BEGIN { 
     plan tests => 98;
-    $ENV{LIST_MOREUTILS_PP} = 0;
-};
+    $ENV{LIST_MOREUTILS_PP} = 1;
+}
 
 use List::MoreUtils qw/:all/;
 
@@ -394,3 +394,4 @@ ok(1);
     my $u = uniq @a;
     ok(10000, $u);
 }
+	    

@@ -16,14 +16,13 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
     bootstrap List::MoreUtils $VERSION;
     1;
-};
-
+} if not $ENV{LIST_MOREUTILS_PP};
 
 eval <<'EOP' if not defined &any;
 
@@ -83,9 +82,8 @@ sub false (&@) {
 
 sub firstidx (&@) {
     my $f = shift;
-    local *_;
     for my $i (0 .. $#_) {
-	$_ = $_[$i];	
+	local *_ = \$_[$i];	
 	return $i if $f->();
     }
     return -1;
@@ -93,9 +91,8 @@ sub firstidx (&@) {
 
 sub lastidx (&@) {
     my $f = shift;
-    local *_;
     for my $i (reverse 0 .. $#_) {
-	$_ = $_[$i];
+	local *_ = \$_[$i];
 	return $i if $f->();
     }
     return -1;
@@ -163,18 +160,16 @@ sub before_incl (&@)
 sub indexes (&@)
 {
     my $test = shift;
-    local *_;
-    grep {local $_=$_[$_]; $test->()} 0..$#_;
+    grep {local *_=\$_[$_]; $test->()} 0..$#_;
 }
 
 sub lastval (&@)
 {
     my $test = shift;
-    local *_;
     my $ix;
     for ($ix=$#_; $ix>=0; $ix--)
     {
-        $_ = $_[$ix];
+        local *_ = \$_[$ix];
         my $testval = $test->();
         $_[$ix] = $_;    # simulate $_ as alias
         return $_ if $testval;
@@ -281,6 +276,12 @@ sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
 
     map { my $ix = $_; map $_->[$ix], @_; } 0..$max; 
 }
+
+sub uniq (@) {
+    my %h;
+    map { $h{$_}++ == 0 ? $_ : () } @_;
+}
+
 EOP
 
 *first_index = \&firstidx;
@@ -302,7 +303,7 @@ List::MoreUtils - Provide the stuff missing in List::Util
                            lastidx insert_after insert_after_string
 			   apply after after_incl before before_incl
 			   indexes lastval firstval pairwise each_array
-			   natatime mesh);
+			   natatime mesh uniq);
 
 =head1 DESCRIPTION
 
@@ -499,8 +500,8 @@ and C<$b>.  Note that those two are aliases to the original value so changing
 them will modify the input arrays.
 
     @a = (1 .. 5);
-    @b = (10 .. 15);
-    @x = pairwise { $a + $b } @a, @b;	# returns 11, 13, 15, 17, 20
+    @b = (11 .. 15);
+    @x = pairwise { $a + $b } @a, @b;	# returns 12, 14, 16, 18, 20
 
     # mesh with pairwise
     @a = qw/a b c/;
@@ -517,7 +518,7 @@ elements.  And so on, until all elements are exhausted.
 This is useful for looping over more than one array at once:
 
     my $ea = each_array(@a, @b, @c);
-    while ( ($a,$b,$c) = $ea->() )   { .... }
+    while ( my ($a, $b, $c) = $ea->() )   { .... }
 
 The iterator returns the empty list when it reached the end of all arrays.
 
@@ -565,6 +566,15 @@ Examples:
 
 C<zip> is an alias for C<mesh>.
 
+=item uniq LIST
+
+Returns a new list by stripping duplicate values in LIST. The order of
+elements in the returned list is the same as in LIST. In scalar context,
+returns the number of unique elements in LIST.
+
+    my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
+    my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
+
 =back
 
 =head1 EXPORTS
@@ -577,17 +587,43 @@ It may make more sense though to only import the stuff your program actually nee
 
     use List::MoreUtils qw/any firstidx/;
 
+=head1 ENVIRONMENT
+
+When C<LIST_MOREUTILS_PP> is set, the module will always use the pure-Perl
+implementation and not the XS one. This environment variable is really just
+there for the test-suite to force testing the Perl implementation, and possibly
+for reporting of bugs. I don't see any reason to use it in a production
+environment.
+
 =head1 VERSION
 
-This is version 0.07.
+This is version 0.08.
 
 =head1 BUGS
 
-No known ones.
+There is a problem with a bug in 5.6.x perls. It is a syntax error to write
+things like:
+
+    my @x = apply { s/foo/bar/ } qw/foo bar baz/;
+
+It has to be written as either
+
+    my @x = apply { s/foo/bar/ } 'foo', 'bar', 'baz';
+
+or
+
+    my @x = apply { s/foo/bar/ } my @dummy = qw/foo bar baz/;
+
+Perl5.5.x and perl5.8.x don't suffer from this limitation.
 
 If you have a functionality that you could imagine being in this module, please
 drop me a line. This module's policy will be less strict than C<List::Util>'s when
 it comes to additions as it isn't a core module.
+
+When you report bugs, it would be nice if you could additionally give me the
+output of your program with the environment variable C<LIST_MOREUTILS_PP> set
+to a true value. That way I know where to look for the problem (in XS,
+pure-Perl or possibly both).
 
 =head1 THANKS
 
@@ -595,12 +631,15 @@ Credits go to a number of people: Steve Purkis for giving me namespace advice
 and James Keenan and Terrence Branno for their effort of keeping the CPAN
 tidier by making List::Utils obsolete. 
 
-Brian McCauley suggested the includsion of C<apply> and provided the pure-Perl
+Brian McCauley suggested the inclusion of C<apply> and provided the pure-Perl
 implementation for it.
 
 Eric J. Roode asked me to add all functions from his module C<List::MoreUtil>
 into this one. With minor modifications, the pure-Perl implementations of those
 are by him.
+
+The bunch of people who almost immediately pointed out the many problems with
+the glitchy 0.07 release (Slaven Rezic, Ron Savage, CPAN testers).
 
 =head1 SEE ALSO
 
