@@ -3,6 +3,8 @@ Changes
 Makefile.PL
 MANIFEST
 README
+t/0_pod.t
+t/0_pod_coverage.t
 t/List-MoreUtils-pp.t
 t/List-MoreUtils.t
 lib/List/MoreUtils.pm

@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.10  Fri Apr  1 19:43:48 CEST 2005
+	- new function minmax() with comparisons in O(3n/2 - 2)
+	- some POD corrections (Adam Kennedy)
+	- POD- and POD-coverage tests
+
 0.09  Sat Dec  4 07:17:10 CET 2004
 	- 0.08 only fixed uniq() for scalar context
 

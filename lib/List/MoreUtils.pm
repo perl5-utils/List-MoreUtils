@@ -11,12 +11,12 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 %EXPORT_TAGS = ( 
     all => [ qw(any all none notall true false firstidx lastidx last_index insert_after insert_after_string apply
 		after after_incl before before_incl indexes firstval first_value lastval last_value each_array
-		pairwise natatime mesh zip uniq) ],
+		pairwise natatime mesh zip uniq minmax) ],
 );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -282,6 +282,34 @@ sub uniq (@) {
     map { $h{$_}++ == 0 ? $_ : () } @_;
 }
 
+sub minmax (@) {
+    return if ! @_;
+    my $min = my $max = $_[0];
+
+    for (my $i = 1; $i < @_; $i += 2) {
+	if ($_[$i-1] <= $_[$i]) {
+	    $min = $_[$i-1] if $min > $_[$i-1];
+	    $max = $_[$i]   if $max < $_[$i];
+	} else {
+	    $min = $_[$i]   if $min > $_[$i];
+	    $max = $_[$i-1] if $max < $_[$i-1];
+	}
+    }
+
+    if (@_ & 1) {
+	my $i = $#_;
+	if ($_[$i-1] <= $_[$i]) {
+	    $min = $_[$i-1] if $min > $_[$i-1];
+	    $max = $_[$i]   if $max < $_[$i];
+	} else {
+	    $min = $_[$i]   if $min > $_[$i];
+	    $max = $_[$i-1] if $max < $_[$i-1];
+	}
+    }
+
+    return ($min, $max);
+}
+
 EOP
 
 *first_index = \&firstidx;
@@ -303,7 +331,7 @@ List::MoreUtils - Provide the stuff missing in List::Util
                            lastidx insert_after insert_after_string
 			   apply after after_incl before before_incl
 			   indexes lastval firstval pairwise each_array
-			   natatime mesh uniq);
+			   natatime mesh uniq minmax);
 
 =head1 DESCRIPTION
 
@@ -390,7 +418,7 @@ C<first_index> is an alias for C<firstidx>.
 
 =item lastidx BLOCK LIST
 
-=item list_index BLOCK LIST
+=item last_index BLOCK LIST
 
 Returns the index of the last element in LIST for which the criterion in BLOCK is true. Sets C<$_>
 for each item in LIST in turn:
@@ -447,7 +475,7 @@ Think of it as syntactic sugar for
 =item after BLOCK LIST
 
 Returns a list of the values of LIST after (and not including) the point
-where CODE returns a true value. Sets C<$_> for each element in LIST in turn.
+where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
 
     @x = after { $_ % 5 == 0 } (1..9);    # returns 6, 7, 8, 9
 
@@ -457,7 +485,7 @@ Same as C<after> but also inclues the element for which BLOCK is true.
 
 =item before BLOCK LIST
 
-Returns a list of values of LIST upto (and not including) the point where CODE
+Returns a list of values of LIST upto (and not including) the point where BLOCK
 returns a true value. Sets C<$_> for each element in LIST in turn.
 
 =item before_incl BLOCK LIST
@@ -474,7 +502,7 @@ just like C<grep> only that it returns indices instead of values:
 
 =item firstval BLOCK LIST
 
-=item first_val BLOCK LIST
+=item first_value BLOCK LIST
 
 Returns the first element in LIST for which BLOCK evaluates to true. Each
 element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
@@ -484,7 +512,7 @@ C<first_val> is an alias for C<firstval>.
 
 =item lastval BLOCK LIST
 
-=item last_val BLOCK LIST
+=item last_value BLOCK LIST
 
 Returns the last value in LIST for which BLOCK evaluates to true. Each element
 of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
@@ -575,6 +603,21 @@ returns the number of unique elements in LIST.
     my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
     my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
 
+=item minmax LIST
+
+Calculates the minimum and maximum of LIST and returns a two element list with
+the first element being the minimum and the second the maximum. Returns the empty
+list if LIST was empty.
+
+The minmax algorithm differs from a naive iteration over the list where each element
+is compared to two values being the so far calculated min and max value in that it
+only requires 3n/2 - 2 comparisons. Thus it is the most efficient possible algorithm.
+
+However, the Perl implementation of it has some overhead simply due to the fact
+that there are more lines of Perl code involved. Therefore, LIST needs to be
+fairly big in order for minmax to win over a naive implementation. This
+limitation does not apply to the XS version.
+    
 =back
 
 =head1 EXPORTS
@@ -597,7 +640,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.09.
+This is version 0.10.
 
 =head1 BUGS
 
@@ -651,7 +694,7 @@ Tassilo von Parseval, E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004 by Tassilo von Parseval
+Copyright (C) 2004-2005 by Tassilo von Parseval
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,

@@ -1,6 +1,6 @@
 use Test;
 BEGIN { 
-    plan tests => 98;
+    plan tests => 104;
     $ENV{LIST_MOREUTILS_PP} = 0;
 };
 
@@ -9,7 +9,6 @@ use List::MoreUtils qw/:all/;
 sub arrayeq {
     local $^W = 0;
     my ($ary1, $ary2) = @_;
-    #warn "(@$ary1) != (@$ary2)\n";
     return 0 if @$ary1 != @$ary2;
     for (0 .. $#$ary1) {
 	if ($ary1->[$_] ne $ary2->[$_]) {
@@ -393,4 +392,25 @@ ok(1);
     ok(arrayeq(\@u, [1 .. 10000]));
     my $u = uniq @a;
     ok(10000, $u);
+}
+
+#minmax
+{
+    my @list = reverse 0 .. 100_000;
+    my ($min, $max) = minmax(@list);
+    ok($min, 0);
+    ok($max, 100_000);
+
+    # even number of elements
+    push @list, 100_001;
+    ($min, $max) = minmax(@list);
+    ok($min, 0);
+    ok($max, 100_001);
+
+    # some floats
+    @list = (0, -1.1, 3.14, 1/7, 100_000, -10/3);
+    ($min, $max) = minmax(@list);
+    # floating-point comparison cunningly avoided
+    ok(sprintf("%i", $min), -3);
+    ok($max, 100_000);
 }

@@ -1,6 +1,6 @@
 use Test;
 BEGIN { 
-    plan tests => 98;
+    plan tests => 104;
     $ENV{LIST_MOREUTILS_PP} = 1;
 }
 
@@ -394,4 +394,24 @@ ok(1);
     my $u = uniq @a;
     ok(10000, $u);
 }
-	    
+	   
+#minmax
+{
+    my @list = reverse 0 .. 100_000;
+    my ($min, $max) = minmax @list;
+    ok($min, 0);
+    ok($max, 100_000);
+
+    # even number of elements
+    push @list, 100_001;
+    ($min, $max) = minmax @list;
+    ok($min, 0);
+    ok($max, 100_001);
+
+    # some floats
+    @list = (0, -1.1, 3.14, 1/7, 100_000, -10/3);
+    ($min, $max) = minmax @list;
+    # floating-point comparison cunningly avoided
+    ok(sprintf("%i", $min), -3);
+    ok($max, 100_000);
+}

@@ -1467,8 +1467,79 @@ uniq (...)
 	SvREFCNT_dec(hv);
 	XSRETURN(count);
     }
+
+void
+minmax (...)
+    PROTOTYPE: @
+    CODE:
+    {
+	register int i;
+	register SV *minsv, *maxsv, *asv, *bsv;
+	register double min, max, a, b;
 	
-	
+	if (!items)
+	    XSRETURN_EMPTY;
+
+	minsv = maxsv = ST(0);
+	min = max = slu_sv_value(minsv);
+
+	for (i = 1; i < items; i += 2) {
+	    asv = ST(i-1);
+	    bsv = ST(i);
+	    a = slu_sv_value(asv);
+	    b = slu_sv_value(bsv);
+	    if (a <= b) {
+		if (min > a) {
+		    min = a;
+		    minsv = asv;
+		}
+		if (max < b) {
+		    max = b;
+		    maxsv = bsv;
+		}
+	    } else {
+		if (min > b) {
+		    min = b;
+		    minsv = bsv;
+		}
+		if (max < a) {
+		    max = a;
+		    maxsv = asv;
+		}
+	    }
+	}
+
+	if (items & 1) {
+	    asv = ST(items-2);
+	    bsv = ST(items-1);
+	    a = slu_sv_value(asv);
+	    b = slu_sv_value(bsv);
+	    if (a <= b) {
+		if (min > a) {
+		    min = a;
+		    minsv = asv;
+		}
+		if (max < b) {
+		    max = b;
+		    maxsv = bsv;
+		}
+	    } else {
+		if (min > b) {
+		    min = b;
+		    minsv = bsv;
+		}
+		if (max < a) {
+		    max = a;
+		    maxsv = asv;
+		}
+	    }
+	}
+	ST(0) = minsv;
+	ST(1) = maxsv;
+
+	XSRETURN(2);
+    }
+ 
 MODULE = List::MoreUtils                PACKAGE = List::MoreUtils_ea
 
 void
