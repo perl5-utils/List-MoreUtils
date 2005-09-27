@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.11  Tue Sep 27 08:15:22 CEST 2005
+	- make sure that Test::Pod and Test::Pod::Coverage are
+	  installed in the required minimum versions
+	  (thanks to Ricardo Signes <rjbs AT cpan DOT org>)
+
 0.10  Fri Apr  1 19:43:48 CEST 2005
 	- new function minmax() with comparisons in O(3n/2 - 2)
 	- some POD corrections (Adam Kennedy)
