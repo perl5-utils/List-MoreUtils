@@ -1,7 +1,8 @@
-List-MoreUtils version 0.11
+List-MoreUtils version 0.12
 ===========================
 
-Provide the missing functionality from List::Util (see "SUGGESTED ADDITIONS" in its manpage).
+Provide the missing functionality from List::Util (see "SUGGESTED ADDITIONS" in
+its manpage).
 
 INSTALLATION
 

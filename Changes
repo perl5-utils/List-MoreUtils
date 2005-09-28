@@ -1,5 +1,9 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.12  Wed Sep 28 08:09:08 CEST 2005
+	- first_index and each_arrayref weren't exportable
+	  (spotted by Darren Duncan)
+
 0.11  Tue Sep 27 08:15:22 CEST 2005
 	- make sure that Test::Pod and Test::Pod::Coverage are
 	  installed in the required minimum versions

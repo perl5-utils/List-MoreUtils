@@ -9,14 +9,15 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 @ISA = qw(Exporter DynaLoader);
 
 %EXPORT_TAGS = ( 
-    all => [ qw(any all none notall true false firstidx lastidx last_index insert_after insert_after_string apply
-		after after_incl before before_incl indexes firstval first_value lastval last_value each_array
-		pairwise natatime mesh zip uniq minmax) ],
+    all => [ qw(any all none notall true false firstidx first_index lastidx
+		last_index insert_after insert_after_string apply after after_incl before
+		before_incl indexes firstval first_value lastval last_value each_array
+		each_arrayref pairwise natatime mesh zip uniq minmax) ],
 );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -327,11 +328,11 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
 =head1 SYNOPSIS
 
-    use List::MoreUtils qw(any all none notall true false firstidx 
-                           lastidx insert_after insert_after_string
-			   apply after after_incl before before_incl
-			   indexes lastval firstval pairwise each_array
-			   natatime mesh uniq minmax);
+    use List::MoreUtils qw(any all none notall true false firstidx first_index 
+                           lastidx last_index insert_after insert_after_string 
+                           apply after after_incl before before_incl indexes 
+                           firstval first_value lastval last_value each_array
+                           each_arrayref pairwise natatime mesh zip uniq minmax);
 
 =head1 DESCRIPTION
 
