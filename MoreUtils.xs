@@ -177,8 +177,6 @@ any (code,...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -187,11 +185,13 @@ any (code,...)
 	    if (SvTRUE(*PL_stack_sp)) {
 	      POPBLOCK(cx,PL_curpm);
 	      CATCH_SET(oldcatch);
+	      LEAVESUB(cv);
 	      XSRETURN_YES;
 	    }
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	XSRETURN_NO;
     }
 
@@ -231,8 +231,6 @@ all (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -241,11 +239,13 @@ all (code, ...)
 	    if (!SvTRUE(*PL_stack_sp)) {
 	      POPBLOCK(cx,PL_curpm);
 	      CATCH_SET(oldcatch);
+	      LEAVESUB(cv);
 	      XSRETURN_NO;
 	    }
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	XSRETURN_YES;
     }
 
@@ -286,8 +286,6 @@ none (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -296,11 +294,13 @@ none (code, ...)
 	    if (SvTRUE(*PL_stack_sp)) {
 	      POPBLOCK(cx,PL_curpm);
 	      CATCH_SET(oldcatch);
+	      LEAVESUB(cv);
 	      XSRETURN_NO;
 	    }
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	XSRETURN_YES;
     }
 
@@ -341,8 +341,6 @@ notall (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -351,11 +349,13 @@ notall (code, ...)
 	    if (!SvTRUE(*PL_stack_sp)) {
 	      POPBLOCK(cx,PL_curpm);
 	      CATCH_SET(oldcatch);
+	      LEAVESUB(cv);
 	      XSRETURN_YES;
 	    }
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	XSRETURN_NO;
     }
 
@@ -397,8 +397,6 @@ true (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -409,7 +407,8 @@ true (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
-	
+	LEAVESUB(cv);
+
 	done:
 	RETVAL = count;
     }
@@ -454,8 +453,6 @@ false (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -466,6 +463,7 @@ false (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	
 	done:
 	;
@@ -509,8 +507,6 @@ firstidx (code, ...)
 	    CATCH_SET(TRUE);
 	    PUSHBLOCK(cx, CXt_SUB, SP);
 	    PUSHSUB(cx);
-	    if (!CvDEPTH(cv))
-		SvREFCNT_inc(cv);
 		
 	    for (i = 1 ; i < items ; i++) {
 		GvSV(PL_defgv) = ST(i);
@@ -523,6 +519,7 @@ firstidx (code, ...)
 	    }
 	    POPBLOCK(cx,PL_curpm);
 	    CATCH_SET(oldcatch);
+	    LEAVESUB(cv);
 	}
 
     }
@@ -565,8 +562,6 @@ lastidx (code, ...)
 	    CATCH_SET(TRUE);
 	    PUSHBLOCK(cx, CXt_SUB, SP);
 	    PUSHSUB(cx);
-	    if (!CvDEPTH(cv))
-		SvREFCNT_inc(cv);
 		
 	    for (i = items-1 ; i > 0 ; i--) {
 		GvSV(PL_defgv) = ST(i);
@@ -579,6 +574,7 @@ lastidx (code, ...)
 	    }
 	    POPBLOCK(cx,PL_curpm);
 	    CATCH_SET(oldcatch);
+	    LEAVESUB(cv);
 	}
 
     }
@@ -624,8 +620,6 @@ insert_after (code, val, avref)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 	    
 	for (i = 0; i <= len ; i++) {
 	    GvSV(PL_defgv) = *av_fetch(av, i, FALSE);
@@ -638,6 +632,7 @@ insert_after (code, val, avref)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	if (RETVAL) {
 	    SvREFCNT_inc(val);
 	    insert_after(i, val, av);
@@ -728,8 +723,6 @@ apply (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 		
 	for(i = 1 ; i < items ; i++) {
 	    GvSV(PL_defgv) = newSVsv(ST(i));
@@ -739,7 +732,8 @@ apply (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm)
 	CATCH_SET(oldcatch);
-	
+	LEAVESUB(cv);
+
 	done:
 	XSRETURN(items-1);
     }
@@ -780,8 +774,6 @@ after (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 	    
 	for (i = 1; i < items; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -793,7 +785,8 @@ after (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
-	
+	LEAVESUB(cv);
+
 	for (j = i + 1; j < items; j++)
 	    ST(j-i-1) = ST(j);
 	XSRETURN(items-i-1);
@@ -835,8 +828,6 @@ after_incl (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 	    
 	for (i = 1; i < items; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -848,7 +839,8 @@ after_incl (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
-	
+	LEAVESUB(cv);
+
 	for (j = i; j < items; j++)
 	    ST(j-i) = ST(j);
 	
@@ -891,8 +883,6 @@ before (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 	    
 	for (i = 1; i < items; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -905,7 +895,8 @@ before (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
-   
+	LEAVESUB(cv); 
+
 	XSRETURN(i-1);
     }
 
@@ -945,8 +936,6 @@ before_incl (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 	    
 	for (i = 1; i < items; i++) {
 	    GvSV(PL_defgv) = ST(i);
@@ -960,7 +949,8 @@ before_incl (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
-	
+	LEAVESUB(cv);
+
 	XSRETURN(i-1);
     }
 
@@ -1000,8 +990,6 @@ indexes (code, ...)
 	CATCH_SET(TRUE);
 	PUSHBLOCK(cx, CXt_SUB, SP);
 	PUSHSUB(cx);
-	if (!CvDEPTH(cv))
-	    SvREFCNT_inc(cv);
 	    
 	
 	for (i = 1, j = 0; i < items; i++) {
@@ -1019,6 +1007,7 @@ indexes (code, ...)
 	}
 	POPBLOCK(cx,PL_curpm);
 	CATCH_SET(oldcatch);
+	LEAVESUB(cv);
 	
 	XSRETURN(j);
     }
@@ -1059,8 +1048,6 @@ lastval (code, ...)
 	    CATCH_SET(TRUE);
 	    PUSHBLOCK(cx, CXt_SUB, SP);
 	    PUSHSUB(cx);
-	    if (!CvDEPTH(cv))
-		SvREFCNT_inc(cv);
 		
 	    for (i = items-1 ; i > 0 ; i--) {
 		GvSV(PL_defgv) = ST(i);
@@ -1074,6 +1061,7 @@ lastval (code, ...)
 	    }
 	    POPBLOCK(cx,PL_curpm);
 	    CATCH_SET(oldcatch);
+	    LEAVESUB(cv);
 	}
 
     }
@@ -1116,8 +1104,6 @@ firstval (code, ...)
 	    CATCH_SET(TRUE);
 	    PUSHBLOCK(cx, CXt_SUB, SP);
 	    PUSHSUB(cx);
-	    if (!CvDEPTH(cv))
-		SvREFCNT_inc(cv);
 		
 	    for (i = 1; i < items; i++) {
 		GvSV(PL_defgv) = ST(i);
@@ -1131,6 +1117,7 @@ firstval (code, ...)
 	    }
 	    POPBLOCK(cx,PL_curpm);
 	    CATCH_SET(oldcatch);
+	    LEAVESUB(cv);
 	}
 
     }

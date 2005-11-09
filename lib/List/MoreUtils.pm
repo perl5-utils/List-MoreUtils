@@ -17,7 +17,7 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -641,7 +641,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.10.
+This is version 0.13.
 
 =head1 BUGS
 
@@ -684,6 +684,8 @@ are by him.
 
 The bunch of people who almost immediately pointed out the many problems with
 the glitchy 0.07 release (Slaven Rezic, Ron Savage, CPAN testers).
+
+A particularly nasty memory leak was spotted by Thomas A. Lowery.
 
 =head1 SEE ALSO
 

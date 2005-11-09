@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.13  Wed Nov  9 16:29:02 CET 2005
+	- nearly all functions receiving a CODE-block as first
+	  argument had a hefty memory-leak: Fixed
+	  (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)
+
 0.12  Wed Sep 28 08:09:08 CEST 2005
 	- first_index and each_arrayref weren't exportable
 	  (spotted by Darren Duncan)
