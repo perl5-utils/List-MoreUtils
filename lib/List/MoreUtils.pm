@@ -17,7 +17,7 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -309,6 +309,10 @@ sub minmax (@) {
     }
 
     return ($min, $max);
+}
+
+sub _XScompiled {
+    return 0;
 }
 
 EOP
@@ -641,7 +645,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.13.
+This is version 0.14.
 
 =head1 BUGS
 
@@ -686,6 +690,8 @@ The bunch of people who almost immediately pointed out the many problems with
 the glitchy 0.07 release (Slaven Rezic, Ron Savage, CPAN testers).
 
 A particularly nasty memory leak was spotted by Thomas A. Lowery.
+
+Lars Thegler made me aware of problems with older Perl versions.
 
 =head1 SEE ALSO
 

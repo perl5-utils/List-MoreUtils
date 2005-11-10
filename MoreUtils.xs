@@ -39,6 +39,12 @@ my_cxinc(pTHX)
 
 #if PERL_VERSION < 6
 #    define NV double
+#    define LEAVESUB(cv)	    \
+	{			    \
+	    if (cv)		{   \
+		SvREFCNT_dec(cv);   \
+	    }			    \
+	}
 #endif
 
 #ifdef SVf_IVisUV
@@ -1526,7 +1532,13 @@ minmax (...)
 
 	XSRETURN(2);
     }
- 
+
+void
+_XScompiled ()
+    CODE:
+	XSRETURN_YES;
+
+
 MODULE = List::MoreUtils                PACKAGE = List::MoreUtils_ea
 
 void

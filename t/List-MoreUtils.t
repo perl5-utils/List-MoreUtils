@@ -6,6 +6,13 @@ BEGIN {
 
 use List::MoreUtils qw/:all/;
 
+{
+    local $^W = 0;
+    *ok = sub ($;$$) {
+	skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", @_);
+    };
+}
+
 sub arrayeq {
     local $^W = 0;
     my ($ary1, $ary2) = @_;
