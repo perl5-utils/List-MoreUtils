@@ -17,6 +17,37 @@
 #  define pTHX
 #endif
 
+/* multicall.h is all nice and 
+ * fine but wont work on perl < 5.6.0 */
+
+#if PERL_VERSION > 5
+#   include "multicall.h"
+#else
+#   define dMULTICALL						\
+	OP *_op;						\
+	PERL_CONTEXT *cx;					\
+	SV **newsp;						\
+	U8 hasargs = 0;						\
+	bool oldcatch = CATCH_GET;
+#   define PUSH_MULTICALL(cv)					\
+	_op = CvSTART(cv);					\
+	SAVESPTR(CvROOT(cv)->op_ppaddr);			\
+	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];		\
+	SAVESPTR(PL_curpad);					\
+	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);	\
+	SAVETMPS;						\
+	SAVESPTR(PL_op);					\
+	CATCH_SET(TRUE);					\
+	PUSHBLOCK(cx, CXt_SUB, SP);				\
+	PUSHSUB(cx);
+#   define MULTICALL						\
+	PL_op = _op;						\
+	CALLRUNOPS();
+#   define POP_MULTICALL					\
+	POPBLOCK(cx,PL_curpm);					\
+	CATCH_SET(oldcatch);					
+#endif
+
 /* Some platforms have strict exports. And before 5.7.3 cxinc (or Perl_cxinc)
    was not exported. Therefore platforms like win32, VMS etc have problems
    so we redefine it here -- GMB
@@ -149,504 +180,320 @@ MODULE = List::MoreUtils		PACKAGE = List::MoreUtils
 
 void
 any (code,...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *anyop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    GV *gv;
+    HV *stash;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	if (items <= 1)
-	    XSRETURN_UNDEF;
+    if (items <= 1)
+	XSRETURN_UNDEF;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	anyop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = anyop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) {
-	      POPBLOCK(cx,PL_curpm);
-	      CATCH_SET(oldcatch);
-	      LEAVESUB(cv);
-	      XSRETURN_YES;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+	    
+    for(i = 1 ; i < items ; ++i) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    POP_MULTICALL;
+	    XSRETURN_YES;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	XSRETURN_NO;
     }
+    POP_MULTICALL;
+    XSRETURN_NO;
+}
 
 void
 all (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *allop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	if (items <= 1)
-	    XSRETURN_UNDEF;
+    if (items <= 1)
+	XSRETURN_UNDEF;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	allop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = allop;
-	    CALLRUNOPS(aTHX);
-	    if (!SvTRUE(*PL_stack_sp)) {
-	      POPBLOCK(cx,PL_curpm);
-	      CATCH_SET(oldcatch);
-	      LEAVESUB(cv);
-	      XSRETURN_NO;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+ 
+    for(i = 1 ; i < items ; i++) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (!SvTRUE(*PL_stack_sp)) {
+	    POP_MULTICALL;
+	    XSRETURN_NO;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	XSRETURN_YES;
     }
+    POP_MULTICALL;
+    XSRETURN_YES;
+}
 
 
 void
 none (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *noneop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	if (items <= 1)
-	    XSRETURN_UNDEF;
+    if (items <= 1)
+	XSRETURN_UNDEF;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	noneop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = noneop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) {
-	      POPBLOCK(cx,PL_curpm);
-	      CATCH_SET(oldcatch);
-	      LEAVESUB(cv);
-	      XSRETURN_NO;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for(i = 1 ; i < items ; ++i) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    POP_MULTICALL;
+	    XSRETURN_NO;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	XSRETURN_YES;
     }
-
+    POP_MULTICALL;
+    XSRETURN_YES;
+}
 
 void
 notall (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *notallop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	if (items <= 1)
-	    XSRETURN_UNDEF;
+    if (items <= 1)
+	XSRETURN_UNDEF;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	notallop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = notallop;
-	    CALLRUNOPS(aTHX);
-	    if (!SvTRUE(*PL_stack_sp)) {
-	      POPBLOCK(cx,PL_curpm);
-	      CATCH_SET(oldcatch);
-	      LEAVESUB(cv);
-	      XSRETURN_YES;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+	    
+    for(i = 1 ; i < items ; ++i) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (!SvTRUE(*PL_stack_sp)) {
+	    POP_MULTICALL;
+	    XSRETURN_YES;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	XSRETURN_NO;
     }
-
+    POP_MULTICALL;
+    XSRETURN_NO;
+}
 
 int
 true (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *trueop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
-	I32 count = 0;
-	
-	if (items <= 1)
-	    goto done;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    I32 count = 0;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	trueop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = trueop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) 
-		count++;
-	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
+    if (items <= 1)
+	goto done;
 
-	done:
-	RETVAL = count;
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for(i = 1 ; i < items ; ++i) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) 
+	    count++;
     }
-    OUTPUT:
-	RETVAL
+    POP_MULTICALL;
+
+    done:
+    RETVAL = count;
+}
+OUTPUT:
+    RETVAL
 
 int
 false (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *falseop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    I32 count = 0;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	RETVAL = 0;
-	
-	if (items <= 1)
-	    goto done;
+    if (items <= 1)
+	goto done;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	falseop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = falseop;
-	    CALLRUNOPS(aTHX);
-	    if (!SvTRUE(*PL_stack_sp)) 
-		RETVAL++;
-	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	
-	done:
-	;
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for(i = 1 ; i < items ; ++i) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (!SvTRUE(*PL_stack_sp)) 
+	    count++;
     }
-    OUTPUT:
-	RETVAL
+    POP_MULTICALL;
+
+    done:
+    RETVAL = count;
+}
+OUTPUT:
+    RETVAL
 
 int
 firstidx (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *firstidxop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	RETVAL = -1;
-	
-	if (items > 1) {
-	    SAVESPTR(GvSV(PL_defgv));
-	    cv = sv_2cv(code, &stash, &gv, 0);
-	    firstidxop = CvSTART(cv);
-	    SAVESPTR(CvROOT(cv)->op_ppaddr);
-	    CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	    PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	    SAVESPTR(PL_curpad);
-	    PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	    SAVETMPS;
-	    SAVESPTR(PL_op);
-	    CATCH_SET(TRUE);
-	    PUSHBLOCK(cx, CXt_SUB, SP);
-	    PUSHSUB(cx);
-		
-	    for (i = 1 ; i < items ; i++) {
-		GvSV(PL_defgv) = ST(i);
-		PL_op = firstidxop;
-		CALLRUNOPS(aTHX);
-		if (SvTRUE(*PL_stack_sp)) {
-		    RETVAL = i-1;
-		    break;
-		}
-	    }
-	    POPBLOCK(cx,PL_curpm);
-	    CATCH_SET(oldcatch);
-	    LEAVESUB(cv);
-	}
-
-    }
-    OUTPUT:
-	RETVAL
-
-int
-lastidx (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *lastidxop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
-
-	RETVAL = -1;
-	
-	if (items > 1) {
-	    SAVESPTR(GvSV(PL_defgv));
-	    cv = sv_2cv(code, &stash, &gv, 0);
-	    lastidxop = CvSTART(cv);
-	    SAVESPTR(CvROOT(cv)->op_ppaddr);
-	    CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	    PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	    SAVESPTR(PL_curpad);
-	    PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	    SAVETMPS;
-	    SAVESPTR(PL_op);
-	    CATCH_SET(TRUE);
-	    PUSHBLOCK(cx, CXt_SUB, SP);
-	    PUSHSUB(cx);
-		
-	    for (i = items-1 ; i > 0 ; i--) {
-		GvSV(PL_defgv) = ST(i);
-		PL_op = lastidxop;
-		CALLRUNOPS(aTHX);
-		if (SvTRUE(*PL_stack_sp)) {
-		    RETVAL = i-1;
-		    break;
-		}
-	    }
-	    POPBLOCK(cx,PL_curpm);
-	    CATCH_SET(oldcatch);
-	    LEAVESUB(cv);
-	}
-
-    }
-    OUTPUT:
-	RETVAL
-
-int
-insert_after (code, val, avref)
-	SV *code;
-	SV *val;
-	SV *avref;
-    PROTOTYPE: &$\@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *insertafterop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
-
-	AV *av = (AV*)SvRV(avref);
-	int len = av_len(av);
-	RETVAL = 0;
-	
-	SAVESPTR(GvSV(PL_defgv));
+    RETVAL = -1;
+    
+    if (items > 1) {
 	cv = sv_2cv(code, &stash, &gv, 0);
-	insertafterop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-	    
-	for (i = 0; i <= len ; i++) {
-	    GvSV(PL_defgv) = *av_fetch(av, i, FALSE);
-	    PL_op = insertafterop;
-	    CALLRUNOPS(aTHX);
+	PUSH_MULTICALL(cv);
+	SAVESPTR(GvSV(PL_defgv));
+ 
+	for (i = 1 ; i < items ; ++i) {
+	    GvSV(PL_defgv) = args[i];
+	    MULTICALL;
 	    if (SvTRUE(*PL_stack_sp)) {
-		RETVAL = 1;
+		RETVAL = i-1;
 		break;
 	    }
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	if (RETVAL) {
-	    SvREFCNT_inc(val);
-	    insert_after(i, val, av);
-	}
-
+	POP_MULTICALL;
     }
-    OUTPUT:
-	RETVAL
+}
+OUTPUT:
+    RETVAL
+
+int
+lastidx (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
+
+    RETVAL = -1;
+    
+    if (items > 1) {
+	cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(cv);
+	SAVESPTR(GvSV(PL_defgv));
+ 
+	for (i = items-1 ; i > 0 ; --i) {
+	    GvSV(PL_defgv) = args[i];
+	    MULTICALL;
+	    if (SvTRUE(*PL_stack_sp)) {
+		RETVAL = i-1;
+		break;
+	    }
+	}
+	POP_MULTICALL;
+    }
+}
+OUTPUT:
+    RETVAL
+
+int
+insert_after (code, val, avref)
+    SV *code;
+    SV *val;
+    SV *avref;
+PROTOTYPE: &$\@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    CV *cv;
+
+    AV *av = (AV*)SvRV(avref);
+    int len = av_len(av);
+    RETVAL = 0;
+    
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for (i = 0; i <= len ; ++i) {
+	GvSV(PL_defgv) = *av_fetch(av, i, FALSE);
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    RETVAL = 1;
+	    break;
+	}
+    }
+    
+    POP_MULTICALL;
+
+    if (RETVAL) {
+	SvREFCNT_inc(val);
+	insert_after(i, val, av);
+    }
+}
+OUTPUT:
+    RETVAL
 
 int
 insert_after_string (string, val, avref)
@@ -694,441 +541,292 @@ insert_after_string (string, val, avref)
 	
 void
 apply (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *applyop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
-	I32 count = 0;
-	
-	if (items <= 1)
-	    XSRETURN_EMPTY;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    CV *cv;
+    SV **args = &PL_stack_base[ax];	
+    I32 count = 0;
+    
+    if (items <= 1)
+	XSRETURN_EMPTY;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	applyop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-		
-	for(i = 1 ; i < items ; i++) {
-	    GvSV(PL_defgv) = newSVsv(ST(i));
-	    PL_op = applyop;
-	    CALLRUNOPS(aTHX);
-	    ST(i-1) =  GvSV(PL_defgv);
-	}
-	POPBLOCK(cx,PL_curpm)
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-
-	done:
-	XSRETURN(items-1);
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+	    
+    for(i = 1 ; i < items ; ++i) {
+	GvSV(PL_defgv) = newSVsv(args[i]);
+	MULTICALL;
+	args[i-1] = GvSV(PL_defgv);
     }
+    POP_MULTICALL;
+
+    done:
+    XSRETURN(items-1);
+}
 
 void
 after (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i, j;
-	HV *stash;
-	CV *cv;
-	OP *afterop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i, j;
+    HV *stash;
+    CV *cv;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
 
-	if (items <= 1)
-	    XSRETURN_EMPTY;
+    if (items <= 1)
+	XSRETURN_EMPTY;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	afterop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-	    
-	for (i = 1; i < items; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = afterop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) {
-		break;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for (i = 1; i < items; i++) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    break;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-
-	for (j = i + 1; j < items; j++)
-	    ST(j-i-1) = ST(j);
-	XSRETURN(items-i-1);
     }
+
+    POP_MULTICALL;
+
+    for (j = i + 1; j < items; ++j)
+	args[j-i-1] = args[j];
+
+    XSRETURN(items-i-1);
+}
 
 void
 after_incl (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i, j;
-	HV *stash;
-	CV *cv;
-	OP *afterop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i, j;
+    HV *stash;
+    CV *cv;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
 
-	if (items <= 1)
-	    XSRETURN_EMPTY;
+    if (items <= 1)
+	XSRETURN_EMPTY;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	afterop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-	    
-	for (i = 1; i < items; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = afterop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) {
-		break;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for (i = 1; i < items; i++) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    break;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-
-	for (j = i; j < items; j++)
-	    ST(j-i) = ST(j);
-	
-	XSRETURN(items-i);
     }
+
+    POP_MULTICALL;
+
+    for (j = i; j < items; j++)
+	args[j-i] = args[j];
+
+    XSRETURN(items-i);
+}
 
 void
 before (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *beforeop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
+    
+    if (items <= 1)
+	XSRETURN_EMPTY;
 
-	if (items <= 1)
-	    XSRETURN_EMPTY;
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	beforeop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-	    
-	for (i = 1; i < items; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = beforeop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) {
-		break;
-	    }
-	    ST(i-1) = ST(i);
+    for (i = 1; i < items; i++) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    break;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv); 
-
-	XSRETURN(i-1);
+	args[i-1] = args[i];
     }
+
+    POP_MULTICALL;
+
+    XSRETURN(i-1);
+}
 
 void
 before_incl (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *beforeop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	if (items <= 1)
-	    XSRETURN_EMPTY;
+    if (items <= 1)
+	XSRETURN_EMPTY;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	beforeop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-	    
-	for (i = 1; i < items; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = beforeop;
-	    CALLRUNOPS(aTHX);
-	    ST(i-1) = ST(i);
-	    if (SvTRUE(*PL_stack_sp)) {
-		i++;
-		break;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for (i = 1; i < items; ++i) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	args[i-1] = args[i];
+	if (SvTRUE(*PL_stack_sp)) {
+	    ++i;
+	    break;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-
-	XSRETURN(i-1);
     }
+
+    POP_MULTICALL;
+
+    XSRETURN(i-1);
+}
 
 void
 indexes (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i, j;
-	HV *stash;
-	CV *cv;
-	OP *indexop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i, j;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	if (items <= 1)
-	    XSRETURN_EMPTY;
+    if (items <= 1)
+	XSRETURN_EMPTY;
 
-	SAVESPTR(GvSV(PL_defgv));
-	cv = sv_2cv(code, &stash, &gv, 0);
-	indexop = CvSTART(cv);
-	SAVESPTR(CvROOT(cv)->op_ppaddr);
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	SAVESPTR(PL_curpad);
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	SAVETMPS;
-	SAVESPTR(PL_op);
-	CATCH_SET(TRUE);
-	PUSHBLOCK(cx, CXt_SUB, SP);
-	PUSHSUB(cx);
-	    
-	
-	for (i = 1, j = 0; i < items; i++) {
-	    GvSV(PL_defgv) = ST(i);
-	    PL_op = indexop;
-	    CALLRUNOPS(aTHX);
-	    if (SvTRUE(*PL_stack_sp)) {
-		ST(j) = sv_2mortal(newSViv(i-1));
-		/* need to artificially increase ref-count here
-		 * because POPBLOCK further below would otherwise
-		 * free the items in SP */
-		SvREFCNT_inc(ST(j));
-		j++;
-	    }
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+    
+    for (i = 1, j = 0; i < items; i++) {
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	if (SvTRUE(*PL_stack_sp)) {
+	    args[j] = sv_2mortal(newSViv(i-1));
+	    /* need to artificially increase ref-count here
+	     * because POPBLOCK further below would otherwise
+	     * free the items in SP */
+	    SvREFCNT_inc(args[j]);
+	    j++;
 	}
-	POPBLOCK(cx,PL_curpm);
-	CATCH_SET(oldcatch);
-	LEAVESUB(cv);
-	
-	XSRETURN(j);
     }
+    
+    POP_MULTICALL;
+    
+    XSRETURN(j);
+}
 
 SV *
 lastval (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *lastvalop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];	
+    CV *cv;
 
-	RETVAL = &PL_sv_undef;
-	
-	if (items > 1) {
-	    SAVESPTR(GvSV(PL_defgv));
-	    cv = sv_2cv(code, &stash, &gv, 0);
-	    lastvalop = CvSTART(cv);
-	    SAVESPTR(CvROOT(cv)->op_ppaddr);
-	    CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	    PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	    SAVESPTR(PL_curpad);
-	    PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	    SAVETMPS;
-	    SAVESPTR(PL_op);
-	    CATCH_SET(TRUE);
-	    PUSHBLOCK(cx, CXt_SUB, SP);
-	    PUSHSUB(cx);
-		
-	    for (i = items-1 ; i > 0 ; i--) {
-		GvSV(PL_defgv) = ST(i);
-		PL_op = lastvalop;
-		CALLRUNOPS(aTHX);
-		if (SvTRUE(*PL_stack_sp)) {
-		    /* see comment in indexes() */
-		    SvREFCNT_inc(RETVAL = ST(i));
-		    break;
-		}
+    RETVAL = &PL_sv_undef;
+    
+    if (items > 1) {
+	cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(cv);
+	SAVESPTR(GvSV(PL_defgv));
+
+	for (i = items-1 ; i > 0 ; --i) {
+	    GvSV(PL_defgv) = args[i];
+	    MULTICALL;
+	    if (SvTRUE(*PL_stack_sp)) {
+		/* see comment in indexes() */
+		SvREFCNT_inc(RETVAL = args[i]);
+		break;
 	    }
-	    POPBLOCK(cx,PL_curpm);
-	    CATCH_SET(oldcatch);
-	    LEAVESUB(cv);
 	}
-
+	POP_MULTICALL;
     }
-    OUTPUT:
-	RETVAL
+}
+OUTPUT:
+    RETVAL
 
 SV *
 firstval (code, ...)
-	SV *code;
-    PROTOTYPE: &@
-    CODE:
-    {
-	register int i;
-	HV *stash;
-	CV *cv;
-	OP *firstvalop;
-	PERL_CONTEXT *cx;
-	GV *gv;
-	SV **newsp;
-	I32 gimme = G_SCALAR;
-	U8 hasargs = 0;
-	bool oldcatch = CATCH_GET;
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
 
-	RETVAL = &PL_sv_undef;
-	
-	if (items > 1) {
-	    SAVESPTR(GvSV(PL_defgv));
-	    cv = sv_2cv(code, &stash, &gv, 0);
-	    firstvalop = CvSTART(cv);
-	    SAVESPTR(CvROOT(cv)->op_ppaddr);
-	    CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];
-#ifdef PAD_SET_CUR
-	    PAD_SET_CUR(CvPADLIST(cv),1);
-#else
-	    SAVESPTR(PL_curpad);
-	    PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);
-#endif
-	    SAVETMPS;
-	    SAVESPTR(PL_op);
-	    CATCH_SET(TRUE);
-	    PUSHBLOCK(cx, CXt_SUB, SP);
-	    PUSHSUB(cx);
-		
-	    for (i = 1; i < items; i++) {
-		GvSV(PL_defgv) = ST(i);
-		PL_op = firstvalop;
-		CALLRUNOPS(aTHX);
-		if (SvTRUE(*PL_stack_sp)) {
-		    /* see comment in indexes() */
-		    SvREFCNT_inc(RETVAL = ST(i));
-		    break;
-		}
+    RETVAL = &PL_sv_undef;
+    
+    if (items > 1) {
+	cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(cv);
+	SAVESPTR(GvSV(PL_defgv));
+
+	for (i = 1; i < items; ++i) {
+	    GvSV(PL_defgv) = args[i];
+	    MULTICALL;
+	    if (SvTRUE(*PL_stack_sp)) {
+		/* see comment in indexes() */
+		SvREFCNT_inc(RETVAL = args[i]);
+		break;
 	    }
-	    POPBLOCK(cx,PL_curpm);
-	    CATCH_SET(oldcatch);
-	    LEAVESUB(cv);
 	}
-
+	POP_MULTICALL;
     }
-    OUTPUT:
-	RETVAL
+}
+OUTPUT:
+    RETVAL
 
 void
 _array_iterator (method = "")

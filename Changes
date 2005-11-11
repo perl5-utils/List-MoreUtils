@@ -1,5 +1,11 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.15  Fri Nov 11 09:23:29 CET 2005
+	- 0.13 and 0.14 broke the module on 5.6.x
+	  (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)
+	- internals changed to make use of the new MULTICALL API 
+	  which had to be backported to 5.005_x
+
 0.14  Thu Nov 10 13:08:03 CET 2005
 	- 0.13 fixed the leaks but rendered the XS part uncompilable
 	  for perls < 5.6.0: Fixed
