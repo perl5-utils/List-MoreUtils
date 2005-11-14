@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.16  Mon Nov 14 09:57:28 CET 2005
+	- a dangling semicolon in some macros prevented
+	  the XS portion to compile on some compilers
+	  (Lars Thegler <lars AT thegler DOT dk>)
+
 0.15  Fri Nov 11 09:23:29 CET 2005
 	- 0.13 and 0.14 broke the module on 5.6.x
 	  (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)

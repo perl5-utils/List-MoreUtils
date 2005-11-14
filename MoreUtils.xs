@@ -28,7 +28,7 @@
 	PERL_CONTEXT *cx;					\
 	SV **newsp;						\
 	U8 hasargs = 0;						\
-	bool oldcatch = CATCH_GET;
+	bool oldcatch = CATCH_GET
 #   define PUSH_MULTICALL(cv)					\
 	_op = CvSTART(cv);					\
 	SAVESPTR(CvROOT(cv)->op_ppaddr);			\
@@ -39,13 +39,13 @@
 	SAVESPTR(PL_op);					\
 	CATCH_SET(TRUE);					\
 	PUSHBLOCK(cx, CXt_SUB, SP);				\
-	PUSHSUB(cx);
+	PUSHSUB(cx)
 #   define MULTICALL						\
 	PL_op = _op;						\
-	CALLRUNOPS();
+	CALLRUNOPS()
 #   define POP_MULTICALL					\
 	POPBLOCK(cx,PL_curpm);					\
-	CATCH_SET(oldcatch);					
+	CATCH_SET(oldcatch)
 #endif
 
 /* Some platforms have strict exports. And before 5.7.3 cxinc (or Perl_cxinc)
