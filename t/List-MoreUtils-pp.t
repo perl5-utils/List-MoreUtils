@@ -1,6 +1,6 @@
 use Test;
 BEGIN { 
-    plan tests => 104;
+    plan tests => 109;
     $ENV{LIST_MOREUTILS_PP} = 1;
 }
 
@@ -263,7 +263,43 @@ ok(1);
 
 }
 
-#pairwise (81...)
+#each_array (81...)
+{
+    my @a = (7, 3, 'a', undef, 'r');
+    my @b = qw/a 2 -1 x/;
+
+    my $it = each_arrayref \@a, \@b;
+    my (@r, @idx);
+    while (my ($a, $b) = $it->())
+    {
+	push @r, $a, $b;
+	push @idx, $it->('index');
+    }
+    
+    $it->(); # do I segfault? I shouldn't. 
+
+    ok(arrayeq(\@r, [7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef]));
+    ok(arrayeq(\@idx, [0..4]));
+
+    # testing two iterators on the same arrays in parallel
+    @a = (1, 3, 5);
+    @b = (2, 4, 6);
+    my $i1 = each_array @a, @b;
+    my $i2 = each_array @a, @b;
+    @r = ();
+    while (my ($a, $b) = $i1->() and my ($c, $d) = $i2->()) {
+	push @r, $a, $b, $c, $d;
+    }
+    ok(arrayeq(\@r, [1,2,1,2,3,4,3,4,5,6,5,6]));
+
+    # input arrays must not be modified
+    ok(arrayeq(\@a, [1,3,5]));
+    ok(arrayeq(\@b, [2,4,6]));
+
+}
+
+
+#pairwise (86...)
 {
     my @a = (1, 2, 3, 4, 5);
     my @b = (2, 4, 6, 8, 10);
@@ -325,7 +361,7 @@ ok(1);
     ok(arrayeq(\@c, [qw/a 1 b 2 c 3/]));  # 88
 }
 
-#natatime (90...)
+#natatime (95...)
 {
     my @x = ('a'..'g');
     my $it = natatime 3, @x;
@@ -346,7 +382,7 @@ ok(1);
     ok(arrayeq(\@r, \@a), 1, "natatime2");
 }
 
-#mesh (92...)
+#mesh (97...)
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
@@ -366,7 +402,7 @@ ok(1);
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#zip (just an alias for mesh) (95...)
+#zip (just an alias for mesh) (100...)
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;

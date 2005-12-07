@@ -17,7 +17,7 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.16';
+$VERSION = '0.17';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -558,6 +558,11 @@ The iterator returns the empty list when it reached the end of all arrays.
 If the iterator is passed an argument of 'C<index>', then it retuns
 the index of the last fetched set of values, as a scalar.
 
+=item each_arrayref LIST
+
+Like each_array, but the arguments are references to arrays, not the
+plain arrays.
+
 =item natatime BLOCK LIST
 
 Creates an array iterator, for looping over an array in chunks of
@@ -645,7 +650,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.16.
+This is version 0.17.
 
 =head1 BUGS
 
@@ -692,6 +697,8 @@ the glitchy 0.07 release (Slaven Rezic, Ron Savage, CPAN testers).
 A particularly nasty memory leak was spotted by Thomas A. Lowery.
 
 Lars Thegler made me aware of problems with older Perl versions.
+
+Anno Siegel de-orphaned C<each_arrayref>.
 
 =head1 SEE ALSO
 

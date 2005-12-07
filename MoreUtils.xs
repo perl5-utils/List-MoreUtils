@@ -146,6 +146,29 @@ sv_tainted(SV *sv)
 #define WARN_ON \
     PL_curcop->cop_warnings = oldwarn;
 
+#define EACH_ARRAY_BODY \
+	register int i;									\
+	arrayeach_args * args;								\
+	HV *stash = gv_stashpv("List::MoreUtils_ea", TRUE);				\
+	CV *closure = newXS(NULL, XS_List__MoreUtils__array_iterator, __FILE__);	\
+											\
+	/* prototype */									\
+	sv_setpv((SV*)closure, ";$");							\
+											\
+	New(0, args, 1, arrayeach_args);						\
+	New(0, args->avs, items, AV*);							\
+	args->navs = items;								\
+	args->curidx = 0;								\
+											\
+	for (i = 0; i < items; i++)							\
+	    args->avs[i] = (AV*)SvRV(ST(i));						\
+											\
+	CvXSUBANY(closure).any_ptr = args;						\
+	RETVAL = newRV_noinc((SV*)closure);						\
+											\
+	/* in order to allow proper cleanup in DESTROY-handler */			\
+	sv_bless(RETVAL, stash)
+
 /* need this one for array_each() */
 typedef struct {
     AV **avs;	    /* arrays over which to iterate in parallel */
@@ -874,27 +897,16 @@ each_array (...)
     PROTOTYPE: \@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
     CODE:
     {
-	register int i;
-	arrayeach_args * args;
-	HV *stash = gv_stashpv("List::MoreUtils_ea", TRUE);
-	CV *closure = newXS(NULL, XS_List__MoreUtils__array_iterator, __FILE__);
+	EACH_ARRAY_BODY;
+    }
+    OUTPUT:
+	RETVAL
 
-	/* prototype */
-	sv_setpv((SV*)closure, ";$");
-
-	New(0, args, 1, arrayeach_args);
-	New(0, args->avs, items, AV*);
-	args->navs = items;
-	args->curidx = 0;
-
-	for (i = 0; i < items; i++) 
-	    args->avs[i] = (AV*)SvRV(ST(i));
-	
-	CvXSUBANY(closure).any_ptr = args;
-	RETVAL = newRV_noinc((SV*)closure);
-
-	/* in order to allow proper cleanup in DESTROY-handler */
-	sv_bless(RETVAL, stash);
+SV *
+each_arrayref (...)
+    CODE:
+    {
+	EACH_ARRAY_BODY;
     }
     OUTPUT:
 	RETVAL
