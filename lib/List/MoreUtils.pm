@@ -17,7 +17,7 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -650,7 +650,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.17.
+This is version 0.18.
 
 =head1 BUGS
 
@@ -700,6 +700,46 @@ Lars Thegler made me aware of problems with older Perl versions.
 
 Anno Siegel de-orphaned C<each_arrayref>.
 
+David Filmer made me aware of a problem in each_arrayref that could ultimately
+lead to a segfault.
+
+=head1 TODO
+
+A pile of requests from other people is still pending further processing in my
+mailbox. This includes:
+
+=over 4
+
+=item * part(&@)
+
+Partition a list based on the code-reference's return-value.
+
+=item * uniq_by(&@)
+
+Use code-reference to extract a key based on which the uniqueness is determined.
+
+=item * delete_index
+
+=item * random_item
+
+=item * random_item_delete_index
+
+=item * list_diff_hash
+
+=item * list_diff_inboth
+
+=item * list_diff_infirst
+
+=item * list_diff_insecond
+
+These were all suggested by Dan Muey.
+
+=item * listify
+
+Always return a flat list when either a simple scalar value was passed or an array-reference.
+
+=back
+
 =head1 SEE ALSO
 
 L<List::Util>
@@ -710,7 +750,7 @@ Tassilo von Parseval, E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004-2005 by Tassilo von Parseval
+Copyright (C) 2004-2006 by Tassilo von Parseval
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,

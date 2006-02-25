@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.18  Sat Feb 25 08:55:48 CET 2006
+	- each_arrayref (XS) couldn't deal with refs to list literals
+	  (brought up by David Filmer <usenet AT DavidFilmer DOT com>
+	   in comp.lang.perl.misc)
+
 0.17  Wed Dec  7 10:45:43 CET 2005
 	- each_arrayref had no XS implementation and wasn't
 	  mentioned in the PODs

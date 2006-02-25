@@ -1,15 +1,19 @@
 use Test;
 BEGIN { 
-    plan tests => 109;
     $ENV{LIST_MOREUTILS_PP} = 0;
 };
-
 use List::MoreUtils qw/:all/;
 
 {
     local $^W = 0;
     *ok = sub ($;$$) {
-	skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", @_);
+	if (@_ == 1) {
+	    skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0]);
+	} elsif (@_ == 2) {
+	    skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0], $_[1]);
+	} else {
+	    skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0], $_[1], $_[2]);
+	}
     };
 }
 
@@ -26,10 +30,11 @@ sub arrayeq {
     }
     return 1;
 }
-    
-ok(1); 
+
+my $TESTS = 0;
 
 # any
+BEGIN { $TESTS += 6 }
 {
     my @list = (1 .. 10000);
     ok(any { $_ == 5000 } @list);
@@ -40,7 +45,8 @@ ok(1);
     ok(!defined(any { }));
 }
 
-# all (8...)
+# all (7...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(all { defined } @list);
@@ -49,7 +55,8 @@ ok(1);
     ok(!defined all { } );
 }
 
-# none (12...)
+# none (11...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(none { !defined } @list);
@@ -58,7 +65,8 @@ ok(1);
     ok(!defined none { });
 }
 
-# notall (16...)
+# notall (15...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(notall { !defined } @list);
@@ -67,7 +75,8 @@ ok(1);
     ok(!defined notall { });
 }
 
-# true (20...)
+# true (19...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(10000, true { defined } @list);
@@ -76,7 +85,8 @@ ok(1);
     ok(!true { });
 }
 
-# false (24...)
+# false (23...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(10000, false { !defined } @list);
@@ -85,7 +95,8 @@ ok(1);
     ok(!false { });
 }
 
-# firstidx (28...)
+# firstidx (27...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(4999, firstidx { $_ >= 5000 } @list);
@@ -94,7 +105,8 @@ ok(1);
     ok(-1, firstidx { });
 }
 
-# lastidx (32...)
+# lastidx (31...)
+BEGIN { $TESTS += 8 }
 {
     my @list = (1 .. 10000);
     ok(9999, lastidx { $_ >= 5000 } @list);
@@ -109,7 +121,8 @@ ok(1);
     ok(-1, last_index { });
 }
 
-# insert_after (40...)
+# insert_after (39...)
+BEGIN { $TESTS += 4 }
 {
     my @list = qw/This is a list/;
     insert_after { $_ eq "a" } "longer" => @list;
@@ -124,7 +137,8 @@ ok(1);
     ok(join(' ', @list), "This is a longer list");
 }
 
-# insert_after_string (44...)
+# insert_after_string (43...)
+BEGIN { $TESTS += 3 }
 {
     my @list = qw/This is a list/;
     insert_after_string "a", "longer" => @list;
@@ -138,7 +152,8 @@ ok(1);
     ok(join(' ', @list), "This\0 is\0 a\0 longer\0 list\0");
 }
 
-# apply (47...)
+# apply (46...)
+BEGIN { $TESTS += 6 }
 {
     my @list  = (0 .. 9);
     my @list1 = apply { $_++ } @list;
@@ -159,7 +174,8 @@ ok(1);
 # In the following, the @dummy variable is needed to circumvent
 # a parser glitch in the 5.6.x series.
 
-#after (53...)
+#after (52...)
+BEGIN { $TESTS += 3 }
 {
     my @x = after { $_ % 5 == 0 } 1..9;
     ok(arrayeq(\@x, [6,7,8,9]));
@@ -169,7 +185,8 @@ ok(1);
     ok(arrayeq(\@x, [ qw/baz foo/ ]));
 }
 
-#after_incl (56...)
+#after_incl (55...)
+BEGIN { $TESTS += 3 }
 {
     my @x = after_incl {$_ % 5 == 0} 1..9;
     ok(arrayeq(\@x, [5, 6, 7, 8, 9]));
@@ -179,7 +196,8 @@ ok(1);
     ok(arrayeq(\@x, [ qw/bar baz foo/ ]));
 }
 
-#before (59...)
+#before (58...)
+BEGIN { $TESTS += 3 }
 {
     my @x = before {$_ % 5 == 0} 1..9;    
     ok(arrayeq(\@x, [1, 2, 3, 4]));
@@ -189,7 +207,8 @@ ok(1);
     ok(arrayeq(\@x, [  qw/bar baz/ ]));
 }
 
-#before_incl (62...)
+#before_incl (61...)
+BEGIN { $TESTS += 3 }
 {
     my @x = before_incl {$_ % 5 == 0} 1..9;
     ok(arrayeq(\@x, [1, 2, 3, 4, 5]));
@@ -199,7 +218,8 @@ ok(1);
     ok(arrayeq(\@x, [ qw/bar baz foo/ ]));
 }
 
-#indexes (65...)
+#indexes (64...)
+BEGIN { $TESTS += 2 }
 {
     my @x = indexes {$_ > 5}  4..9;
     ok(arrayeq(\@x, [2..5]));
@@ -207,7 +227,8 @@ ok(1);
     ok(!@x);
 }
 
-#lastval/last_value (68...)
+#lastval/last_value (67...)
+BEGIN { $TESTS += 4 }
 {
     my $x = last_value {$_ > 5}  4..9;  
     ok($x, 9);
@@ -220,7 +241,8 @@ ok(1);
     ok(!defined $x);
 }
 
-#firstval/first_value (72...)
+#firstval/first_value (71...)
+BEGIN { $TESTS += 4 }
 {
     my $x = first_value {$_ > 5}  4..9; 
     ok($x, 6);
@@ -234,7 +256,8 @@ ok(1);
     
 }
 
-#each_array (76...)
+#each_array (75...)
+BEGIN { $TESTS += 10 }
 {
     my @a = (7, 3, 'a', undef, 'r');
     my @b = qw/a 2 -1 x/;
@@ -267,9 +290,30 @@ ok(1);
     ok(arrayeq(\@a, [1,3,5]));
     ok(arrayeq(\@b, [2,4,6]));
 
+    # this used to give "semi-panic: attempt to dup freed string"
+    # See: <news:1140827861.481475.111380@z34g2000cwc.googlegroups.com>
+    my $ea = each_arrayref([1 .. 26], ['A' .. 'Z']);
+    (@a, @b) = ();
+    while (my ($a, $b) = $ea->()) {
+	push @a, $a; push @b, $b;
+    }
+    ok(arrayeq(\@a, [1 .. 26]));
+    ok(arrayeq(\@b, ['A' .. 'Z']));
+
+    # and this even used to dump core
+    my @nums = 1 .. 26;
+    $ea = each_arrayref(\@nums, ['A' .. 'Z']);
+    (@a, @b) = ();
+    while (my ($a, $b) = $ea->()) {
+	push @a, $a; push @b, $b;
+    }
+    ok(arrayeq(\@a, [1 .. 26]));
+    ok(arrayeq(\@a, \@nums));
+    ok(arrayeq(\@b, ['A' .. 'Z']));
 }
 
-#each_array (81...)
+#each_array (85...)
+BEGIN { $TESTS += 5 }
 {
     my @a = (7, 3, 'a', undef, 'r');
     my @b = qw/a 2 -1 x/;
@@ -304,7 +348,8 @@ ok(1);
 
 }
 
-#pairwise (86...)
+#pairwise (90...)
+BEGIN { $TESTS += 9 }
 {
     my @a = (1, 2, 3, 4, 5);
     my @b = (2, 4, 6, 8, 10);
@@ -344,7 +389,7 @@ ok(1);
 	my $limit = $#A > $#B? $#A : $#B;    # loop iteration limit
 
 	local(*$caller_a, *$caller_b);
-	map    # This map expression is also the return value.
+	map # This map expression is also the return value.
 	{
 	    # assign to $a, $b as refs to caller's array elements
 	    (*$caller_a, *$caller_b) = \($A[$_], $B[$_]);
@@ -366,7 +411,8 @@ ok(1);
     ok(arrayeq(\@c, [qw/a 1 b 2 c 3/]));  # 88
 }
 
-#natatime (95...)
+#natatime (99...)
+BEGIN { $TESTS += 3 }
 {
     my @x = ('a'..'g');
     my $it = natatime 3, @x;
@@ -385,9 +431,17 @@ ok(1);
 	push @r, @vals;
     }
     ok(arrayeq(\@r, \@a), 1, "natatime2");
+
+    $it = natatime 1, 1 .. 26;
+    @r = ();
+    while (my @vals = &$it) {
+	push @r, @vals;
+    }
+    ok(arrayeq(\@r, [1 .. 26]), 1, "natatime3");
 }
 
-#mesh (97...)
+#mesh (102...)
+BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
@@ -407,7 +461,8 @@ ok(1);
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#zip (just an alias for mesh) (100...)
+#zip (just an alias for mesh) (105...)
+BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
@@ -427,7 +482,8 @@ ok(1);
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#uniq
+#uniq (108...)
+BEGIN { $TESTS += 2 }
 {
     my @a = map { (1 .. 10000) } 0 .. 1;
     my @u = uniq @a;
@@ -436,7 +492,8 @@ ok(1);
     ok(10000, $u);
 }
 
-#minmax
+#minmax (110...)
+BEGIN { $TESTS += 6 }
 {
     my @list = reverse 0 .. 100_000;
     my ($min, $max) = minmax(@list);
@@ -453,6 +510,9 @@ ok(1);
     @list = (0, -1.1, 3.14, 1/7, 100_000, -10/3);
     ($min, $max) = minmax(@list);
     # floating-point comparison cunningly avoided
-    ok(sprintf("%i", $min), -3);
+    ok(sprintf("%.2f", $min), "-3.33");
     ok($max, 100_000);
 }
+
+BEGIN { plan tests => $TESTS }
+

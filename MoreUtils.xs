@@ -160,8 +160,10 @@ sv_tainted(SV *sv)
 	args->navs = items;								\
 	args->curidx = 0;								\
 											\
-	for (i = 0; i < items; i++)							\
+	for (i = 0; i < items; i++) {							\
 	    args->avs[i] = (AV*)SvRV(ST(i));						\
+	    SvREFCNT_inc(args->avs[i]);							\
+	}										\
 											\
 	CvXSUBANY(closure).any_ptr = args;						\
 	RETVAL = newRV_noinc((SV*)closure);						\
@@ -1256,9 +1258,12 @@ DESTROY(sv)
     SV *sv;
     CODE:
     {
+	register int i;
 	CV *code = (CV*)SvRV(sv);
 	arrayeach_args *args = CvXSUBANY(code).any_ptr;
 	if (args) {
+	    for (i = 0; i < args->navs; ++i)
+		SvREFCNT_dec(args->avs[i]);
 	    Safefree(args->avs);
 	    Safefree(args);
 	    CvXSUBANY(code).any_ptr = NULL;
@@ -1273,9 +1278,12 @@ DESTROY(sv)
     SV *sv;
     CODE:
     {
+	register int i;
 	CV *code = (CV*)SvRV(sv);
 	natatime_args *args = CvXSUBANY(code).any_ptr;
 	if (args) {
+	    for (i = 0; i < args->nsvs; ++i)
+		SvREFCNT_dec(args->svs[i]);
 	    Safefree(args->svs);
 	    Safefree(args);
 	    CvXSUBANY(code).any_ptr = NULL;
