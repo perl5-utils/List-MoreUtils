@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.19  Mon Mar 13 19:07:37 CET 2006
+	- working down myself the queue of suggestions:
+	  part() added
+	  (Ricardo SIGNES <rjbs AT cpan DOT org>)
+
 0.18  Sat Feb 25 08:55:48 CET 2006
 	- each_arrayref (XS) couldn't deal with refs to list literals
 	  (brought up by David Filmer <usenet AT DavidFilmer DOT com>

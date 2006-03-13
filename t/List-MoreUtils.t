@@ -3,6 +3,7 @@ BEGIN {
     $ENV{LIST_MOREUTILS_PP} = 0;
 };
 use List::MoreUtils qw/:all/;
+use strict;
 
 {
     local $^W = 0;
@@ -353,7 +354,7 @@ BEGIN { $TESTS += 9 }
 {
     my @a = (1, 2, 3, 4, 5);
     my @b = (2, 4, 6, 8, 10);
-    @c = pairwise {$a + $b} @a, @b;
+    my @c = pairwise {$a + $b} @a, @b;
     ok(arrayeq(\@c, [3, 6, 9, 12, 15]), 1, "pw1");
 
     @c = pairwise {$a * $b} @a, @b;   # returns (2, 8, 18)
@@ -375,6 +376,7 @@ BEGIN { $TESTS += 9 }
     
     sub pairwise_perl (&\@\@)
     {
+	no strict;
 	my $op = shift;
 	local (*A, *B) = @_;    # syms for caller's input arrays
 
@@ -382,7 +384,6 @@ BEGIN { $TESTS += 9 }
 	my ($caller_a, $caller_b) = do
 	{
 	    my $pkg = caller();
-	    no strict 'refs';
 	    \*{$pkg.'::a'}, \*{$pkg.'::b'};
 	};
 
@@ -424,7 +425,7 @@ BEGIN { $TESTS += 3 }
     }
     ok(arrayeq(\@r, ['a b c', 'd e f', 'g']), 1, "natatime1");
 
-    @a = (1 .. 10000);
+    my @a = (1 .. 10000);
     $it = natatime 1, @a;
     @r = ();
     while (my @vals = &$it) {
@@ -445,7 +446,7 @@ BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
-    @z = mesh @x, @y;
+    my @z = mesh @x, @y;
     ok(arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]));
 
     my @a = ('x');
@@ -466,7 +467,7 @@ BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
-    @z = zip @x, @y;
+    my @z = zip @x, @y;
     ok(arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]));
 
     my @a = ('x');
@@ -512,6 +513,40 @@ BEGIN { $TESTS += 6 }
     # floating-point comparison cunningly avoided
     ok(sprintf("%.2f", $min), "-3.33");
     ok($max, 100_000);
+}
+
+#part (115...)
+BEGIN { $TESTS += 14 }
+{
+    my @list = 1 .. 12;
+    my $i = 0;
+    my @part = part { $i++ % 3 } @list;
+    ok(arrayeq($part[0], [ 1, 4, 7, 10 ]));
+    ok(arrayeq($part[1], [ 2, 5, 8, 11 ]));
+    ok(arrayeq($part[2], [ 3, 6, 9, 12 ]));
+
+    @part = part { 3 } @list;
+    ok(!defined $part[0]);
+    ok(!defined $part[1]);
+    ok(!defined $part[2]); 
+    ok(arrayeq($part[3], [ 1 .. 12 ]));
+
+    eval { @part = part { -1 } @list };
+    ok($@ =~ /^Modification of non-creatable array value attempted, subscript -1/);
+
+    $i = 0;
+    @part = part { $i++ == 0 ? 0 : -1 } @list;
+    ok(arrayeq($part[0], [ 1 .. 12 ]));
+
+    local $^W = 0;
+    @part = part { undef } @list;
+    ok(arrayeq($part[0], [ 1 .. 12 ]));
+
+    @part = part { 1_000_000 } @list;
+    ok(arrayeq($part[1_000_000], [ @list ]));
+    ok(!defined $part[0]);
+    ok(!defined $part[@part/2]);
+    ok(!defined $part[999_999]);
 }
 
 BEGIN { plan tests => $TESTS }

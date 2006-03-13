@@ -12,12 +12,12 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
     all => [ qw(any all none notall true false firstidx first_index lastidx
 		last_index insert_after insert_after_string apply after after_incl before
 		before_incl indexes firstval first_value lastval last_value each_array
-		each_arrayref pairwise natatime mesh zip uniq minmax) ],
+		each_arrayref pairwise natatime mesh zip uniq minmax part) ],
 );
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.18';
+$VERSION = '0.19';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -309,6 +309,13 @@ sub minmax (@) {
     }
 
     return ($min, $max);
+}
+
+sub part(&@) {
+    my ($code, @list) = @_;
+    my @parts;
+    push @{ $parts[$code->($_)] }, $_  for @list;
+    return @parts;
 }
 
 sub _XScompiled {
@@ -627,7 +634,35 @@ However, the Perl implementation of it has some overhead simply due to the fact
 that there are more lines of Perl code involved. Therefore, LIST needs to be
 fairly big in order for minmax to win over a naive implementation. This
 limitation does not apply to the XS version.
-    
+
+=item part BLOCK LIST
+
+Partitions LIST based on the return value of BLOCK which denotes into which partition
+the current value is put.
+
+Returns a list of the partitions thusly created. Each partition created is a
+reference to an array.
+
+    my $i = 0;
+    my @part = part { $i++ % 2 } 1 .. 8;   # returns [1, 3, 5, 7], [2, 4, 6, 8]
+
+You can have a sparse list of partitions as well where non-set partitions will
+be undef:
+
+    my @part = part { 2 } 1 .. 10;	    # returns undef, undef, [ 1 .. 10 ]
+
+Be careful with negative values, though:
+
+    my @part = part { -1 } 1 .. 10;
+    __END__
+    Modification of non-creatable array value attempted, subscript -1 ...
+
+Negative values are only ok when they refer to a partition previously created:
+
+    my @idx = (0, 1, -1);
+    my $i = 0;
+    my @part = part { $idx[$++ % 3] } 1 .. 8;	# [1, 4, 7], [2, 3, 5, 6, 8]
+
 =back
 
 =head1 EXPORTS
@@ -650,7 +685,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.18.
+This is version 0.19.
 
 =head1 BUGS
 
@@ -684,7 +719,7 @@ Credits go to a number of people: Steve Purkis for giving me namespace advice
 and James Keenan and Terrence Branno for their effort of keeping the CPAN
 tidier by making List::Utils obsolete. 
 
-Brian McCauley suggested the inclusion of C<apply> and provided the pure-Perl
+Brian McCauley suggested the inclusion of apply() and provided the pure-Perl
 implementation for it.
 
 Eric J. Roode asked me to add all functions from his module C<List::MoreUtil>
@@ -698,10 +733,16 @@ A particularly nasty memory leak was spotted by Thomas A. Lowery.
 
 Lars Thegler made me aware of problems with older Perl versions.
 
-Anno Siegel de-orphaned C<each_arrayref>.
+Anno Siegel de-orphaned each_arrayref().
 
 David Filmer made me aware of a problem in each_arrayref that could ultimately
 lead to a segfault.
+
+Ricardo Signes suggested the inclusion of part() and provided the
+Perl-implementation.
+
+Robin Huston kindly fixed a bug in perl's MULTICALL API to make the
+XS-implementation of part() work.
 
 =head1 TODO
 
@@ -710,13 +751,10 @@ mailbox. This includes:
 
 =over 4
 
-=item * part(&@)
-
-Partition a list based on the code-reference's return-value.
-
 =item * uniq_by(&@)
 
-Use code-reference to extract a key based on which the uniqueness is determined.
+Use code-reference to extract a key based on which the uniqueness is
+determined. Suggested by Aaron Crane.
 
 =item * delete_index
 
@@ -737,6 +775,7 @@ These were all suggested by Dan Muey.
 =item * listify
 
 Always return a flat list when either a simple scalar value was passed or an array-reference.
+Suggested by Mark Summersault.
 
 =back
 

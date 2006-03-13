@@ -2,6 +2,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
+
 #ifndef PERL_VERSION
 #    include <patchlevel.h>
 #    if !(defined(PERL_VERSION) || (SUBVERSION > 0 && defined(PATCHLEVEL)))
@@ -45,7 +46,8 @@
 	CALLRUNOPS()
 #   define POP_MULTICALL					\
 	POPBLOCK(cx,PL_curpm);					\
-	CATCH_SET(oldcatch)
+	CATCH_SET(oldcatch);					\
+	SPAGAIN
 #endif
 
 /* Some platforms have strict exports. And before 5.7.3 cxinc (or Perl_cxinc)
@@ -171,6 +173,9 @@ sv_tainted(SV *sv)
 	/* in order to allow proper cleanup in DESTROY-handler */			\
 	sv_bless(RETVAL, stash)
 
+
+/* #include "dhash.h" */
+
 /* need this one for array_each() */
 typedef struct {
     AV **avs;	    /* arrays over which to iterate in parallel */
@@ -200,7 +205,7 @@ insert_after (int idx, SV *what, AV *av) {
 	SvREFCNT_dec(what);
 
 }
-    
+   
 MODULE = List::MoreUtils		PACKAGE = List::MoreUtils		
 
 void
@@ -1244,6 +1249,133 @@ minmax (...)
 
 	XSRETURN(2);
     }
+
+void
+part (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    register int i, j;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    I32 count = 0;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
+    
+    AV **tmp = NULL;
+    int last = 0;
+    
+    if (items == 1)
+	XSRETURN_EMPTY;
+
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for(i = 1 ; i < items ; ++i) {
+	int idx;
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	idx = SvIV(*PL_stack_sp);
+
+	if (idx < 0 && (idx += last) < 0)
+	    croak("Modification of non-creatable array value attempted, subscript %i", idx);
+
+	if (idx >= last) {
+	    int oldlast = last;
+	    last = idx + 1;
+	    Renew(tmp, last, AV*);
+	    Zero(tmp + oldlast, last - oldlast, AV*);
+	}
+	if (!tmp[idx])
+	    tmp[idx] = newAV();
+	av_push(tmp[idx], args[i]);
+    }
+    POP_MULTICALL;
+
+    EXTEND(SP, last);
+    for (i = 0; i < last; ++i) {
+	if (!tmp[i]) {
+	    ST(i) = &PL_sv_undef;
+	    continue;
+	}
+	ST(i) = newRV_noinc((SV*)tmp[i]);
+    }
+    
+    Safefree(tmp);
+    XSRETURN(last);
+}
+
+#if 0
+void
+part_dhash (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    /* We might want to keep this dhash-implementation.
+     * It is currently slower than the above but it uses less
+     * memory for sparse parts such as 
+     *   @part = part { 10_000_000 } 1 .. 100_000;
+     * Maybe there's a way to optimize dhash.h to get more speed
+     * from it.
+     */
+    dMULTICALL;
+    register int i, j, lastidx = -1;
+    int max;
+    HV *stash;
+    GV *gv;
+    I32 gimme = G_SCALAR;
+    I32 count = 0;
+    SV **args = &PL_stack_base[ax];
+    CV *cv;
+
+    dhash_t *h = dhash_init();
+
+    if (items == 1)
+	XSRETURN_EMPTY;
+
+    cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(cv);
+    SAVESPTR(GvSV(PL_defgv));
+
+    for(i = 1 ; i < items ; ++i) {
+	int idx;
+	GvSV(PL_defgv) = args[i];
+	MULTICALL;
+	idx = SvIV(*PL_stack_sp);
+
+	if (idx < 0 && (idx += h->max) < 0)
+	    croak("Modification of non-creatable array value attempted, subscript %i", idx);
+
+	dhash_store(h, idx, args[i]);
+    }
+    POP_MULTICALL;
+
+    dhash_sort_final(h);
+    
+    EXTEND(SP, max = h->max+1);
+    i = 0;
+    lastidx = -1;
+    while (i < h->count) {
+	int retidx = h->ary[i].key;
+	int fill = retidx - lastidx - 1;
+	for (j = 0; j < fill; j++) {
+	    ST(retidx - j - 1) = &PL_sv_undef;
+	}
+	ST(retidx) = newRV_noinc((SV*)h->ary[i].val);
+	i++;
+	lastidx = retidx;
+    }
+    
+    dhash_destroy(h);
+    XSRETURN(max);
+}
+
+#endif
 
 void
 _XScompiled ()

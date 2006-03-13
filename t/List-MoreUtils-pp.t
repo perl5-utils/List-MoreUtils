@@ -1,6 +1,5 @@
 use Test;
 BEGIN { 
-    plan tests => 109;
     $ENV{LIST_MOREUTILS_PP} = 1;
 }
 
@@ -20,10 +19,14 @@ sub arrayeq {
     }
     return 1;
 }
-    
+
+my $TESTS = 0;
+
+BEGIN { $TESTS += 1 }
 ok(1); 
 
-# any
+# any(2...)
+BEGIN { $TESTS += 6 }
 {
     my @list = (1 .. 10000);
     ok(any { $_ == 5000 } @list);
@@ -35,6 +38,7 @@ ok(1);
 }
 
 # all (8...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(all { defined } @list);
@@ -44,6 +48,7 @@ ok(1);
 }
 
 # none (12...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(none { !defined } @list);
@@ -53,6 +58,7 @@ ok(1);
 }
 
 # notall (16...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(notall { !defined } @list);
@@ -62,6 +68,7 @@ ok(1);
 }
 
 # true (20...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(10000, true { defined } @list);
@@ -71,6 +78,7 @@ ok(1);
 }
 
 # false (24...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(10000, false { !defined } @list);
@@ -80,6 +88,7 @@ ok(1);
 }
 
 # firstidx (28...)
+BEGIN { $TESTS += 4 }
 {
     my @list = (1 .. 10000);
     ok(4999, firstidx { $_ >= 5000 } @list);
@@ -89,6 +98,7 @@ ok(1);
 }
 
 # lastidx (32...)
+BEGIN { $TESTS += 8 }
 {
     my @list = (1 .. 10000);
     ok(9999, lastidx { $_ >= 5000 } @list);
@@ -104,6 +114,7 @@ ok(1);
 }
 
 # insert_after (40...)
+BEGIN { $TESTS += 4 }
 {
     my @list = qw/This is a list/;
     insert_after { $_ eq "a" } "longer" => @list;
@@ -119,6 +130,7 @@ ok(1);
 }
 
 # insert_after_string (44...)
+BEGIN { $TESTS += 3 }
 {
     my @list = qw/This is a list/;
     insert_after_string "a", "longer" => @list;
@@ -133,6 +145,7 @@ ok(1);
 }
 
 # apply (47...)
+BEGIN { $TESTS += 6 }
 {
     my @list  = (0 .. 9);
     my @list1 = apply { $_++ } @list;
@@ -154,6 +167,7 @@ ok(1);
 # a parser glitch in the 5.6.x series.
 
 #after (53...)
+BEGIN { $TESTS += 3 }
 {
     my @x = after { $_ % 5 == 0 } 1..9;
     ok(arrayeq(\@x, [6,7,8,9]));
@@ -164,6 +178,7 @@ ok(1);
 }
 
 #after_incl (56...)
+BEGIN { $TESTS += 3 }
 {
     my @x = after_incl {$_ % 5 == 0} 1..9;
     ok(arrayeq(\@x, [5, 6, 7, 8, 9]));
@@ -174,6 +189,7 @@ ok(1);
 }
 
 #before (59...)
+BEGIN { $TESTS += 3 }
 {
     my @x = before {$_ % 5 == 0} 1..9;    
     ok(arrayeq(\@x, [1, 2, 3, 4]));
@@ -184,6 +200,7 @@ ok(1);
 }
 
 #before_incl (62...)
+BEGIN { $TESTS += 3 }
 {
     my @x = before_incl {$_ % 5 == 0} 1..9;
     ok(arrayeq(\@x, [1, 2, 3, 4, 5]));
@@ -194,6 +211,7 @@ ok(1);
 }
 
 #indexes (65...)
+BEGIN { $TESTS += 2 }
 {
     my @x = indexes {$_ > 5}  4..9;
     ok(arrayeq(\@x, [2..5]));
@@ -201,7 +219,8 @@ ok(1);
     ok(!@x);
 }
 
-#lastval/last_value (68...)
+#lastval/last_value (67...)
+BEGIN { $TESTS += 4 }
 {
     my $x = last_value {$_ > 5}  4..9;  
     ok($x, 9);
@@ -214,7 +233,8 @@ ok(1);
     ok(!defined $x);
 }
 
-#firstval/first_value (72...)
+#firstval/first_value (71...)
+BEGIN { $TESTS += 4 }
 {
     my $x = first_value {$_ > 5}  4..9; 
     ok($x, 6);
@@ -228,7 +248,8 @@ ok(1);
     
 }
 
-#each_array (76...)
+#each_array (75...)
+BEGIN { $TESTS += 5 }
 {
     my @a = (7, 3, 'a', undef, 'r');
     my @b = qw/a 2 -1 x/;
@@ -263,7 +284,8 @@ ok(1);
 
 }
 
-#each_array (81...)
+#each_array (80...)
+BEGIN { $TESTS += 5 }
 {
     my @a = (7, 3, 'a', undef, 'r');
     my @b = qw/a 2 -1 x/;
@@ -295,11 +317,11 @@ ok(1);
     # input arrays must not be modified
     ok(arrayeq(\@a, [1,3,5]));
     ok(arrayeq(\@b, [2,4,6]));
-
 }
 
 
-#pairwise (86...)
+#pairwise (85...)
+BEGIN { $TESTS += 9 }
 {
     my @a = (1, 2, 3, 4, 5);
     my @b = (2, 4, 6, 8, 10);
@@ -361,7 +383,8 @@ ok(1);
     ok(arrayeq(\@c, [qw/a 1 b 2 c 3/]));  # 88
 }
 
-#natatime (95...)
+#natatime (94...)
+BEGIN { $TESTS += 2 }
 {
     my @x = ('a'..'g');
     my $it = natatime 3, @x;
@@ -382,7 +405,8 @@ ok(1);
     ok(arrayeq(\@r, \@a), 1, "natatime2");
 }
 
-#mesh (97...)
+#mesh (96...)
+BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
@@ -402,7 +426,8 @@ ok(1);
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#zip (just an alias for mesh) (100...)
+#zip (just an alias for mesh) (99...)
+BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
     my @y = qw/1 2 3 4/;
@@ -422,7 +447,8 @@ ok(1);
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#uniq
+#uniq(102...)
+BEGIN { $TESTS += 2 }
 {
     my @a = map { (1 .. 10000) } 0 .. 1;
     my @u = uniq @a;
@@ -431,7 +457,8 @@ ok(1);
     ok(10000, $u);
 }
 	   
-#minmax
+#minmax(104...)
+BEGIN { $TESTS += 6 }
 {
     my @list = reverse 0 .. 100_000;
     my ($min, $max) = minmax @list;
@@ -451,3 +478,39 @@ ok(1);
     ok(sprintf("%i", $min), -3);
     ok($max, 100_000);
 }
+
+#part(110...)
+BEGIN { $TESTS += 14 }
+{
+    my @list = 1 .. 12;
+    my $i = 0;
+    my @part = part { $i++ % 3 } @list;
+    ok(arrayeq($part[0], [ 1, 4, 7, 10 ]));
+    ok(arrayeq($part[1], [ 2, 5, 8, 11 ]));
+    ok(arrayeq($part[2], [ 3, 6, 9, 12 ]));
+
+    @part = part { 3 } @list;
+    ok(!defined $part[0]);
+    ok(!defined $part[1]);
+    ok(!defined $part[2]); 
+    ok(arrayeq($part[3], [ 1 .. 12 ]));
+
+    eval { @part = part { -1 } @list };
+    ok($@ =~ /^Modification of non-creatable array value attempted, subscript -1/);
+
+    $i = 0;
+    @part = part { $i++ == 0 ? 0 : -1 } @list;
+    ok(arrayeq($part[0], [ 1 .. 12 ]));
+
+    local $^W = 0;
+    @part = part { undef } @list;
+    ok(arrayeq($part[0], [ 1 .. 12 ]));
+
+    @part = part { 1_000_000 } @list;
+    ok(arrayeq($part[1_000_000], [ @list ]));
+    ok(!defined $part[0]);
+    ok(!defined $part[@part/2]);
+    ok(!defined $part[999_999]);
+}
+
+BEGIN { plan tests => $TESTS }
