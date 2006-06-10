@@ -516,7 +516,7 @@ BEGIN { $TESTS += 6 }
 }
 
 #part (115...)
-BEGIN { $TESTS += 14 }
+BEGIN { $TESTS += 24 }
 {
     my @list = 1 .. 12;
     my $i = 0;
@@ -547,6 +547,14 @@ BEGIN { $TESTS += 14 }
     ok(!defined $part[0]);
     ok(!defined $part[@part/2]);
     ok(!defined $part[999_999]);
+
+	# changing the list in place used to destroy
+	# its elements due to a wrong refcnt
+	@list = 1 .. 10;
+	@list = part { $_ } @list;
+	for (1 .. 10) {
+		ok(arrayeq($list[$_], [ $_ ]));
+	}
 }
 
 BEGIN { plan tests => $TESTS }

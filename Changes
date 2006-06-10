@@ -1,5 +1,9 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.20  Tue Apr 25 15:43:57 EDT 2006
+	- part() would destroy the list elements when changing
+	  an array in place (@list = part { ... } @list)
+
 0.19  Mon Mar 13 19:07:37 CET 2006
 	- working down myself the queue of suggestions:
 	  part() added

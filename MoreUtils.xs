@@ -1293,6 +1293,7 @@ CODE:
 	if (!tmp[idx])
 	    tmp[idx] = newAV();
 	av_push(tmp[idx], args[i]);
+	SvREFCNT_inc(args[i]);
     }
     POP_MULTICALL;
 
