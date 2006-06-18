@@ -960,6 +960,8 @@ _pairwise (code, ...)
 	    PUSHMARK(SP);
 	    PUTBACK;
 	    nret = call_sv(code, G_EVAL|G_ARRAY);
+            if (SvTRUE(ERRSV))
+                croak("%s", SvPV_nolen(ERRSV));
 	    SPAGAIN;
 	    nitems += nret;
 	    while (nret--) {
@@ -1030,6 +1032,10 @@ pairwise (code, ...)
 	    PUSHMARK(SP);
 	    PUTBACK;
 	    nret = call_sv(code, G_EVAL|G_ARRAY);
+            if (SvTRUE(ERRSV)) {
+                Safefree(buf);
+                croak("%s", SvPV_nolen(ERRSV));
+            }
 	    SPAGAIN;
 	    nitems += nret;
 	    if (nitems > alloc) {

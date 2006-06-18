@@ -350,7 +350,7 @@ BEGIN { $TESTS += 5 }
 }
 
 #pairwise (90...)
-BEGIN { $TESTS += 9 }
+BEGIN { $TESTS += 10 }
 {
     my @a = (1, 2, 3, 4, 5);
     my @b = (2, 4, 6, 8, 10);
@@ -410,9 +410,13 @@ BEGIN { $TESTS += 9 }
     @b = qw/1 2 3/;
     @c = pairwise { ($a, $b) } @a, @b;
     ok(arrayeq(\@c, [qw/a 1 b 2 c 3/]));  # 88
+
+    # test that a die inside the code-reference will no longer be trapped
+    eval { pairwise { die "I died\n" } @a, @b };
+    ok($@, "I died\n");
 }
 
-#natatime (99...)
+#natatime (100...)
 BEGIN { $TESTS += 3 }
 {
     my @x = ('a'..'g');
@@ -441,7 +445,7 @@ BEGIN { $TESTS += 3 }
     ok(arrayeq(\@r, [1 .. 26]), 1, "natatime3");
 }
 
-#mesh (102...)
+#mesh (103...)
 BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
@@ -462,7 +466,7 @@ BEGIN { $TESTS += 3 }
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#zip (just an alias for mesh) (105...)
+#zip (just an alias for mesh) (106...)
 BEGIN { $TESTS += 3 }
 {
     my @x = qw/a b c d/;
@@ -483,7 +487,7 @@ BEGIN { $TESTS += 3 }
 		     6, undef, 7, undef, 8, undef, 9, undef, 10, undef]));
 }
 
-#uniq (108...)
+#uniq (109...)
 BEGIN { $TESTS += 2 }
 {
     my @a = map { (1 .. 10000) } 0 .. 1;
@@ -493,7 +497,7 @@ BEGIN { $TESTS += 2 }
     ok(10000, $u);
 }
 
-#minmax (110...)
+#minmax (111...)
 BEGIN { $TESTS += 6 }
 {
     my @list = reverse 0 .. 100_000;
@@ -515,7 +519,7 @@ BEGIN { $TESTS += 6 }
     ok($max, 100_000);
 }
 
-#part (115...)
+#part (116...)
 BEGIN { $TESTS += 24 }
 {
     my @list = 1 .. 12;
