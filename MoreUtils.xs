@@ -137,6 +137,11 @@ sv_tainted(SV *sv)
 #  define PTR2UV(ptr) (UV)(ptr)
 #endif
 
+#ifndef SvPV_nolen
+    STRLEN N_A;
+#   define SvPV_nolen(sv) SvPV(sv, N_A)
+#endif
+
 #ifndef call_sv
 #  define call_sv perl_call_sv
 #endif
