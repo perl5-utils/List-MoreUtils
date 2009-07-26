@@ -1,5 +1,30 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.24  Sun Jul 19 08:26:35 EDT 2009
+        - List::MoreUtils was not handling the stack properly when the stack was grown
+          from inside code-references
+        - a couple of tests for each_arrayref were calling each_array 
+
+0.23  Sun Apr 19 06:56:09 EDT 2009
+        - BACKWARDS INCOMPATIBLE CHANGE:
+          fixed: Returning undef when none is passed an empty array is counterintuitive
+          (http://rt.cpan.org/Ticket/Display.html?id=40905)
+        - fixed: minmax error: unpredictable results with lists of 1 element 
+          (http://rt.cpan.org/Ticket/Display.html?id=39847)
+        - fixed: bug: uniq doesn't like undef values.
+                 uniq warns on undef values
+          (http://rt.cpan.org/Ticket/Display.html?id=37533)
+          (http://rt.cpan.org/Ticket/Display.html?id=43214)
+        - fixed: bug in pairwise when $a and $b are lexically defined using my
+          (http://rt.cpan.org/Ticket/Display.html?id=44518)
+        - fixed: Big memory leak with XS part()
+          (http://rt.cpan.org/Ticket/Display.html?id=41097)
+        - fixed: memory leak in indexes() [XS]
+          (http://rt.cpan.org/Public/Bug/Display.html?id=41494)
+        - reduced memory-requirements for the part() tests as that was responsible
+          for a lot of unnecessary test-failures
+        - new function bsearch() which performs a binary search
+
 0.22  Sun Jul  2 11:25:39 EDT 2006
         - SvPV_nolen doesn't exist on pre 5.6 perls
 
