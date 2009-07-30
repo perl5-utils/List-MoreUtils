@@ -1,5 +1,12 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.25_01 Thu Jul 30 17:43:20 EDT 2009 
+        - it seems the only way of handling the stack that works on all 
+          flavors of the multicall API is by making a shallow copy of it
+          and use that between the PUSH/POP_MULTICALL bracket
+        - fix awkward ok() override in List-MoreUtils.t so that it reports
+          line numbers in test failures properly
+
 0.24  Sun Jul 19 08:26:35 EDT 2009
         - List::MoreUtils was not handling the stack properly when the stack was grown
           from inside code-references

@@ -243,6 +243,24 @@ insert_after (int idx, SV *what, AV *av) {
 	SvREFCNT_dec(what);
 
 }
+
+#define dSTACK                                  \
+    SV **args
+
+#define STA(i)  args[i]
+
+#define COPY_STACK                              \
+    Newx(args, items, SV*);                     \
+    Copy(&PL_stack_base[ax], args, items, SV*)
+    
+#define FREE_STACK                              \
+    Safefree(args)
+
+#define FREE_STACK_REFRESH(n)                   \
+    EXTEND(SP, n);                              \
+    Copy(args, &PL_stack_base[ax], n, SV*);     \
+    FREE_STACK
+
    
 MODULE = List::MoreUtils		PACKAGE = List::MoreUtils		
 
@@ -252,7 +270,8 @@ any (code,...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
+
     register int i;
     GV *gv;
     HV *stash;
@@ -262,19 +281,23 @@ CODE:
     if (items <= 1)
 	XSRETURN_UNDEF;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 	    
     for(i = 1 ; i < items ; ++i) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) {
 	    POP_MULTICALL;
+            FREE_STACK;
 	    XSRETURN_YES;
 	}
     }
     POP_MULTICALL;
+    FREE_STACK;
     XSRETURN_NO;
 }
 
@@ -284,7 +307,7 @@ all (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -294,19 +317,23 @@ CODE:
     if (items <= 1)
 	XSRETURN_UNDEF;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
  
     for(i = 1 ; i < items ; i++) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (!SvTRUE(*PL_stack_sp)) {
 	    POP_MULTICALL;
+            FREE_STACK;
 	    XSRETURN_NO;
 	}
     }
     POP_MULTICALL;
+    FREE_STACK;
     XSRETURN_YES;
 }
 
@@ -317,7 +344,7 @@ none (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -327,19 +354,23 @@ CODE:
     if (items <= 1)
 	XSRETURN_YES;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) {
 	    POP_MULTICALL;
+            FREE_STACK;
 	    XSRETURN_NO;
 	}
     }
     POP_MULTICALL;
+    FREE_STACK;
     XSRETURN_YES;
 }
 
@@ -349,7 +380,7 @@ notall (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -359,19 +390,23 @@ CODE:
     if (items <= 1)
 	XSRETURN_UNDEF;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 	    
     for(i = 1 ; i < items ; ++i) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (!SvTRUE(*PL_stack_sp)) {
 	    POP_MULTICALL;
+            FREE_STACK;
 	    XSRETURN_YES;
 	}
     }
     POP_MULTICALL;
+    FREE_STACK;
     XSRETURN_NO;
 }
 
@@ -381,7 +416,7 @@ true (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -392,17 +427,20 @@ CODE:
     if (items <= 1)
 	goto done;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) 
 	    count++;
     }
     POP_MULTICALL;
+    FREE_STACK;
 
     done:
     RETVAL = count;
@@ -416,7 +454,7 @@ false (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -427,17 +465,20 @@ CODE:
     if (items <= 1)
 	goto done;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (!SvTRUE(*PL_stack_sp)) 
 	    count++;
     }
     POP_MULTICALL;
+    FREE_STACK;
 
     done:
     RETVAL = count;
@@ -451,7 +492,7 @@ firstidx (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -461,12 +502,15 @@ CODE:
     RETVAL = -1;
     
     if (items > 1) {
+
+        COPY_STACK;
+
 	cv = sv_2cv(code, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 	SAVESPTR(GvSV(PL_defgv));
  
 	for (i = 1 ; i < items ; ++i) {
-	    GvSV(PL_defgv) = PL_stack_base[ax+i];
+	    GvSV(PL_defgv) = STA(i);
 	    MULTICALL;
 	    if (SvTRUE(*PL_stack_sp)) {
 		RETVAL = i-1;
@@ -474,6 +518,7 @@ CODE:
 	    }
 	}
 	POP_MULTICALL;
+        FREE_STACK;
     }
 }
 OUTPUT:
@@ -485,7 +530,7 @@ lastidx (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -495,12 +540,15 @@ CODE:
     RETVAL = -1;
     
     if (items > 1) {
+
+        COPY_STACK;
+
 	cv = sv_2cv(code, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 	SAVESPTR(GvSV(PL_defgv));
  
 	for (i = items-1 ; i > 0 ; --i) {
-	    GvSV(PL_defgv) = PL_stack_base[ax+i];
+	    GvSV(PL_defgv) = STA(i);
 	    MULTICALL;
 	    if (SvTRUE(*PL_stack_sp)) {
 		RETVAL = i-1;
@@ -508,6 +556,7 @@ CODE:
 	    }
 	}
 	POP_MULTICALL;
+        FREE_STACK;
     }
 }
 OUTPUT:
@@ -605,7 +654,7 @@ apply (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -616,16 +665,19 @@ CODE:
     if (items <= 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 	    
     for(i = 1 ; i < items ; ++i) {
-	GvSV(PL_defgv) = newSVsv(PL_stack_base[ax+i]);
+	GvSV(PL_defgv) = newSVsv(STA(i));
 	MULTICALL;
-        PL_stack_base[ax+i-1] = GvSV(PL_defgv);
+        STA(i-1) = GvSV(PL_defgv);
     }
     POP_MULTICALL;
+    FREE_STACK_REFRESH(items-1);
 
     done:
     XSRETURN(items-1);
@@ -637,8 +689,8 @@ after (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
-    register int i, j;
+    dMULTICALL; dSTACK;
+    register int i, j, k;
     HV *stash;
     CV *cv;
     GV *gv;
@@ -647,12 +699,14 @@ CODE:
     if (items <= 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; i++) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) {
 	    break;
@@ -661,10 +715,12 @@ CODE:
 
     POP_MULTICALL;
 
-    for (j = i + 1; j < items; ++j)
-	PL_stack_base[ax+j-i-1] = PL_stack_base[ax+j];
+    for (j = i + 1, k = 0; j < items; ++j, ++k)
+	STA(k) = STA(j);
 
-    XSRETURN(items-i-1);
+    FREE_STACK_REFRESH(k);
+
+    XSRETURN(k);
 }
 
 void
@@ -673,8 +729,8 @@ after_incl (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
-    register int i, j;
+    dMULTICALL; dSTACK;
+    register int i, j, k;
     HV *stash;
     CV *cv;
     GV *gv;
@@ -683,12 +739,14 @@ CODE:
     if (items <= 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; i++) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) {
 	    break;
@@ -697,10 +755,12 @@ CODE:
 
     POP_MULTICALL;
 
-    for (j = i; j < items; j++)
-	PL_stack_base[ax+j-i] = PL_stack_base[ax+j];
+    for (j = i, k = 0; j < items; ++j, ++k)
+        STA(k) = STA(j);
 
-    XSRETURN(items-i);
+    FREE_STACK_REFRESH(k);
+
+    XSRETURN(k);
 }
 
 void
@@ -709,7 +769,7 @@ before (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -719,20 +779,24 @@ CODE:
     if (items <= 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; i++) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) {
 	    break;
 	}
-	PL_stack_base[ax+i-1] = PL_stack_base[ax+i];
+        STA(i-1) = STA(i);
     }
 
     POP_MULTICALL;
+
+    FREE_STACK_REFRESH(i-1);
 
     XSRETURN(i-1);
 }
@@ -743,7 +807,7 @@ before_incl (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -753,14 +817,16 @@ CODE:
     if (items <= 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; ++i) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
-	PL_stack_base[ax+i-1] = PL_stack_base[ax+i];
+	STA(i-1) = STA(i);
 	if (SvTRUE(*PL_stack_sp)) {
 	    ++i;
 	    break;
@@ -768,6 +834,8 @@ CODE:
     }
 
     POP_MULTICALL;
+
+    FREE_STACK_REFRESH(i-1);
 
     XSRETURN(i-1);
 }
@@ -778,7 +846,7 @@ indexes (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i, j;
     HV *stash;
     GV *gv;
@@ -788,20 +856,23 @@ CODE:
     if (items <= 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
     
     for (i = 1, j = 0; i < items; i++) {
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	if (SvTRUE(*PL_stack_sp)) {
-	    PL_stack_base[ax+j] = newSViv(i-1);
-	    j++;
+	    STA(j++) = newSViv(i-1);
 	}
     }
 
     POP_MULTICALL;
+
+    FREE_STACK_REFRESH(j);
 
     for (i = 0; i < j; ++i)
         sv_2mortal(PL_stack_base[ax+i]);
@@ -815,7 +886,7 @@ lastval (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -825,20 +896,24 @@ CODE:
     RETVAL = &PL_sv_undef;
     
     if (items > 1) {
+
+        COPY_STACK;
+
 	cv = sv_2cv(code, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 	SAVESPTR(GvSV(PL_defgv));
 
 	for (i = items-1 ; i > 0 ; --i) {
-	    GvSV(PL_defgv) = PL_stack_base[ax+i];
+	    GvSV(PL_defgv) = STA(i);
 	    MULTICALL;
 	    if (SvTRUE(*PL_stack_sp)) {
 		/* POP_MULTICALL further down will decrement it by one */
-		SvREFCNT_inc(RETVAL = PL_stack_base[ax+i]);
+		SvREFCNT_inc(RETVAL = STA(i));
 		break;
 	    }
 	}
 	POP_MULTICALL;
+        FREE_STACK;
     }
 }
 OUTPUT:
@@ -850,7 +925,7 @@ firstval (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i;
     HV *stash;
     GV *gv;
@@ -860,20 +935,24 @@ CODE:
     RETVAL = &PL_sv_undef;
     
     if (items > 1) {
+
+        COPY_STACK;
+
 	cv = sv_2cv(code, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 	SAVESPTR(GvSV(PL_defgv));
 
 	for (i = 1; i < items; ++i) {
-	    GvSV(PL_defgv) = PL_stack_base[ax+i];
+	    GvSV(PL_defgv) = STA(i);
 	    MULTICALL;
 	    if (SvTRUE(*PL_stack_sp)) {
 		/* POP_MULTICALL further down will decrement it by one */
-		SvREFCNT_inc(RETVAL = PL_stack_base[ax+i]);
+		SvREFCNT_inc(RETVAL = STA(i));
 		break;
 	    }
 	}
 	POP_MULTICALL;
+        FREE_STACK;
     }
 }
 OUTPUT:
@@ -1300,7 +1379,7 @@ part (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     register int i, j;
     HV *stash;
     GV *gv;
@@ -1314,13 +1393,15 @@ CODE:
     if (items == 1)
 	XSRETURN_EMPTY;
 
+    COPY_STACK;
+
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
 	int idx;
-	GvSV(PL_defgv) = PL_stack_base[ax+i];
+	GvSV(PL_defgv) = STA(i);
 	MULTICALL;
 	idx = SvIV(*PL_stack_sp);
 
@@ -1335,11 +1416,12 @@ CODE:
 	}
 	if (!tmp[idx])
 	    tmp[idx] = newAV();
-	av_push(tmp[idx], PL_stack_base[ax+i]);
-	SvREFCNT_inc(PL_stack_base[ax+i]);
+	av_push(tmp[idx], STA(i));
+	SvREFCNT_inc(STA(i));
     }
     POP_MULTICALL;
     SPAGAIN;
+    FREE_STACK;
 
     EXTEND(SP, last);
     for (i = 0; i < last; ++i) {
@@ -1428,7 +1510,7 @@ bsearch (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    dMULTICALL;
+    dMULTICALL; dSTACK;
     HV *stash;
     GV *gv;
     CV *cv;
@@ -1439,6 +1521,8 @@ CODE:
     int val = -1;
 
     if (items > 1) {
+
+        COPY_STACK;
 
 	cv = sv_2cv(code, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
@@ -1452,7 +1536,7 @@ CODE:
             if (k >= items-1)
                 break;
 
-            GvSV(PL_defgv) = PL_stack_base[ax+1+k];
+            GvSV(PL_defgv) = STA(1+k);
             MULTICALL;
             val = SvIV(*PL_stack_sp);
 
@@ -1460,7 +1544,8 @@ CODE:
                 POP_MULTICALL;
                 if (gimme == G_SCALAR)
                     XSRETURN_YES;
-                SvREFCNT_inc(RETVAL = PL_stack_base[ax+1+k]);
+                SvREFCNT_inc(RETVAL = STA(1+k));
+                FREE_STACK;
                 goto yes;
             }
             if (val < 0) {
@@ -1470,6 +1555,7 @@ CODE:
             }
         } while (i <= j);
         POP_MULTICALL;
+        FREE_STACK;
     }
 
     if (gimme == G_ARRAY)

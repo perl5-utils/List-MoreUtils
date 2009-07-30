@@ -19,7 +19,7 @@ use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-$VERSION = '0.24';
+$VERSION = '0.25_01';
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -727,7 +727,7 @@ environment.
 
 =head1 VERSION
 
-This is version 0.22.
+This is version 0.25_01.
 
 =head1 BUGS
 

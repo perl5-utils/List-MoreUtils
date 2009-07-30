@@ -9,12 +9,13 @@ use strict;
     local $^W = 0;
     *ok = sub ($;$$) {
         if (@_ == 1) {
-            skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0]);
+            @_ = (List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0]);
         } elsif (@_ == 2) {
-            skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0], $_[1]);
+            @_ = (List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0], $_[1]);
         } else {
-            skip(List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0], $_[1], $_[2]);
+            @_ = (List::MoreUtils::_XScompiled() ? 0 : "XS portion not compiled", $_[0], $_[1], $_[2]);
         }
+        goto &skip;
     };
 }
 
