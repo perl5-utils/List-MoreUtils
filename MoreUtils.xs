@@ -155,7 +155,13 @@ sv_tainted(SV *sv)
 
 #define FUNC_NAME GvNAME(GvEGV(ST(items)))
 
-inline static int 
+#ifdef _MSC_VER
+#   define INLINE
+#else
+#   define INLINE inline
+#endif
+
+INLINE static int 
 in_pad (const char *name, SV *code) {
 
     GV *gv;
@@ -250,7 +256,7 @@ insert_after (int idx, SV *what, AV *av) {
 #define STA(i)  args[i]
 
 #define COPY_STACK                              \
-    Newx(args, items, SV*);                     \
+    New(0, args, items, SV*);                     \
     Copy(&PL_stack_base[ax], args, items, SV*)
     
 #define FREE_STACK                              \
@@ -1517,7 +1523,7 @@ CODE:
     I32 gimme = GIMME; /* perl-5.5.4 bus-errors out later when using GIMME 
                           therefore we save its value in a fresh variable */
 
-    register long long i, j;
+    register long i, j;
     int val = -1;
 
     if (items > 1) {
@@ -1531,7 +1537,7 @@ CODE:
         i = 0;
         j = items - 1;
         do {
-            long long k = ((double)(i + j)) / 2.0;
+            long k = ((double)(i + j)) / 2.0;
 
             if (k >= items-1)
                 break;

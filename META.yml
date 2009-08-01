@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               List-MoreUtils
-version:            0.25_01
+version:            0.25_02
 abstract:           Provide the stuff missing in List::Util
 author:
     - Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>

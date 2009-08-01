@@ -1,5 +1,10 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.25_02 Sat Aug  1 06:41:55 EDT 2009
+        - MS VC++ 7 doesn't like inline nor 'long long'
+          (patch provided by Taro Nishino (taro DOT nishino AT gmail.com)
+        - Newx isbn't around in older perls so use New(0,...) instead
+
 0.25_01 Thu Jul 30 17:43:20 EDT 2009 
         - it seems the only way of handling the stack that works on all 
           flavors of the multicall API is by making a shallow copy of it
