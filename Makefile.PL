@@ -1,6 +1,7 @@
-# More or less identical with Scalar-List-Util's Makefile.PL
-
-use 5.00503;
+use strict;
+BEGIN {
+	require 5.00503;
+}
 use Config              ();
 use ExtUtils::MakeMaker ();
 
