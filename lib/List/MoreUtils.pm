@@ -7,7 +7,8 @@ use DynaLoader ();
 
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 BEGIN {
-    $VERSION     = '0.22';
+    $VERSION     = '0.23_01';
+    $VERSION     = eval $VERSION;
     @ISA         = qw(Exporter DynaLoader);
     %EXPORT_TAGS = ( 
         all => [ qw(
@@ -21,12 +22,12 @@ BEGIN {
 }
 
 eval {
-    local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
+    local $ENV{PERL_DL_NONLAZY} = $ENV{PERL_DL_NONLAZY} ? 0 : $ENV{PERL_DL_NONLAZY};
     bootstrap List::MoreUtils $VERSION;
     1;
-} if not $ENV{LIST_MOREUTILS_PP};
+} unless $ENV{LIST_MOREUTILS_PP};
 
-eval <<'EOP' if not defined &any;
+eval <<'EOP' unless defined &any;
 
 sub any (&@) {
     my $f = shift;

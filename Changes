@@ -1,5 +1,9 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.23_01 Sat 25 Sep 2010
+	- First attempt at repackaging the List::MoreUtils code in
+	  Makefile.PL and release toolchain similar to Params::Util
+
 0.22  Sun Jul  2 11:25:39 EDT 2006
         - SvPV_nolen doesn't exist on pre 5.6 perls
 

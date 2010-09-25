@@ -15,18 +15,18 @@ unless ( defined $make_xs ) {
 }
 
 WriteMakefile(
-	NAME          => 'List::MoreUtils',
-	ABSTRACT_FROM => 'lib/List/MoreUtils.pm', 
-	VERSION_FROM  => 'lib/List/MoreUtils.pm', 
-	AUTHOR	      => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
-	DEFINE        => '-DPERL_EXT',	# otherwise 'cxinc' isn't defined 
-	PREREQ_PM     => {},
-	clean         => { FILES => 'test.c' }
-	CONFIGURE     => sub {
+	NAME         => 'List::MoreUtils',
+	ABSTRACT     => 'Provide the stuff missing in List::Util', 
+	VERSION_FROM => 'lib/List/MoreUtils.pm', 
+	AUTHOR	     => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
+	LICENSE      => 'perl',
+	DEFINE       => '-DPERL_EXT',	# otherwise 'cxinc' isn't defined 
+	PREREQ_PM    => { },
+	CONFIGURE    => sub {
 		my $hash = $_[1];
 		unless ( $make_xs ) {
-			$hash->{XS} = {};
-			$hash->{C}  = [];
+			$hash->{XS} = { };
+			$hash->{C}  = [ ];
 		}
 		return $hash;
 	},
@@ -64,12 +64,27 @@ sub WriteMakefile {
 }
 
 sub can_cc {
-	print "Testing if you have a C compiler\n";
+	my @chunks = split(/ /, $Config::Config{cc}) or return;
 
-	open F, ">test.c" or return 0;
-	print F "int main() { return 0; }\n";
-	close F or return 0
-	system ("$Config{make} test$Config{obj_ext}") and return 0;
+	# $Config{cc} may contain args; try to find out the program part
+	while ( @chunks ) {
+		return can_run("@chunks") || (pop(@chunks), next);
+	}
 
-	return 1;
+	return;
+}
+
+sub can_run {
+	my ($cmd) = @_;
+
+	my $_cmd = $cmd;
+	return $_cmd if (-x $_cmd or $_cmd = MM->maybe_command($_cmd));
+
+	for my $dir ((split /$Config::Config{path_sep}/, $ENV{PATH}), '.') {
+		next if $dir eq '';
+		my $abs = File::Spec->catfile($dir, $cmd);
+		return $abs if (-x $abs or $abs = MM->maybe_command($abs));
+	}
+
+	return;
 }
