@@ -2,22 +2,23 @@ package List::MoreUtils;
 
 use 5.00503;
 use strict;
+use Exporter   ();
+use DynaLoader ();
 
-require Exporter;
-require DynaLoader;
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
-@ISA = qw(Exporter DynaLoader);
-
-%EXPORT_TAGS = ( 
-    all => [ qw(any all none notall true false firstidx first_index lastidx
-		last_index insert_after insert_after_string apply after after_incl before
-		before_incl indexes firstval first_value lastval last_value each_array
-		each_arrayref pairwise natatime mesh zip uniq minmax part) ],
-);
-
-@EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-$VERSION = '0.22';
+BEGIN {
+    $VERSION     = '0.22';
+    @ISA         = qw(Exporter DynaLoader);
+    %EXPORT_TAGS = ( 
+        all => [ qw(
+            any all none notall true false firstidx first_index lastidx
+            last_index insert_after insert_after_string apply after after_incl before
+            before_incl indexes firstval first_value lastval last_value each_array
+            each_arrayref pairwise natatime mesh zip uniq minmax part
+        ) ],
+    );
+    @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+}
 
 eval {
     local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
@@ -35,7 +36,7 @@ sub any (&@) {
     }
     return 0;
 }
-    
+
 sub all (&@) {
     my $f = shift;
     return if ! @_;
@@ -128,44 +129,38 @@ sub apply (&@) {
     wantarray ? @values : $values[-1];
 }
 
-sub after (&@)
-{
+sub after (&@) {
     my $test = shift;
     my $started;
     my $lag;
     grep $started ||= do { my $x=$lag; $lag=$test->(); $x},  @_;
 }
 
-sub after_incl (&@)
-{
+sub after_incl (&@) {
     my $test = shift;
     my $started;
     grep $started ||= $test->(), @_;
 }
 
-sub before (&@)
-{
+sub before (&@) {
     my $test = shift;
     my $keepgoing=1;
     grep $keepgoing &&= !$test->(),  @_;
 }
 
-sub before_incl (&@)
-{
+sub before_incl (&@) {
     my $test = shift;
     my $keepgoing=1;
     my $lag=1;
     grep $keepgoing &&= do { my $x=$lag; $lag=!$test->(); $x},  @_;
 }
 
-sub indexes (&@)
-{
+sub indexes (&@) {
     my $test = shift;
     grep {local *_=\$_[$_]; $test->()} 0..$#_;
 }
 
-sub lastval (&@)
-{
+sub lastval (&@) {
     my $test = shift;
     my $ix;
     for ($ix=$#_; $ix>=0; $ix--)
@@ -178,8 +173,7 @@ sub lastval (&@)
     return undef;
 }
 
-sub firstval (&@)
-{
+sub firstval (&@) {
     my $test = shift;
     foreach (@_)
     {
@@ -188,8 +182,7 @@ sub firstval (&@)
     return undef;
 }
 
-sub pairwise(&\@\@)
-{
+sub pairwise(&\@\@) {
     my $op = shift;
     use vars qw/@A @B/;
     local (*A, *B) = @_;    # syms for caller's input arrays
@@ -213,13 +206,11 @@ sub pairwise(&\@\@)
     }  0 .. $limit;
 }
 
-sub each_array (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
-{
+sub each_array (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
     return each_arrayref(@_);
 }
 
-sub each_arrayref
-{
+sub each_arrayref {
     my @arr_list  = @_;     # The list of references to the arrays
     my $index     = 0;      # Which one the caller will get next
     my $max_num   = 0;      # Number of elements in longest array
@@ -260,8 +251,7 @@ sub each_arrayref
     }
 }
 
-sub natatime ($@)
-{
+sub natatime ($@) {
     my $n = shift;
     my @list = @_;
 
@@ -325,13 +315,16 @@ sub _XScompiled {
 EOP
 
 *first_index = \&firstidx;
-*last_index = \&lastidx;
+*last_index  = \&lastidx;
 *first_value = \&firstval;
-*last_value = \&lastval;
-*zip = \&mesh;
+*last_value  = \&lastval;
+*zip         = \&mesh;
 
 1;
+
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -339,11 +332,13 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
 =head1 SYNOPSIS
 
-    use List::MoreUtils qw(any all none notall true false firstidx first_index 
-                           lastidx last_index insert_after insert_after_string 
-                           apply after after_incl before before_incl indexes 
-                           firstval first_value lastval last_value each_array
-                           each_arrayref pairwise natatime mesh zip uniq minmax);
+    use List::MoreUtils qw(
+        any all none notall true false firstidx first_index 
+        lastidx last_index insert_after insert_after_string 
+        apply after after_incl before before_incl indexes 
+        firstval first_value lastval last_value each_array
+        each_arrayref pairwise natatime mesh zip uniq minmax
+    );
 
 =head1 DESCRIPTION
 
@@ -785,11 +780,11 @@ L<List::Util>
 
 =head1 AUTHOR
 
-Tassilo von Parseval, E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
+Tassilo von Parseval E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004-2006 by Tassilo von Parseval
+Copyright 2004 - 2010 by Tassilo von Parseval
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,

@@ -1,59 +1,75 @@
 # More or less identical with Scalar-List-Util's Makefile.PL
 
 use 5.00503;
-use ExtUtils::MakeMaker;
-use Config;
+use Config              ();
+use ExtUtils::MakeMaker ();
 
-for (@ARGV) {
-    /^-pm/ and $no_xs = 1;
-    /^-xs/ and $no_xs = 0;
+# Should we build the XS version?
+my $make_xs = undef;
+foreach ( @ARGV ) {
+	/^-pm/ and $make_xs = 0;
+	/^-xs/ and $make_xs = 1;
+}
+unless ( defined $make_xs ) {
+	$make_xs = can_cc();
 }
 
-sub init {
-    my $hash = $_[1];
-    if ($no_xs) {
-	@{$hash}{XS,C} = ( {}, [] );
-    }
-    $hash;
+WriteMakefile(
+	NAME          => 'List::MoreUtils',
+	ABSTRACT_FROM => 'lib/List/MoreUtils.pm', 
+	VERSION_FROM  => 'lib/List/MoreUtils.pm', 
+	AUTHOR	      => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
+	DEFINE        => '-DPERL_EXT',	# otherwise 'cxinc' isn't defined 
+	PREREQ_PM     => {},
+	clean         => { FILES => 'test.c' }
+	CONFIGURE     => sub {
+		my $hash = $_[1];
+		unless ( $make_xs ) {
+			$hash->{XS} = {};
+			$hash->{C}  = [];
+		}
+		return $hash;
+	},
+);
+
+
+
+
+
+
+######################################################################
+# Support Functions
+
+sub WriteMakefile {
+	my %params = @_;
+	my $eumm_version = $ExtUtils::MakeMaker::VERSION;
+	$eumm_version = eval $eumm_version;
+	die "EXTRA_META is deprecated" if exists $params{EXTRA_META};
+	die "License not specified" unless exists $params{LICENSE};
+	if ($params{BUILD_REQUIRES} and $eumm_version < 6.5503) {
+		#EUMM 6.5502 has problems with BUILD_REQUIRES
+		$params{PREREQ_PM} = {
+			%{$params{PREREQ_PM} || {}},
+			%{$params{BUILD_REQUIRES}}
+		};
+		delete $params{BUILD_REQUIRES};
+	}
+	delete $params{CONFIGURE_REQUIRES} if $eumm_version < 6.52;
+	delete $params{MIN_PERL_VERSION}   if $eumm_version < 6.48;
+	delete $params{META_MERGE}         if $eumm_version < 6.46;
+	delete $params{LICENSE}            if $eumm_version < 6.31;
+	delete $params{AUTHOR}             if $] < 5.005;
+
+	ExtUtils::MakeMaker::WriteMakefile(%params);
 }
 
-sub no_cc {
-    $no_xs = 1;
-    print <<"EDQ";
+sub can_cc {
+	print "Testing if you have a C compiler\n";
 
-I cannot determine if you have a C compiler
-so I will install a perl-only implementation
+	open F, ">test.c" or return 0;
+	print F "int main() { return 0; }\n";
+	close F or return 0
+	system ("$Config{make} test$Config{obj_ext}") and return 0;
 
-You can force installation of the XS version with
-
-perl Makefile.PL -xs
-
-EDQ
-    write_makefile();
-    exit;
+	return 1;
 }
-
-sub write_makefile {
-    WriteMakefile(
-	NAME		    => 'List::MoreUtils',
-	VERSION_FROM	    => 'lib/List/MoreUtils.pm', 
-	PREREQ_PM	    => {}, 
-	($] >= 5.005 ?     
-	  (ABSTRACT_FROM    => 'lib/List/MoreUtils.pm', 
-	   AUTHOR	    => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>') : ()),
-	DEFINE		    => '-DPERL_EXT',	# otherwise 'cxinc' isn't defined 
-	CONFIGURE	    => \&init,
-	clean		    => { FILES => 'test.c' }
-    );
-}
-
-write_makefile();
-
-exit if defined $no_xs;
-
-print "Testing if you have a C compiler\n";
-
-open F, ">test.c" or no_cc();
-print F "int main() { return 0; }\n";
-close F or no_cc();
-system ("$Config{make} test$Config{obj_ext}") and no_cc();
