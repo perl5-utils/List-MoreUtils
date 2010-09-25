@@ -679,10 +679,6 @@ there for the test-suite to force testing the Perl implementation, and possibly
 for reporting of bugs. I don't see any reason to use it in a production
 environment.
 
-=head1 VERSION
-
-This is version 0.22.
-
 =head1 BUGS
 
 There is a problem with a bug in 5.6.x perls. It is a syntax error to write
