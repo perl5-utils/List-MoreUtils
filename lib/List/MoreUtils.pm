@@ -7,16 +7,15 @@ use DynaLoader ();
 
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 BEGIN {
-    $VERSION     = '0.23_01';
-    $VERSION     = eval $VERSION;
-    @ISA         = qw(Exporter DynaLoader);
+    $VERSION     = '0.24';
+    @ISA         = qw{Exporter DynaLoader};
     %EXPORT_TAGS = ( 
-        all => [ qw(
+        all => [ qw{
             any all none notall true false firstidx first_index lastidx
             last_index insert_after insert_after_string apply after after_incl before
             before_incl indexes firstval first_value lastval last_value each_array
             each_arrayref pairwise natatime mesh zip uniq minmax part
-        ) ],
+        } ],
     );
     @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 }
@@ -33,7 +32,7 @@ sub any (&@) {
     my $f = shift;
     return if ! @_;
     for (@_) {
-	return 1 if $f->();
+        return 1 if $f->();
     }
     return 0;
 }
@@ -42,7 +41,7 @@ sub all (&@) {
     my $f = shift;
     return if ! @_;
     for (@_) {
-	return 0 if ! $f->();
+        return 0 if ! $f->();
     }
     return 1;
 }
@@ -51,7 +50,7 @@ sub none (&@) {
     my $f = shift;
     return if ! @_;
     for (@_) {
-	return 0 if $f->();
+        return 0 if $f->();
     }
     return 1;
 }
@@ -60,7 +59,7 @@ sub notall (&@) {
     my $f = shift;
     return if ! @_;
     for (@_) {
-	return 1 if ! $f->();
+        return 1 if ! $f->();
     }
     return 0;
 }
@@ -69,7 +68,7 @@ sub true (&@) {
     my $f = shift;
     my $count = 0;
     for (@_) {
-	$count++ if $f->();
+        $count++ if $f->();
     }
     return $count;
 }
@@ -78,7 +77,7 @@ sub false (&@) {
     my $f = shift;
     my $count = 0;
     for (@_) {
-	$count++ if ! $f->();
+        $count++ if ! $f->();
     }
     return $count;
 }
@@ -86,8 +85,8 @@ sub false (&@) {
 sub firstidx (&@) {
     my $f = shift;
     for my $i (0 .. $#_) {
-	local *_ = \$_[$i];	
-	return $i if $f->();
+        local *_ = \$_[$i];	
+        return $i if $f->();
     }
     return -1;
 }
@@ -95,8 +94,8 @@ sub firstidx (&@) {
 sub lastidx (&@) {
     my $f = shift;
     for my $i (reverse 0 .. $#_) {
-	local *_ = \$_[$i];
-	return $i if $f->();
+        local *_ = \$_[$i];
+        return $i if $f->();
     }
     return -1;
 }
@@ -106,8 +105,8 @@ sub insert_after (&$\@) {
     my $c = -1;
     local *_;
     for my $i (0 .. $#$list) {
-	$_ = $list->[$i];
-	$c = $i, last if $code->();
+        $_ = $list->[$i];
+        $c = $i, last if $code->();
     }
     @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
     return 0;
@@ -117,8 +116,8 @@ sub insert_after_string ($$\@) {
     my ($string, $val, $list) = @_;
     my $c = -1;
     for my $i (0 .. $#$list) {
-	local $^W = 0;
-	$c = $i, last if $string eq $list->[$i];
+        local $^W = 0;
+        $c = $i, last if $string eq $list->[$i];
     }
     @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
     return 0;
@@ -279,24 +278,24 @@ sub minmax (@) {
     my $min = my $max = $_[0];
 
     for (my $i = 1; $i < @_; $i += 2) {
-	if ($_[$i-1] <= $_[$i]) {
-	    $min = $_[$i-1] if $min > $_[$i-1];
-	    $max = $_[$i]   if $max < $_[$i];
-	} else {
-	    $min = $_[$i]   if $min > $_[$i];
-	    $max = $_[$i-1] if $max < $_[$i-1];
-	}
+        if ($_[$i-1] <= $_[$i]) {
+            $min = $_[$i-1] if $min > $_[$i-1];
+            $max = $_[$i]   if $max < $_[$i];
+        } else {
+            $min = $_[$i]   if $min > $_[$i];
+            $max = $_[$i-1] if $max < $_[$i-1];
+        }
     }
 
     if (@_ & 1) {
-	my $i = $#_;
-	if ($_[$i-1] <= $_[$i]) {
-	    $min = $_[$i-1] if $min > $_[$i-1];
-	    $max = $_[$i]   if $max < $_[$i];
-	} else {
-	    $min = $_[$i]   if $min > $_[$i];
-	    $max = $_[$i-1] if $max < $_[$i-1];
-	}
+        my $i = $#_;
+        if ($_[$i-1] <= $_[$i]) {
+            $min = $_[$i-1] if $min > $_[$i-1];
+            $max = $_[$i]   if $max < $_[$i];
+        } else {
+            $min = $_[$i]   if $min > $_[$i];
+            $max = $_[$i-1] if $max < $_[$i-1];
+        }
     }
 
     return ($min, $max);
