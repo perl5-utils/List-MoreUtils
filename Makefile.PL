@@ -19,7 +19,7 @@ WriteMakefile(
 	NAME         => 'List::MoreUtils',
 	ABSTRACT     => 'Provide the stuff missing in List::Util', 
 	VERSION_FROM => 'lib/List/MoreUtils.pm', 
-	AUTHOR	     => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
+	AUTHOR       => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
 	LICENSE      => 'perl',
 	DEFINE       => '-DPERL_EXT',	# otherwise 'cxinc' isn't defined 
 	PREREQ_PM    => { },
