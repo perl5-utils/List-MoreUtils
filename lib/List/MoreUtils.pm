@@ -7,7 +7,7 @@ use DynaLoader ();
 
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
 BEGIN {
-    $VERSION     = '0.24';
+    $VERSION     = '0.26';
     @ISA         = qw{Exporter DynaLoader};
     %EXPORT_TAGS = ( 
         all => [ qw{

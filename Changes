@@ -1,5 +1,11 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.26 Tue 23 Nov 2010
+	- No changes
+	- Some parts of the CPAN cloud were confusing my 0.24
+	  release with the older deleted 0.24. Bumping version
+	  past Tassilo's to clarify things.
+
 0.24 Mon 22 Nov 2010
 	- No changes, switching to a production version
 
