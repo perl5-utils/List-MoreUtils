@@ -318,6 +318,7 @@ sub _XScompiled {
 }
 
 EOP
+die $@ if $@;
 
 *first_index = \&firstidx;
 *last_index  = \&lastidx;

@@ -341,7 +341,7 @@ sub test_pairwise {
     # Did we modify the input arrays?
     is( arrayeq( \@a, [ 1, 2, 3, 4, 5 ] ), 1, "pw3" );
     is( arrayeq( \@b, [ 2, 4, 6, 8, 10 ] ), 1, "pw4" );
-   
+
     # $a and $b should be aliases: test
     @b = @a = (1, 2, 3);
     @c = pairwise { $a++; $b *= 2 } @a, @b;
@@ -520,6 +520,19 @@ sub test_minmax {
     # Floating-point comparison cunningly avoided
     is( sprintf("%.2f", $min), "-3.33" );
     is( $max, 100_000 );
+
+    # Test with a single negative list value
+    my $input = -1;
+    ($min, $max) = minmax $input;
+    is( $min, -1 );
+    is( $max, -1 );
+
+    # Confirm output are independant copies of input
+    $input = 1;
+    is( $min, -1 );
+    is( $max, -1 );
+    $min = 2;
+    is( $max, -1 );
 }
 
 

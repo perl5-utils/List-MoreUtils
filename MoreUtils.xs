@@ -1203,6 +1203,12 @@ minmax (...)
 	minsv = maxsv = ST(0);
 	min = max = slu_sv_value(minsv);
 
+        if (items == 1) {
+            EXTEND(SP, 1);
+            ST(0) = ST(1) = minsv;
+            XSRETURN(2);
+        }
+
 	for (i = 1; i < items; i += 2) {
 	    asv = ST(i-1);
 	    bsv = ST(i);

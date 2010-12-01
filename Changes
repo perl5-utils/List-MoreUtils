@@ -3,6 +3,8 @@ Revision history for Perl extension List::Any/List::MoreUtils.
 0.27_01 Wed 1 Dec 2010
 	- Refactored the split test scripts into a common test module
 	  to be shared between both the Perl and XS versions.
+	- Reapply fix for http://rt.cpan.org/Ticket/Display.html?id=39847
+	  "minmax error: unpredictable results with lists of 1 element"
 
 0.26 Tue 23 Nov 2010
 	- No changes
