@@ -375,8 +375,8 @@ sub test_pairwise {
     }
 
     (@a, @b) = ();
-    push @a, int rand(10000) for 0 .. rand(10000);
-    push @b, int rand(10000) for 0 .. rand(10000);
+    push @a, int rand(1000) for 0 .. rand(1000);
+    push @b, int rand(1000) for 0 .. rand(1000);
     local $^W = 0;
     my @res1 = pairwise {$a+$b} @a, @b;
     my @res2 = pairwise_perl {$a+$b} @a, @b;
@@ -402,7 +402,7 @@ sub test_natatime {
     }
     is( arrayeq( \@r, [ 'a b c', 'd e f', 'g' ] ), 1, "natatime1" );
 
-    my @a = ( 1 .. 10000 );
+    my @a = ( 1 .. 1000 );
     $it = natatime 1, @a;
     @r = ();
     while ( my @vals = &$it ) {
@@ -452,11 +452,11 @@ sub test_mesh {
 }
 
 sub test_uniq {
-    my @a = map { ( 1 .. 10000 ) } 0 .. 1;
+    my @a = map { ( 1 .. 1000 ) } 0 .. 1;
     my @u = uniq @a;
-    ok( arrayeq( \@u, [ 1 .. 10000 ] ) );
+    ok( arrayeq( \@u, [ 1 .. 1000 ] ) );
     my $u = uniq @a;
-    is( 10000, $u );
+    is( 1000, $u );
 }
 
 sub test_part {
@@ -486,11 +486,11 @@ sub test_part {
     @part = part { undef } @list;
     ok( arrayeq($part[0], [ 1 .. 12 ]) );
 
-    @part = part { 100_000 } @list;
-    ok( arrayeq($part[100_000], [ @list ]) );
+    @part = part { 10000 } @list;
+    ok( arrayeq($part[10000], [ @list ]) );
     ok( ! defined $part[0] );
     ok( ! defined $part[@part / 2] );
-    ok( ! defined $part[99_999] );
+    ok( ! defined $part[9999] );
 
     # Changing the list in place used to destroy
     # its elements due to a wrong refcnt
@@ -502,24 +502,24 @@ sub test_part {
 }
 
 sub test_minmax {
-    my @list = reverse 0 .. 100_000;
+    my @list = reverse 0 .. 10000;
     my ($min, $max) = minmax @list;
     is( $min, 0 );
-    is( $max, 100_000 );
+    is( $max, 10000 );
 
     # Even number of elements
-    push @list, 100_001;
+    push @list, 10001;
     ($min, $max) = minmax @list;
     is( $min, 0 );
-    is( $max, 100_001 );
+    is( $max, 10001 );
 
     # Some floats
-    @list = ( 0, -1.1, 3.14, 1 / 7, 100_000, -10 / 3 );
+    @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );
     ($min, $max) = minmax @list;
 
     # Floating-point comparison cunningly avoided
     is( sprintf("%.2f", $min), "-3.33" );
-    is( $max, 100_000 );
+    is( $max, 10000 );
 
     # Test with a single negative list value
     my $input = -1;
