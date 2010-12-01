@@ -2,6 +2,8 @@ Revision history for Perl extension List::Any/List::MoreUtils.
 
 0.27_02 Wed 1 Dec 2010
 	- Reduced test suite peak memory consumption by 5-10 meg
+	- Added the 'distinct' alias for the uniq function, for people that
+	  like their chained map/grep/sort pipelines with a SQL'ish flavour.
 
 0.27_01 Wed 1 Dec 2010
 	- Refactored the split test scripts into a common test module

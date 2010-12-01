@@ -5,7 +5,7 @@ BEGIN {
     $|  = 1;
     $^W = 1;
 }
-use Test::More tests => 147;
+use Test::More tests => 149;
 
 # Load the library
 BEGIN { 

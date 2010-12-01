@@ -412,51 +412,82 @@ sub test_natatime {
 }
 
 sub test_zip {
-    my @x = qw/a b c d/;
-    my @y = qw/1 2 3 4/;
-    my @z = zip @x, @y;
-    ok( arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]) );
+    SCOPE: {
+        my @x = qw/a b c d/;
+        my @y = qw/1 2 3 4/;
+        my @z = zip @x, @y;
+        ok( arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]) );
+    }
 
-    my @a = ( 'x' );
-    my @b = ( '1', '2' );
-    my @c = qw/zip zap zot/;
-       @z = zip @a, @b, @c;
-    ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
+    SCOPE: {
+        my @a = ( 'x' );
+        my @b = ( '1', '2' );
+        my @c = qw/zip zap zot/;
+        my @z = zip @a, @b, @c;
+        ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
+    }
 
-    @a = ( 1 .. 10 );
-    my @d;
-    $#d = 9; # make array with holes
-    @z = zip @a, @d;
-    ok( arrayeq( \@z, [ 1, undef, 2, undef, 3, undef, 4, undef, 5, undef, 
-                     6, undef, 7, undef, 8, undef, 9, undef, 10, undef ] ) );
+    SCOPE: {
+        my @a = ( 1 .. 10 );
+        my @d;
+        $#d = 9; # make array with holes
+        my @z = zip @a, @d;
+        ok(
+            arrayeq( \@z, [
+                1, undef, 2, undef, 3, undef, 4, undef, 5, undef, 
+                6, undef, 7, undef, 8, undef, 9, undef, 10, undef,
+            ] )
+        );
+    }
 }
 
 sub test_mesh {
-    my @x = qw/a b c d/;
-    my @y = qw/1 2 3 4/;
-    my @z = mesh @x, @y;
-    ok( arrayeq( \@z, [ 'a', 1, 'b', 2, 'c', 3, 'd', 4 ] ) );
+    SCOPE: {
+        my @x = qw/a b c d/;
+        my @y = qw/1 2 3 4/;
+        my @z = mesh @x, @y;
+        ok( arrayeq( \@z, [ 'a', 1, 'b', 2, 'c', 3, 'd', 4 ] ) );
+    }
 
-    my @a = ('x');
-    my @b = ('1', '2');
-    my @c = qw/zip zap zot/;
-    @z = mesh @a, @b, @c;
-    ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
+    SCOPE: {
+        my @a = ('x');
+        my @b = ('1', '2');
+        my @c = qw/zip zap zot/;
+        my @z = mesh @a, @b, @c;
+        ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
+    }
 
-    @a = ( 1 .. 10 );
-    my @d;
-    $#d = 9; # make array with holes
-    @z = mesh @a, @d;
-    ok( arrayeq( \@z, [ 1, undef, 2, undef, 3, undef, 4, undef, 5, undef, 
-                     6, undef, 7, undef, 8, undef, 9, undef, 10, undef ] ) );
+    SCOPE: {
+        my @a = ( 1 .. 10 );
+        my @d;
+        $#d = 9; # make array with holes
+        my @z = mesh @a, @d;
+        ok(
+            arrayeq( \@z, [
+                1, undef, 2, undef, 3, undef, 4, undef, 5, undef,
+                6, undef, 7, undef, 8, undef, 9, undef, 10, undef,
+            ] )
+        );
+    }
 }
 
 sub test_uniq {
-    my @a = map { ( 1 .. 1000 ) } 0 .. 1;
-    my @u = uniq @a;
-    ok( arrayeq( \@u, [ 1 .. 1000 ] ) );
-    my $u = uniq @a;
-    is( 1000, $u );
+    SCOPE: {
+        my @a = map { ( 1 .. 1000 ) } 0 .. 1;
+        my @u = uniq @a;
+        ok( arrayeq( \@u, [ 1 .. 1000 ] ) );
+        my $u = uniq @a;
+        is( 1000, $u );
+    }
+
+    # Test aliases
+    SCOPE: {
+        my @a = map { ( 1 .. 1000 ) } 0 .. 1;
+        my @u = distinct @a;
+        ok( arrayeq( \@u, [ 1 .. 1000 ] ) );
+        my $u = distinct @a;
+        is( 1000, $u );
+    }
 }
 
 sub test_part {
