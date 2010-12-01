@@ -5,16 +5,21 @@ use strict;
 use Exporter   ();
 use DynaLoader ();
 
-use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS);
+use vars qw{$VERSION @ISA @EXPORT_OK %EXPORT_TAGS};
 BEGIN {
-    $VERSION     = '0.26';
-    @ISA         = qw{Exporter DynaLoader};
-    %EXPORT_TAGS = ( 
+    $VERSION     = '0.27_01';
+    @ISA         = qw{ Exporter DynaLoader };
+    %EXPORT_TAGS = (
         all => [ qw{
-            any all none notall true false firstidx first_index lastidx
-            last_index insert_after insert_after_string apply after after_incl before
-            before_incl indexes firstval first_value lastval last_value each_array
-            each_arrayref pairwise natatime mesh zip uniq minmax part
+            any all none notall true false
+            firstidx first_index lastidx last_index
+            insert_after insert_after_string
+            apply indexes
+            after after_incl before before_incl
+            firstval first_value lastval last_value
+            each_array each_arrayref
+            pairwise natatime
+            mesh zip uniq minmax part
         } ],
     );
     @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -85,7 +90,7 @@ sub false (&@) {
 sub firstidx (&@) {
     my $f = shift;
     for my $i (0 .. $#_) {
-        local *_ = \$_[$i];	
+        local *_ = \$_[$i];
         return $i if $f->();
     }
     return -1;
@@ -182,7 +187,7 @@ sub firstval (&@) {
     return undef;
 }
 
-sub pairwise(&\@\@) {
+sub pairwise (&\@\@) {
     my $op = shift;
     use vars qw/@A @B/;
     local (*A, *B) = @_;    # syms for caller's input arrays
@@ -221,7 +226,7 @@ sub each_arrayref {
         unless (ref($_) eq 'ARRAY')
         {
             require Carp;
-            Carp::croak "each_arrayref: argument is not an array reference\n";
+            Carp::croak("each_arrayref: argument is not an array reference\n");
         }
         $max_num = @$_  if @$_ > $max_num;
     }
@@ -241,7 +246,7 @@ sub each_arrayref {
             else
             {
                 require Carp;
-                Carp::croak "each_array: unknown argument '$method' passed to iterator.";
+                Carp::croak("each_array: unknown argument '$method' passed to iterator.");
             }
         }
 
@@ -301,7 +306,7 @@ sub minmax (@) {
     return ($min, $max);
 }
 
-sub part(&@) {
+sub part (&@) {
     my ($code, @list) = @_;
     my @parts;
     push @{ $parts[$code->($_)] }, $_  for @list;
@@ -332,18 +337,22 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
 =head1 SYNOPSIS
 
-    use List::MoreUtils qw(
-        any all none notall true false firstidx first_index 
-        lastidx last_index insert_after insert_after_string 
-        apply after after_incl before before_incl indexes 
-        firstval first_value lastval last_value each_array
-        each_arrayref pairwise natatime mesh zip uniq minmax
-    );
+    use List::MoreUtils qw{
+        any all none notall true false
+        firstidx first_index lastidx last_index
+        insert_after insert_after_string
+        apply indexes
+        after after_incl before before_incl
+        firstval first_value lastval last_value
+        each_array each_arrayref
+        pairwise natatime
+        mesh zip uniq minmax part
+    };
 
 =head1 DESCRIPTION
 
-C<List::MoreUtils> provides some trivial but commonly needed functionality on lists
-which is not going to go into C<List::Util>.
+B<List::MoreUtils> provides some trivial but commonly needed functionality on
+lists which is not going to go into C<List::Util>.
 
 All of the below functions are implementable in only a couple of lines of Perl
 code. Using the functions from this module however should give slightly better

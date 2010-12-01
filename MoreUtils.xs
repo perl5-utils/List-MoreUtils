@@ -2,7 +2,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-
 #ifndef PERL_VERSION
 #    include <patchlevel.h>
 #    if !(defined(PERL_VERSION) || (SUBVERSION > 0 && defined(PATCHLEVEL)))
