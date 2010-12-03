@@ -133,5 +133,4 @@ Revision history for Perl extension List::Any/List::MoreUtils.
 
 0.01  Mon Jul  5 07:58:40 2004
 	- original version; created by h2xs 1.23 with options
-		-b 5.5.3 -A -n List::Any
-
+	  -b 5.5.3 -A -n List::Any
