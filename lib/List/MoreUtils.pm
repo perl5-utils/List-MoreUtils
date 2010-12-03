@@ -379,7 +379,7 @@ Returns a true value if any item in LIST meets the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
 
     print "At least one value undefined"
-        if any { not defined $_ } @list;
+        if any { ! defined($_) } @list;
 
 Returns false otherwise, or C<undef> if LIST is empty.
 
@@ -728,6 +728,12 @@ When you report bugs, it would be nice if you could additionally give me the
 output of your program with the environment variable C<LIST_MOREUTILS_PP> set
 to a true value. That way I know where to look for the problem (in XS,
 pure-Perl or possibly both).
+
+=head1 SUPPORT
+
+Bugs should always be submitted via the CPAN bug tracker.
+
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=List-MoreUtils>
 
 =head1 THANKS
 
