@@ -7,6 +7,8 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
+    plan tests => 153;
+
     test_any();
     test_all();
     test_none();
@@ -42,38 +44,68 @@ sub run {
 ######################################################################
 # Test code intentionally ignorant of implementation (Pure Perl or XS)
 
+# The any function should behave identically to 
+# !! grep CODE LIST
 sub test_any {
+    # The null set should really be valid.
+    # Consider making any { } return false.
+    my $null_scalar = any { };
+    my @null_list   = any { };
+    is( $null_scalar, undef, 'any(null) returns undef' );
+    is_deeply( \@null_list, [ undef ], 'any(null) returns undef' );
+
+    # Normal cases
     my @list = ( 1 .. 10000 );
-    ok( any { $_ == 5000 } @list );
-    ok( any { $_ == 5000 } 1 .. 10000 );
-    ok( any { defined } @list );
-    ok( ! any { ! defined } @list );
-    ok( any { ! defined } undef );
-    ok( ! defined(any { }) );
+    is_true( any { $_ == 5000 } @list );
+    is_true( any { $_ == 5000 } 1 .. 10000 );
+    is_true( any { defined } @list );
+    is_false( any { not defined } @list );
+    is_true( any { not defined } undef );
 }
 
 sub test_all {
+    # The null set should really be valid.
+    # Consider making all { } return false.
+    my $null_scalar = all { };
+    my @null_list   = all { };
+    is( $null_scalar, undef, 'all(null) returns undef' );
+    is_deeply( \@null_list, [ undef ], 'all(null) returns undef' );
+
+    # Normal cases
     my @list = ( 1 .. 10000 );
-    ok( all { defined } @list );
-    ok( all { $_ > 0 } @list );
-    ok( ! all { $_ < 5000 } @list );
-    ok( ! defined all { } );
+    is_true( all { defined } @list );
+    is_true( all { $_ > 0 } @list );
+    is_false( all { $_ < 5000 } @list );
 }
 
 sub test_none {
+    # The null set should really be valid.
+    # Consider making none { } return false.
+    my $null_scalar = none { };
+    my @null_list   = none { };
+    is( $null_scalar, undef, 'none(null) returns undef' );
+    is_deeply( \@null_list, [ undef ], 'none(null) returns undef' );
+
+    # Normal cases
     my @list = ( 1 .. 10000 );
-    ok( none { ! defined } @list );
-    ok( none { $_ > 10000 } @list );
-    ok( ! none { defined } @list );
-    ok( ! defined none { } );
+    is_true( none { not defined } @list );
+    is_true( none { $_ > 10000 } @list );
+    is_false( none { defined } @list );
 }
 
 sub test_notall {
+    # The null set should really be valid.
+    # Consider making none { } return false.
+    my $null_scalar = notall { };
+    my @null_list   = notall { };
+    is( $null_scalar, undef, 'notall(null) returns undef' );
+    is_deeply( \@null_list, [ undef ], 'notall(null) returns undef' );
+
+    # Normal cases
     my @list = ( 1 .. 10000 );
-    ok( notall { ! defined } @list );
-    ok( notall { $_ < 10000 } @list );
-    ok( ! notall { $_ <= 10000 } @list );
-    ok( ! defined notall { } );
+    is_true( notall { ! defined } @list );
+    is_true( notall { $_ < 10000 } @list );
+    is_false( notall { $_ <= 10000 } @list );
 }
 
 sub test_true {
@@ -572,6 +604,16 @@ sub test_minmax {
 
 ######################################################################
 # Support Functions
+
+sub is_true {
+    die "Expected 1 param" unless @_ == 1;
+    is( $_[0], !0 );
+}
+
+sub is_false {
+    die "Expected 1 param" unless @_ == 1;
+    is( $_[0], !1 );
+}
 
 sub arrayeq {
     local $^W = 0;

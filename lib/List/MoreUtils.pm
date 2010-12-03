@@ -34,46 +34,50 @@ eval {
 
 eval <<'EOP' unless defined &any;
 
+# Use pure scalar boolean return values for compatibility with XS
+use constant YES => ! 0;
+use constant NO  => ! 1;
+
 sub any (&@) {
     my $f = shift;
-    return if ! @_;
-    for (@_) {
-        return 1 if $f->();
+    return undef unless @_;
+    foreach ( @_ ) {
+        return YES if $f->();
     }
-    return 0;
+    return NO;
 }
 
 sub all (&@) {
     my $f = shift;
-    return if ! @_;
-    for (@_) {
-        return 0 if ! $f->();
+    return undef unless @_;
+    foreach ( @_ ) {
+        return NO unless $f->();
     }
-    return 1;
+    return YES;
 }
 
 sub none (&@) {
     my $f = shift;
-    return if ! @_;
-    for (@_) {
-        return 0 if $f->();
+    return undef unless @_;
+    foreach ( @_ ) {
+        return NO if $f->();
     }
-    return 1;
+    return YES;
 }
 
 sub notall (&@) {
     my $f = shift;
-    return if ! @_;
-    for (@_) {
-        return 1 if ! $f->();
+    return undef unless @_;
+    foreach ( @_ ) {
+        return YES unless $f->();
     }
-    return 0;
+    return NO;
 }
 
 sub true (&@) {
     my $f = shift;
     my $count = 0;
-    for (@_) {
+    foreach ( @_ ) {
         $count++ if $f->();
     }
     return $count;
@@ -82,8 +86,8 @@ sub true (&@) {
 sub false (&@) {
     my $f = shift;
     my $count = 0;
-    for (@_) {
-        $count++ if ! $f->();
+    foreach ( @_ ) {
+        $count++ unless $f->();
     }
     return $count;
 }
@@ -99,7 +103,7 @@ sub firstidx (&@) {
 
 sub lastidx (&@) {
     my $f = shift;
-    for my $i (reverse 0 .. $#_) {
+    foreach my $i ( reverse 0 .. $#_ ) {
         local *_ = \$_[$i];
         return $i if $f->();
     }
@@ -139,7 +143,7 @@ sub after (&@) {
     my $test = shift;
     my $started;
     my $lag;
-    grep $started ||= do { my $x=$lag; $lag=$test->(); $x},  @_;
+    grep $started ||= do { my $x=$lag; $lag=$test->(); $x}, @_;
 }
 
 sub after_incl (&@) {
@@ -150,20 +154,27 @@ sub after_incl (&@) {
 
 sub before (&@) {
     my $test = shift;
-    my $keepgoing=1;
-    grep $keepgoing &&= !$test->(),  @_;
+    my $keepgoing = 1;
+    grep $keepgoing &&= !$test->(), @_;
 }
 
 sub before_incl (&@) {
     my $test = shift;
     my $keepgoing=1;
     my $lag=1;
-    grep $keepgoing &&= do { my $x=$lag; $lag=!$test->(); $x},  @_;
+    grep $keepgoing &&= do {
+        my $x = $lag;
+        $lag = ! $test->();
+        $x
+    }, @_;
 }
 
 sub indexes (&@) {
     my $test = shift;
-    grep {local *_=\$_[$_]; $test->()} 0..$#_;
+    grep {
+        local *_ = \$_[$_];
+        $test->()
+    } 0 .. $#_;
 }
 
 sub lastval (&@) {
@@ -181,8 +192,7 @@ sub lastval (&@) {
 
 sub firstval (&@) {
     my $test = shift;
-    foreach (@_)
-    {
+    foreach ( @_ ) {
         return $_ if $test->();
     }
     return undef;
@@ -261,16 +271,14 @@ sub natatime ($@) {
     my $n = shift;
     my @list = @_;
 
-    return sub
-    {
+    return sub {
         return splice @list, 0, $n;
     }
 }
 
 sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
     my $max = -1;
-    $max < $#$_  &&  ($max = $#$_)  for @_;
-
+    $max < $#$_ && ( $max = $#$_ ) for @_;
     map { my $ix = $_; map $_->[$ix], @_; } 0..$max; 
 }
 
@@ -371,7 +379,7 @@ Returns a true value if any item in LIST meets the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
 
     print "At least one value undefined"
-        if any { !defined($_) } @list;
+        if any { not defined $_ } @list;
 
 Returns false otherwise, or C<undef> if LIST is empty.
 

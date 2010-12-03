@@ -4,6 +4,9 @@ Revision history for Perl extension List::Any/List::MoreUtils.
 	- Reduced test suite peak memory consumption by 5-10 meg
 	- Added the 'distinct' alias for the uniq function, for people that
 	  like their chained map/grep/sort pipelines with a SQL'ish flavour.
+	- Expanded test suite for the any() group of functions.
+	- The any() group of functions now strictly always return scalar
+	  boolean true, false and undef to match the XS version.
 
 0.27_01 Wed 1 Dec 2010
 	- Refactored the split test scripts into a common test module
