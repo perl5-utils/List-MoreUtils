@@ -5,25 +5,26 @@ use strict;
 use Exporter   ();
 use DynaLoader ();
 
-use vars qw{$VERSION @ISA @EXPORT_OK %EXPORT_TAGS};
+use vars qw{ $VERSION @ISA @EXPORT_OK %EXPORT_TAGS };
 BEGIN {
-    $VERSION     = '0.27_02';
-    @ISA         = qw{ Exporter DynaLoader };
+    $VERSION   = '0.27_03';
+    @ISA       = qw{ Exporter DynaLoader };
+    @EXPORT_OK = qw{
+        any all none notall true false
+        firstidx first_index lastidx last_index
+        insert_after insert_after_string
+        apply indexes
+        after after_incl before before_incl
+        firstval first_value lastval last_value
+        each_array each_arrayref
+        pairwise natatime
+        mesh zip uniq distinct
+        minmax part
+    };
+
     %EXPORT_TAGS = (
-        all => [ qw{
-            any all none notall true false
-            firstidx first_index lastidx last_index
-            insert_after insert_after_string
-            apply indexes
-            after after_incl before before_incl
-            firstval first_value lastval last_value
-            each_array each_arrayref
-            pairwise natatime
-            mesh zip uniq distinct
-            minmax part
-        } ],
+        all => \@EXPORT_OK,
     );
-    @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 }
 
 eval {
@@ -32,7 +33,7 @@ eval {
     1;
 } unless $ENV{LIST_MOREUTILS_PP};
 
-eval <<'EOP' unless defined &any;
+eval <<'END_PERL' unless defined &any;
 
 # Use pure scalar boolean return values for compatibility with XS
 use constant YES => ! 0;
@@ -75,7 +76,7 @@ sub notall (&@) {
 }
 
 sub true (&@) {
-    my $f = shift;
+    my $f     = shift;
     my $count = 0;
     foreach ( @_ ) {
         $count++ if $f->();
@@ -84,7 +85,7 @@ sub true (&@) {
 }
 
 sub false (&@) {
-    my $f = shift;
+    my $f     = shift;
     my $count = 0;
     foreach ( @_ ) {
         $count++ unless $f->();
@@ -94,7 +95,7 @@ sub false (&@) {
 
 sub firstidx (&@) {
     my $f = shift;
-    for my $i (0 .. $#_) {
+    foreach my $i ( 0 .. $#_ ) {
         local *_ = \$_[$i];
         return $i if $f->();
     }
@@ -111,31 +112,39 @@ sub lastidx (&@) {
 }
 
 sub insert_after (&$\@) {
-    my ($code, $val, $list) = @_;
+    my ($f, $val, $list) = @_;
     my $c = -1;
     local *_;
-    for my $i (0 .. $#$list) {
+    foreach my $i ( 0 .. $#$list ) {
         $_ = $list->[$i];
-        $c = $i, last if $code->();
+        $c = $i, last if $f->();
     }
-    @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
+    @$list = (
+        @{$list}[ 0 .. $c ],
+        $val,
+        @{$list}[ $c + 1 .. $#$list ],
+    ) and return 1 if $c != -1;
     return 0;
 }
 
 sub insert_after_string ($$\@) {
     my ($string, $val, $list) = @_;
     my $c = -1;
-    for my $i (0 .. $#$list) {
+    foreach my $i ( 0 .. $#$list ) {
         local $^W = 0;
         $c = $i, last if $string eq $list->[$i];
     }
-    @$list = (@{$list}[0..$c], $val, @{$list}[$c+1..$#$list]) and return 1 if $c != -1;
+    @$list = (
+        @{$list}[ 0 .. $c ],
+        $val,
+        @{$list}[ $c + 1 .. $#$list ],
+    ) and return 1 if $c != -1;
     return 0;
 }
 
 sub apply (&@) {
     my $action = shift;
-    &$action for my @values = @_;
+    &$action foreach my @values = @_;
     wantarray ? @values : $values[-1];
 }
 
@@ -143,7 +152,11 @@ sub after (&@) {
     my $test = shift;
     my $started;
     my $lag;
-    grep $started ||= do { my $x=$lag; $lag=$test->(); $x}, @_;
+    grep $started ||= do {
+        my $x = $lag;
+        $lag = $test->();
+        $x
+    }, @_;
 }
 
 sub after_incl (&@) {
@@ -154,15 +167,15 @@ sub after_incl (&@) {
 
 sub before (&@) {
     my $test = shift;
-    my $keepgoing = 1;
-    grep $keepgoing &&= !$test->(), @_;
+    my $more = 1;
+    grep $more &&= ! $test->(), @_;
 }
 
 sub before_incl (&@) {
     my $test = shift;
-    my $keepgoing=1;
-    my $lag=1;
-    grep $keepgoing &&= do {
+    my $more = 1;
+    my $lag  = 1;
+    grep $more &&= do {
         my $x = $lag;
         $lag = ! $test->();
         $x
@@ -180,11 +193,12 @@ sub indexes (&@) {
 sub lastval (&@) {
     my $test = shift;
     my $ix;
-    for ($ix=$#_; $ix>=0; $ix--)
-    {
+    for ( $ix = $#_; $ix >= 0; $ix-- ) {
         local *_ = \$_[$ix];
         my $testval = $test->();
-        $_[$ix] = $_;    # simulate $_ as alias
+
+        # Simulate $_ as alias
+        $_[$ix] = $_;
         return $_ if $testval;
     }
     return undef;
@@ -200,25 +214,29 @@ sub firstval (&@) {
 
 sub pairwise (&\@\@) {
     my $op = shift;
-    use vars qw/@A @B/;
-    local (*A, *B) = @_;    # syms for caller's input arrays
+
+    # Symbols for caller's input arrays
+    use vars qw{ @A @B };
+    local ( *A, *B ) = @_;
 
     # Localise $a, $b
-    my ($caller_a, $caller_b) = do
-    {
+    my ( $caller_a, $caller_b ) = do {
         my $pkg = caller();
         no strict 'refs';
         \*{$pkg.'::a'}, \*{$pkg.'::b'};
     };
 
-    my $limit = $#A > $#B? $#A : $#B;    # loop iteration limit
+    # Loop iteration limit
+    my $limit = $#A > $#B? $#A : $#B;
 
-    local(*$caller_a, *$caller_b);
-    map    # This map expression is also the return value.
-    {
-        # assign to $a, $b as refs to caller's array elements
-        (*$caller_a, *$caller_b) = \($A[$_], $B[$_]);
-        $op->();    # perform the transformation
+    # This map expression is also the return value
+    local( *$caller_a, *$caller_b );
+    map {
+        # Assign to $a, $b as refs to caller's array elements
+        ( *$caller_a, *$caller_b ) = \( $A[$_], $B[$_] );
+
+        # Perform the transformation
+        $op->();
     }  0 .. $limit;
 }
 
@@ -227,50 +245,45 @@ sub each_array (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
 }
 
 sub each_arrayref {
-    my @arr_list  = @_;     # The list of references to the arrays
-    my $index     = 0;      # Which one the caller will get next
-    my $max_num   = 0;      # Number of elements in longest array
+    my @list  = @_; # The list of references to the arrays
+    my $index = 0;  # Which one the caller will get next
+    my $max   = 0;  # Number of elements in longest array
 
     # Get the length of the longest input array
-    foreach (@arr_list)
-    {
-        unless (ref($_) eq 'ARRAY')
-        {
+    foreach ( @list ) {
+        unless ( ref $_ eq 'ARRAY' ) {
             require Carp;
             Carp::croak("each_arrayref: argument is not an array reference\n");
         }
-        $max_num = @$_  if @$_ > $max_num;
+        $max = @$_ if @$_ > $max;
     }
 
     # Return the iterator as a closure wrt the above variables.
-    return sub
-    {
-        if (@_)
-        {
+    return sub {
+        if ( @_ ) {
             my $method = shift;
-            if ($method eq 'index')
-            {
-                # Return current (last fetched) index
-                return undef if $index == 0  ||  $index > $max_num;
-                return $index-1;
-            }
-            else
-            {
+            unless ( $method eq 'index' ) {
                 require Carp;
                 Carp::croak("each_array: unknown argument '$method' passed to iterator.");
             }
+
+            # Return current (last fetched) index
+            return undef if $index == 0  ||  $index > $max;
+            return $index - 1;
         }
 
-        return if $index >= $max_num;     # No more elements to return
+        # No more elements to return
+        return if $index >= $max;
         my $i = $index++;
-        return map $_->[$i], @arr_list;   # Return ith elements
+
+        # Return ith elements
+        return map $_->[$i], @list; 
     }
 }
 
 sub natatime ($@) {
-    my $n = shift;
+    my $n    = shift;
     my @list = @_;
-
     return sub {
         return splice @list, 0, $n;
     }
@@ -278,21 +291,24 @@ sub natatime ($@) {
 
 sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
     my $max = -1;
-    $max < $#$_ && ( $max = $#$_ ) for @_;
-    map { my $ix = $_; map $_->[$ix], @_; } 0..$max; 
+    $max < $#$_ && ( $max = $#$_ ) foreach @_;
+    map {
+        my $ix = $_;
+        map $_->[$ix], @_;
+    } 0 .. $max; 
 }
 
 sub uniq (@) {
-    my %h;
+    my %h = ();
     map { $h{$_}++ == 0 ? $_ : () } @_;
 }
 
 sub minmax (@) {
-    return if ! @_;
+    return unless @_;
     my $min = my $max = $_[0];
 
-    for (my $i = 1; $i < @_; $i += 2) {
-        if ($_[$i-1] <= $_[$i]) {
+    for ( my $i = 1; $i < @_; $i += 2 ) {
+        if ( $_[$i-1] <= $_[$i] ) {
             $min = $_[$i-1] if $min > $_[$i-1];
             $max = $_[$i]   if $max < $_[$i];
         } else {
@@ -301,7 +317,7 @@ sub minmax (@) {
         }
     }
 
-    if (@_ & 1) {
+    if ( @_ & 1 ) {
         my $i = $#_;
         if ($_[$i-1] <= $_[$i]) {
             $min = $_[$i-1] if $min > $_[$i-1];
@@ -318,7 +334,7 @@ sub minmax (@) {
 sub part (&@) {
     my ($code, @list) = @_;
     my @parts;
-    push @{ $parts[$code->($_)] }, $_  for @list;
+    push @{ $parts[ $code->($_) ] }, $_  foreach @list;
     return @parts;
 }
 
@@ -326,7 +342,7 @@ sub _XScompiled {
     return 0;
 }
 
-EOP
+END_PERL
 die $@ if $@;
 
 *first_index = \&firstidx;

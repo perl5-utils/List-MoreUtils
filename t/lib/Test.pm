@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 153;
+    plan tests => 156;
 
     test_any();
     test_all();
@@ -109,31 +109,43 @@ sub test_notall {
 }
 
 sub test_true {
+    # The null set should result in zero
+    my $null_scalar = true { };
+    my @null_list   = true { };
+    is( $null_scalar, 0, 'true(null) returns zero' );
+    is_deeply( \@null_list, [ 0 ], 'true(null) returns zero' );
+
+    # Normal cases
     my @list = ( 1 .. 10000 );
     is( 10000, true { defined } @list );
-    is( 0, true { ! defined } @list );
+    is( 0, true { not defined } @list );
     is( 1, true { $_ == 10000 } @list );
-    ok( ! true { } );
 }
 
 sub test_false {
+    # The null set should result in zero
+    my $null_scalar = true { };
+    my @null_list   = true { };
+    is( $null_scalar, 0, 'true(null) returns zero' );
+    is_deeply( \@null_list, [ 0 ], 'true(null) returns zero' );
+
+    # Normal cases
     my @list = ( 1 .. 10000 );
-    is( 10000, false { ! defined } @list );
+    is( 10000, false { not defined } @list );
     is( 0, false { defined } @list );
     is( 1, false { $_ > 1 } @list );
-    ok( ! false { } );
 }
 
 sub test_firstidx {
     my @list = ( 1 .. 10000 );
     is( 4999, firstidx { $_ >= 5000 } @list );
-    is( -1, firstidx { ! defined } @list );
+    is( -1, firstidx { not defined } @list );
     is( 0, firstidx { defined } @list );
     is( -1, firstidx { } );
 
-    # Test aliases
+    # Test the alias
     is( 4999, first_index { $_ >= 5000 } @list );
-    is( -1, first_index { ! defined } @list );
+    is( -1, first_index { not defined } @list );
     is( 0, first_index { defined } @list );
     is( -1, first_index { } );
 }
@@ -141,36 +153,36 @@ sub test_firstidx {
 sub test_lastidx {
     my @list = ( 1 .. 10000 );
     is( 9999, lastidx { $_ >= 5000 } @list );
-    is( -1, lastidx { ! defined } @list );
+    is( -1, lastidx { not defined } @list );
     is( 9999, lastidx { defined } @list );
     is( -1, lastidx { } );
 
     # Test aliases
     is( 9999, last_index { $_ >= 5000 } @list );
-    is( -1, last_index { ! defined } @list );
+    is( -1, last_index { not defined } @list );
     is( 9999, last_index { defined } @list );
     is( -1, last_index { } );
 }
 
 sub test_insert_after {
-    my @list = qw/This is a list/;
+    my @list = qw{This is a list};
     insert_after { $_ eq "a" } "longer" => @list;
     is( join(' ', @list), "This is a longer list" );
     insert_after { 0 } "bla" => @list;
     is( join(' ', @list), "This is a longer list" );
     insert_after { $_ eq "list" } "!" => @list;
     is( join(' ', @list), "This is a longer list !" );
-    @list = ( qw/This is/, undef, qw/list/ );
-    insert_after { ! defined($_) } "longer" => @list;
+    @list = ( qw{This is}, undef, qw{list} );
+    insert_after { not defined($_) } "longer" => @list;
     $list[2] = "a";
     is( join(' ', @list), "This is a longer list" );
 }
 
 sub test_insert_after_string {
-    my @list = qw/This is a list/;
+    my @list = qw{This is a list};
     insert_after_string "a", "longer" => @list;
     is( join(' ', @list), "This is a longer list" );
-    @list = ( undef, qw/This is a list/ );
+    @list = ( undef, qw{This is a list} );
     insert_after_string "a", "longer", @list;
     shift @list;
     is( join(' ', @list), "This is a longer list" );
@@ -180,97 +192,100 @@ sub test_insert_after_string {
 }
 
 sub test_apply {
+    # Test the null case
+    my $null_scalar = apply { };
+    my @null_list   = apply { };
+    is( $null_scalar, undef, 'apply(null) returns undef' );
+    is_deeply( \@null_list, [ ], 'apply(null) returns null list' );
+
+    # Normal cases
     my @list  = ( 0 .. 9 );
     my @list1 = apply { $_++ } @list;
-    ok( arrayeq(\@list, [0..9]) );
-    ok( arrayeq(\@list1, [1..10]) );
-
-    @list = ( " foo ", " bar ", "     ", "foobar" );
+    ok( arrayeq( \@list,  [ 0 .. 9  ] ) );
+    ok( arrayeq( \@list1, [ 1 .. 10 ] ) );
+    @list  = ( " foo ", " bar ", "     ", "foobar" );
     @list1 = apply { s/^\s+|\s+$//g } @list;
-    ok( arrayeq(\@list, [" foo ", " bar ", "     ", "foobar"]) );
-    ok( arrayeq(\@list1, ["foo", "bar", "", "foobar"]) );
-
+    ok( arrayeq( \@list,  [ " foo ", " bar ", "     ", "foobar" ] ) );
+    ok( arrayeq( \@list1, [ "foo", "bar", "", "foobar" ] ) );
     my $item = apply { s/^\s+|\s+$//g } @list;
     is( $item, "foobar" );
-
-    ok( ! defined apply {} );
 }
 
 sub test_indexes {
-    my @x = indexes { $_ > 5 }  4..9;
+    my @x = indexes { $_ > 5 } ( 4 .. 9 );
     ok( arrayeq( \@x, [ 2..5 ] ) );
-    @x = indexes { $_ > 5 }  1..4;  
-    ok( ! @x );
+    @x = indexes { $_ > 5 } ( 1 .. 4 );
+    is_deeply( \@x, [ ], 'Got the null list' );
 }
 
 # In the following, the @dummy variable is needed to circumvent
 # a parser glitch in the 5.6.x series.
 sub test_before {
-    my @x = before {$_ % 5 == 0} 1..9;    
-    ok( arrayeq(\@x, [1, 2, 3, 4]) );
-    @x = before { /b/ } my @dummy = qw/bar baz/;
-    ok( ! @x );
-    @x = before { /f/ } @dummy = qw/bar baz foo/;
-    ok( arrayeq(\@x, [  qw/bar baz/ ]) );
+    my @x = before { $_ % 5 == 0 } 1 .. 9;    
+    ok( arrayeq( \@x, [ 1, 2, 3, 4 ] ) );
+    @x = before { /b/ } my @dummy = qw{ bar baz };
+    is_deeply( \@x, [ ], 'Got the null list' );
+    @x = before { /f/ } @dummy = qw{ bar baz foo };
+    ok( arrayeq( \@x, [ qw{ bar baz } ] ) );
 }
 
 # In the following, the @dummy variable is needed to circumvent
 # a parser glitch in the 5.6.x series.
 sub test_before_incl {
-    my @x = before_incl {$_ % 5 == 0} 1..9;
-    ok( arrayeq(\@x, [1, 2, 3, 4, 5]) );
-    @x = before_incl { /foo/ } my @dummy = qw/bar baz/;
-    ok( arrayeq(\@x, [ qw/bar baz/ ]) );
-    @x = before_incl { /f/ } @dummy = qw/bar baz foo/;
-    ok( arrayeq(\@x, [ qw/bar baz foo/ ]) );
+    my @x = before_incl { $_ % 5 == 0 } 1 .. 9;
+    ok( arrayeq( \@x, [ 1, 2, 3, 4, 5 ] ) );
+    @x = before_incl { /foo/ } my @dummy = qw{ bar baz };
+    ok( arrayeq( \@x, [ qw{ bar baz } ] ) );
+    @x = before_incl { /f/ } @dummy = qw{ bar baz foo };
+    ok( arrayeq( \@x, [ qw{ bar baz foo } ] ) );
 }
 
 # In the following, the @dummy variable is needed to circumvent
 # a parser glitch in the 5.6.x series.
 sub test_after {
-    my @x = after { $_ % 5 == 0 } 1..9;
-    ok( arrayeq(\@x, [6,7,8,9]) );
-    @x = after { /foo/ } my @dummy = qw/bar baz/;
-    ok( ! @x );
-    @x = after { /b/ } @dummy = qw/bar baz foo/;
-    ok( arrayeq(\@x, [ qw/baz foo/ ]) );
+    my @x = after { $_ % 5 == 0 } 1 .. 9;
+    ok( arrayeq( \@x, [ 6, 7, 8, 9 ] ) );
+    @x = after { /foo/ } my @dummy = qw{ bar baz };
+    is_deeply( \@x, [ ], 'Got the null list' );
+    @x = after { /b/ } @dummy = qw{ bar baz foo };
+    ok( arrayeq( \@x, [ qw{ baz foo } ] ) );
 }
 
 # In the following, the @dummy variable is needed to circumvent
 # a parser glitch in the 5.6.x series.
 sub test_after_incl {
-    my @x = after_incl { $_ % 5 == 0 } 1..9;
-    ok( arrayeq(\@x, [5, 6, 7, 8, 9]) );
-    @x = after_incl { /foo/ } my @dummy = qw/bar baz/;
-    ok( ! @x );
-    @x = after_incl { /b/ } @dummy = qw/bar baz foo/;
-    ok( arrayeq(\@x, [ qw/bar baz foo/ ]) );
+    my @x = after_incl { $_ % 5 == 0 } 1 .. 9;
+    ok( arrayeq( \@x, [ 5, 6, 7, 8, 9 ] ) );
+    @x = after_incl { /foo/ } my @dummy = qw{ bar baz };
+    is_deeply( \@x, [ ], 'Got the null list' );
+    @x = after_incl { /b/ } @dummy = qw{ bar baz foo };
+    ok( arrayeq( \@x, [ qw{ bar baz foo } ] ) );
 }
 
 sub test_firstval {
-    my $x = firstval { $_ > 5 }  4..9; 
+    my $x = firstval { $_ > 5 }  4 .. 9; 
     is( $x, 6 );
-    $x = firstval { $_ > 5 }  1..4;
-    ok( ! defined $x );
+    $x = firstval { $_ > 5 }  1 .. 4;
+    is( $x, undef );
 
     # Test aliases
     $x = first_value { $_ > 5 }  4..9; 
     is( $x, 6 );
     $x = first_value { $_ > 5 }  1..4;
-    ok( ! defined $x );
+    is( $x, undef );
 }
 
 sub test_lastval {
     my $x = lastval { $_ > 5 }  4..9;
     is( $x, 9 );
     $x = lastval { $_ > 5 }  1..4;
-    ok( ! defined $x );
+    is( $x, undef );
 
     # Test aliases
     $x = last_value { $_ > 5 }  4..9;  
     is( $x, 9 );
     $x = last_value { $_ > 5 }  1..4;
-    ok( ! defined $x );
+    is( $x, undef );
 }
 
 sub test_each_array {
@@ -288,7 +303,7 @@ sub test_each_array {
         $it->();
 
         ok( arrayeq( \@r, [ 7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef ] ) );
-        ok( arrayeq( \@idx, [ 0..4 ] ) );
+        ok( arrayeq( \@idx, [ 0 .. 4 ] ) );
 
         # Testing two iterators on the same arrays in parallel
         @a = ( 1, 3, 5 );
@@ -531,9 +546,9 @@ sub test_part {
     ok( arrayeq($part[2], [ 3, 6, 9, 12 ]) );
 
     @part = part { 3 } @list;
-    ok( ! defined $part[0] );
-    ok( ! defined $part[1] );
-    ok( ! defined $part[2] ); 
+    is( $part[0], undef );
+    is( $part[1], undef );
+    is( $part[2], undef ); 
     ok( arrayeq($part[3], [ 1 .. 12 ]) );
 
     eval {
@@ -551,9 +566,9 @@ sub test_part {
 
     @part = part { 10000 } @list;
     ok( arrayeq($part[10000], [ @list ]) );
-    ok( ! defined $part[0] );
-    ok( ! defined $part[@part / 2] );
-    ok( ! defined $part[9999] );
+    is( $part[0], undef );
+    is( $part[@part / 2], undef );
+    is( $part[9999], undef );
 
     # Changing the list in place used to destroy
     # its elements due to a wrong refcnt

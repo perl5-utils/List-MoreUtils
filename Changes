@@ -1,5 +1,8 @@
 Revision history for Perl extension List::Any/List::MoreUtils.
 
+0.27_03 Sat 4 Dec 2010
+	- General house cleaning
+
 0.27_02 Wed 1 Dec 2010
 	- Reduced test suite peak memory consumption by 5-10 meg
 	- Added the 'distinct' alias for the uniq function, for people that
