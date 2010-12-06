@@ -463,9 +463,10 @@ sub test_zip {
     }
 
     SCOPE: {
+        # Make array with holes
         my @a = ( 1 .. 10 );
         my @d;
-        $#d = 9; # make array with holes
+        $#d = 9; 
         my @z = zip @a, @d;
         ok(
             arrayeq( \@z, [
@@ -492,10 +493,11 @@ sub test_mesh {
         ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
     }
 
+    # Make array with holes
     SCOPE: {
         my @a = ( 1 .. 10 );
         my @d;
-        $#d = 9; # make array with holes
+        $#d = 9;
         my @z = mesh @a, @d;
         ok(
             arrayeq( \@z, [
@@ -523,6 +525,17 @@ sub test_uniq {
         my $u = distinct @a;
         is( 1000, $u );
     }
+
+    # Test support for undef values without warnings
+    # SCOPE: {
+        # my @warnings  = ();
+        # local $SIG{__WARN__} = sub {
+            # push @warnings, @_;
+        # };
+        # my @foo = ('a','b', undef, 'b', '');
+        # is_deeply( [ uniq @foo ], \@foo, 'undef is supported correctly' );
+        # is_deeply( \@warnings, [ ], 'No warnings during uniq check' );
+    # }
 }
 
 sub test_part {

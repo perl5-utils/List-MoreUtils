@@ -7,6 +7,6 @@ BEGIN {
     $ENV{LIST_MOREUTILS_PP} = 0;
 };
 
-use t::lib::Test;
+require t::lib::Test;
 
 t::lib::Test->run;
