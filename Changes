@@ -1,4 +1,9 @@
-Revision history for Perl extension List::Any/List::MoreUtils.
+Revision history for Perl extension List-Any/List-MoreUtils
+
+0.27_05 Mon 6 Dec 2010
+	- Restored the regression test for RT #38630 from 0.23.
+	  As apply() was disabled in 0.27_04 this test will only act
+	  to validate the future XS restoration of apply().
 
 0.27_04 Mon 6 Dec 2010
 	- The behaviour of any/all/none/notall has changed when
