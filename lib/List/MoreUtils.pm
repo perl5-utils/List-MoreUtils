@@ -21,18 +21,44 @@ BEGIN {
         mesh zip uniq distinct
         minmax part
     };
-
     %EXPORT_TAGS = (
         all => \@EXPORT_OK,
     );
+
+    # Load the XS at compile-time so that redefinition warnings will be
+    # thrown correctly if the XS versions of part or indexes loaded
+    eval {
+        local $ENV{PERL_DL_NONLAZY} = $ENV{PERL_DL_NONLAZY} ? 0 : $ENV{PERL_DL_NONLAZY};
+        bootstrap List::MoreUtils $VERSION;
+        1;
+    } unless $ENV{LIST_MOREUTILS_PP};
 }
 
-eval {
-    local $ENV{PERL_DL_NONLAZY} = $ENV{PERL_DL_NONLAZY} ? 0 : $ENV{PERL_DL_NONLAZY};
-    bootstrap List::MoreUtils $VERSION;
-    1;
-} unless $ENV{LIST_MOREUTILS_PP};
+# Always use Perl apply() until memory leaks are resolved.
+sub apply (&@) {
+    my $action = shift;
+    &$action foreach my @values = @_;
+    wantarray ? @values : $values[-1];
+}
 
+# Always use Perl part() until memory leaks are resolved.
+sub part (&@) {
+    my ($code, @list) = @_;
+    my @parts;
+    push @{ $parts[ $code->($_) ] }, $_  foreach @list;
+    return @parts;
+}
+
+# Always use Perl indexes() until memory leaks are resolved.
+sub indexes (&@) {
+    my $test = shift;
+    grep {
+        local *_ = \$_[$_];
+        $test->()
+    } 0 .. $#_;
+}
+
+# Load the pure-Perl versions of the other functions if needed
 eval <<'END_PERL' unless defined &any;
 
 # Use pure scalar boolean return values for compatibility with XS
@@ -41,7 +67,6 @@ use constant NO  => ! 1;
 
 sub any (&@) {
     my $f = shift;
-    return undef unless @_;
     foreach ( @_ ) {
         return YES if $f->();
     }
@@ -50,7 +75,6 @@ sub any (&@) {
 
 sub all (&@) {
     my $f = shift;
-    return undef unless @_;
     foreach ( @_ ) {
         return NO unless $f->();
     }
@@ -59,7 +83,6 @@ sub all (&@) {
 
 sub none (&@) {
     my $f = shift;
-    return undef unless @_;
     foreach ( @_ ) {
         return NO if $f->();
     }
@@ -68,7 +91,6 @@ sub none (&@) {
 
 sub notall (&@) {
     my $f = shift;
-    return undef unless @_;
     foreach ( @_ ) {
         return YES unless $f->();
     }
@@ -142,12 +164,6 @@ sub insert_after_string ($$\@) {
     return 0;
 }
 
-sub apply (&@) {
-    my $action = shift;
-    &$action foreach my @values = @_;
-    wantarray ? @values : $values[-1];
-}
-
 sub after (&@) {
     my $test = shift;
     my $started;
@@ -180,14 +196,6 @@ sub before_incl (&@) {
         $lag = ! $test->();
         $x
     }, @_;
-}
-
-sub indexes (&@) {
-    my $test = shift;
-    grep {
-        local *_ = \$_[$_];
-        $test->()
-    } 0 .. $#_;
 }
 
 sub lastval (&@) {
@@ -331,13 +339,6 @@ sub minmax (@) {
     return ($min, $max);
 }
 
-sub part (&@) {
-    my ($code, @list) = @_;
-    my @parts;
-    push @{ $parts[ $code->($_) ] }, $_  foreach @list;
-    return @parts;
-}
-
 sub _XScompiled {
     return 0;
 }
@@ -345,6 +346,7 @@ sub _XScompiled {
 END_PERL
 die $@ if $@;
 
+# Function aliases
 *first_index = \&firstidx;
 *last_index  = \&lastidx;
 *first_value = \&firstval;
@@ -397,7 +399,7 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
     print "At least one value undefined"
         if any { ! defined($_) } @list;
 
-Returns false otherwise, or C<undef> if LIST is empty.
+Returns false otherwise, or if LIST is empty.
 
 =item all BLOCK LIST
 
@@ -407,7 +409,7 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
     print "All items defined"
         if all { defined($_) } @list;
 
-Returns false otherwise, or C<undef> if LIST is empty.
+Returns false otherwise, or if LIST is empty.
 
 =item none BLOCK LIST
 
@@ -417,7 +419,7 @@ the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
     print "No value defined"
         if none { defined($_) } @list;
 
-Returns false otherwise, or C<undef> if LIST is empty.
+Returns false otherwise, or if LIST is empty.
 
 =item notall BLOCK LIST
 
@@ -428,7 +430,7 @@ turn:
     print "Not all values defined"
         if notall { defined($_) } @list;
 
-Returns false otherwise, or C<undef> if LIST is empty.
+Returns false otherwise, or if LIST is empty.
 
 =item true BLOCK LIST
 

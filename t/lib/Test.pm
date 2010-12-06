@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 156;
+    plan tests => 152;
 
     test_any();
     test_all();
@@ -47,13 +47,6 @@ sub run {
 # The any function should behave identically to 
 # !! grep CODE LIST
 sub test_any {
-    # The null set should really be valid.
-    # Consider making any { } return false.
-    my $null_scalar = any { };
-    my @null_list   = any { };
-    is( $null_scalar, undef, 'any(null) returns undef' );
-    is_deeply( \@null_list, [ undef ], 'any(null) returns undef' );
-
     # Normal cases
     my @list = ( 1 .. 10000 );
     is_true( any { $_ == 5000 } @list );
@@ -61,73 +54,56 @@ sub test_any {
     is_true( any { defined } @list );
     is_false( any { not defined } @list );
     is_true( any { not defined } undef );
+    is_false( any { } );
 }
 
 sub test_all {
-    # The null set should really be valid.
-    # Consider making all { } return false.
-    my $null_scalar = all { };
-    my @null_list   = all { };
-    is( $null_scalar, undef, 'all(null) returns undef' );
-    is_deeply( \@null_list, [ undef ], 'all(null) returns undef' );
-
     # Normal cases
     my @list = ( 1 .. 10000 );
     is_true( all { defined } @list );
     is_true( all { $_ > 0 } @list );
     is_false( all { $_ < 5000 } @list );
+    is_true( all { } );
 }
 
 sub test_none {
-    # The null set should really be valid.
-    # Consider making none { } return false.
-    my $null_scalar = none { };
-    my @null_list   = none { };
-    is( $null_scalar, undef, 'none(null) returns undef' );
-    is_deeply( \@null_list, [ undef ], 'none(null) returns undef' );
-
     # Normal cases
     my @list = ( 1 .. 10000 );
     is_true( none { not defined } @list );
     is_true( none { $_ > 10000 } @list );
     is_false( none { defined } @list );
+    is_true( none { } );
 }
 
 sub test_notall {
-    # The null set should really be valid.
-    # Consider making none { } return false.
-    my $null_scalar = notall { };
-    my @null_list   = notall { };
-    is( $null_scalar, undef, 'notall(null) returns undef' );
-    is_deeply( \@null_list, [ undef ], 'notall(null) returns undef' );
-
     # Normal cases
     my @list = ( 1 .. 10000 );
     is_true( notall { ! defined } @list );
     is_true( notall { $_ < 10000 } @list );
     is_false( notall { $_ <= 10000 } @list );
+    is_false( notall { } );
 }
 
 sub test_true {
-    # The null set should result in zero
+    # The null set should return zero
     my $null_scalar = true { };
     my @null_list   = true { };
-    is( $null_scalar, 0, 'true(null) returns zero' );
-    is_deeply( \@null_list, [ 0 ], 'true(null) returns zero' );
+    is( $null_scalar, 0, 'true(null) returns undef' );
+    is_deeply( \@null_list, [ 0 ], 'true(null) returns undef' );
 
     # Normal cases
     my @list = ( 1 .. 10000 );
     is( 10000, true { defined } @list );
     is( 0, true { not defined } @list );
-    is( 1, true { $_ == 10000 } @list );
+    is( 1, true { $_ == 5000 } @list );
 }
 
 sub test_false {
-    # The null set should result in zero
-    my $null_scalar = true { };
-    my @null_list   = true { };
-    is( $null_scalar, 0, 'true(null) returns zero' );
-    is_deeply( \@null_list, [ 0 ], 'true(null) returns zero' );
+    # The null set should return zero
+    my $null_scalar = false { };
+    my @null_list   = false { };
+    is( $null_scalar, 0, 'false(null) returns undef' );
+    is_deeply( \@null_list, [ 0 ], 'false(null) returns undef' );
 
     # Normal cases
     my @list = ( 1 .. 10000 );

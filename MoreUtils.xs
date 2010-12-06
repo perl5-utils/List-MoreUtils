@@ -209,8 +209,8 @@ insert_after (int idx, SV *what, AV *av) {
 	SvREFCNT_dec(what);
 
 }
-   
-MODULE = List::MoreUtils		PACKAGE = List::MoreUtils		
+
+MODULE = List::MoreUtils		PACKAGE = List::MoreUtils
 
 void
 any (code,...)
@@ -227,7 +227,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_UNDEF;
+	XSRETURN_NO;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -260,7 +260,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_UNDEF;
+	XSRETURN_YES;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -294,7 +294,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_UNDEF;
+	XSRETURN_YES;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -327,7 +327,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_UNDEF;
+	XSRETURN_NO;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -572,7 +572,8 @@ insert_after_string (string, val, avref)
     }
     OUTPUT:
 	RETVAL
-	
+
+#if 0
 void
 apply (code, ...)
     SV *code;
@@ -605,6 +606,8 @@ CODE:
     done:
     XSRETURN(items-1);
 }
+
+#endif
 
 void
 after (code, ...)
@@ -751,6 +754,7 @@ CODE:
     XSRETURN(i-1);
 }
 
+#if 0
 void
 indexes (code, ...)
     SV *code;
@@ -789,6 +793,8 @@ CODE:
     
     XSRETURN(j);
 }
+
+#endif
 
 SV *
 lastval (code, ...)
@@ -1266,6 +1272,7 @@ minmax (...)
 	XSRETURN(2);
     }
 
+#if 0
 void
 part (code, ...)
     SV *code;
@@ -1325,6 +1332,8 @@ CODE:
     Safefree(tmp);
     XSRETURN(last);
 }
+
+#endif
 
 #if 0
 void
