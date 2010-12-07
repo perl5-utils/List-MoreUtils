@@ -1,6 +1,7 @@
 Revision history for Perl extension List-Any/List-MoreUtils
 
-0.27_05 Mon 6 Dec 2010
+0.28 Tue 7 Dec 2010
+	- Switching to a production release
 	- Restored the regression test for RT #38630 from 0.23.
 	  As apply() was disabled in 0.27_04 this test will only act
 	  to validate the future XS restoration of apply().
