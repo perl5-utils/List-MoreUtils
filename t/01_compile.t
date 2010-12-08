@@ -6,8 +6,7 @@ BEGIN {
 	$^W = 1;
 }
 
-use Test::More tests => 3;
-use Test::NoWarnings;
+use Test::More tests => 2;
 
 use_ok( 'List::MoreUtils' );
 use_ok( 't::lib::Test'    );

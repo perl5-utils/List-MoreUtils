@@ -1,5 +1,8 @@
 Revision history for Perl extension List-Any/List-MoreUtils
 
+0.29 Wed 8 Dec 2010
+	- Removed an erroneous Test::NoWarnings dependency
+
 0.28 Tue 7 Dec 2010
 	- Switching to a production release
 	- Restored the regression test for RT #38630 from 0.23.
