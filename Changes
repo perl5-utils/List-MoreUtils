@@ -1,5 +1,10 @@
 Revision history for Perl extension List-Any/List-MoreUtils
 
+0.30 Thu 16 Dec 2010
+	- Change the way we localise PERL_DL_NONLAZY to false to remove
+	  a warning that some people were seeing. The new approach is taken
+	  from the way that List::Util does it.
+
 0.29 Wed 8 Dec 2010
 	- Removed an erroneous Test::NoWarnings dependency
 

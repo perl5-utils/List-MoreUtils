@@ -7,7 +7,7 @@ use DynaLoader ();
 
 use vars qw{ $VERSION @ISA @EXPORT_OK %EXPORT_TAGS };
 BEGIN {
-    $VERSION   = '0.29';
+    $VERSION   = '0.30';
     @ISA       = qw{ Exporter DynaLoader };
     @EXPORT_OK = qw{
         any all none notall true false
@@ -28,9 +28,13 @@ BEGIN {
     # Load the XS at compile-time so that redefinition warnings will be
     # thrown correctly if the XS versions of part or indexes loaded
     eval {
-        local $ENV{PERL_DL_NONLAZY} = $ENV{PERL_DL_NONLAZY} ? 0 : $ENV{PERL_DL_NONLAZY};
+        # PERL_DL_NONLAZY must be false, or any errors in loading will just
+        # cause the perl code to be tested
+        local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
+
         bootstrap List::MoreUtils $VERSION;
         1;
+
     } unless $ENV{LIST_MOREUTILS_PP};
 }
 
