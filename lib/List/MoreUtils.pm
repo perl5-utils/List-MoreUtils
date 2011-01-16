@@ -408,22 +408,23 @@ Returns false otherwise, or if LIST is empty.
 =item all BLOCK LIST
 
 Returns a true value if all items in LIST meet the criterion given through
-BLOCK. Sets C<$_> for each item in LIST in turn:
+BLOCK, or if LIST is empty. Sets C<$_> for each item in LIST in turn:
 
     print "All items defined"
         if all { defined($_) } @list;
 
-Returns false otherwise, or if LIST is empty.
+Returns false otherwise.
 
 =item none BLOCK LIST
 
 Logically the negation of C<any>. Returns a true value if no item in LIST meets
-the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
+the criterion given through BLOCK, or if LIST is empty. Sets C<$_> for each item
+in LIST in turn:
 
     print "No value defined"
         if none { defined($_) } @list;
 
-Returns false otherwise, or if LIST is empty.
+Returns false otherwise.
 
 =item notall BLOCK LIST
 
