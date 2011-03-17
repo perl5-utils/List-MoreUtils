@@ -46,15 +46,6 @@ sub part (&@) {
     return @parts;
 }
 
-# Always use Perl indexes() until memory leaks are resolved.
-sub indexes (&@) {
-    my $test = shift;
-    grep {
-        local *_ = \$_[$_];
-        $test->()
-    } 0 .. $#_;
-}
-
 # Load the pure-Perl versions of the other functions if needed
 eval <<'END_PERL' unless defined &any;
 
@@ -199,6 +190,14 @@ sub before_incl (&@) {
         $lag = ! $test->();
         $x
     }, @_;
+}
+
+sub indexes (&@) {
+    my $test = shift;
+    grep {
+        local *_ = \$_[$_];
+        $test->()
+    } 0 .. $#_;
 }
 
 sub lastval (&@) {

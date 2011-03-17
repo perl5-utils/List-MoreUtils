@@ -754,7 +754,6 @@ CODE:
     XSRETURN(i-1);
 }
 
-#if 0
 void
 indexes (code, ...)
     SV *code;
@@ -779,22 +778,20 @@ CODE:
     for (i = 1, j = 0; i < items; i++) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
-	if (SvTRUE(*PL_stack_sp)) {
-	    args[j] = sv_2mortal(newSViv(i-1));
-	    /* need to artificially increase ref-count here
-	     * because POPBLOCK further below would otherwise
-	     * free the items in SP */
-	    SvREFCNT_inc(args[j]);
-	    j++;
-	}
+	if (SvTRUE(*PL_stack_sp))
+            /* POP_MULTICALL can free mortal temporaries, so we defer
+             * mortalising the returned values till after that's been
+             * done */
+	    args[j++] = newSViv(i-1);
     }
     
     POP_MULTICALL;
-    
+
+    for (i = 0; i < j; i++)
+        sv_2mortal(args[i]);
+
     XSRETURN(j);
 }
-
-#endif
 
 SV *
 lastval (code, ...)
