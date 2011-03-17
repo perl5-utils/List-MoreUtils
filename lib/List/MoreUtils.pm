@@ -38,13 +38,6 @@ BEGIN {
     } unless $ENV{LIST_MOREUTILS_PP};
 }
 
-# Always use Perl apply() until memory leaks are resolved.
-sub apply (&@) {
-    my $action = shift;
-    &$action foreach my @values = @_;
-    wantarray ? @values : $values[-1];
-}
-
 # Always use Perl part() until memory leaks are resolved.
 sub part (&@) {
     my ($code, @list) = @_;
@@ -166,6 +159,12 @@ sub insert_after_string ($$\@) {
         @{$list}[ $c + 1 .. $#$list ],
     ) and return 1 if $c != -1;
     return 0;
+}
+
+sub apply (&@) {
+    my $action = shift;
+    &$action foreach my @values = @_;
+    wantarray ? @values : $values[-1];
 }
 
 sub after (&@) {

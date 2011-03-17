@@ -573,7 +573,6 @@ insert_after_string (string, val, avref)
     OUTPUT:
 	RETVAL
 
-#if 0
 void
 apply (code, ...)
     SV *code;
@@ -603,11 +602,12 @@ CODE:
     }
     POP_MULTICALL;
 
+    for(i = 1 ; i < items ; ++i)
+        sv_2mortal(args[i-1]);
+
     done:
     XSRETURN(items-1);
 }
-
-#endif
 
 void
 after (code, ...)
