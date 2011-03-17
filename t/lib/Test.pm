@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 181;
+    plan tests => 182;
 
     test_any();
     test_all();
@@ -719,6 +719,11 @@ sub test_part {
         my @list = 1 .. 12;
         my $i    = 0;
         my @part = part { $i++ % 3 } @list;
+    });
+
+    leak_free_ok('part with stack-growing' => sub {
+        # This test is from Kevin Ryde; see RT#38699
+        my @part = part { grow_stack(); 1024 } 'one', 'two';
     });
 }
 
