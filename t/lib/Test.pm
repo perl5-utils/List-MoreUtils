@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 182;
+    plan tests => 183;
 
     test_any();
     test_all();
@@ -59,6 +59,10 @@ sub test_any {
     leak_free_ok(any => sub {
         my $ok = any { $_ == 5000 } @list;
         my $ok2 = any { $_ == 5000 } 1 .. 10000;
+    });
+    leak_free_ok('any with a coderef that dies' => sub {
+        # This test is from Kevin Ryde; see RT#48669
+        eval { my $ok = any { die } 1 };
     });
 }
 
