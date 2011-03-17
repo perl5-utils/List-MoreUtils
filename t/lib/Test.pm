@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 183;
+    plan tests => 184;
 
     test_any();
     test_all();
@@ -676,6 +676,18 @@ sub test_uniq {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;
         my @u = uniq @a;
     });
+
+    # This test (and the associated fix) are from Kevin Ryde; see RT#49796
+    leak_free_ok('uniq with exception in overloading stringify', sub {
+        eval {
+            my $obj = DieOnStringify->new;
+            my @u = uniq $obj, $obj;
+        };
+        eval {
+            my $obj = DieOnStringify->new;
+            my $u = uniq $obj, $obj;
+        };
+    });
 }
 
 sub test_part {
@@ -818,6 +830,13 @@ sub leak_free_ok {
             unless eval { require Test::LeakTrace; 1 };
         &Test::LeakTrace::no_leaks_ok($code, "No memory leaks in $name");
     }
+}
+
+{
+    package DieOnStringify;
+    use overload '""' => \&stringify;
+    sub new { bless {}, shift }
+    sub stringify { die 'DieOnStringify exception' }
 }
 
 1;

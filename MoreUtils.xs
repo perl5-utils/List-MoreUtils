@@ -1162,7 +1162,8 @@ uniq (...)
     {
 	register int i, count = 0;
 	HV *hv = newHV();
-	
+	sv_2mortal(newRV_noinc((SV*)hv));
+
 	/* don't build return list in scalar context */
 	if (GIMME == G_SCALAR) {
 	    for (i = 0; i < items; i++) {
@@ -1171,7 +1172,6 @@ uniq (...)
 		    hv_store_ent(hv, ST(i), &PL_sv_yes, 0);
 		}
 	    }
-	    SvREFCNT_dec(hv);
 	    ST(0) = sv_2mortal(newSViv(count));
 	    XSRETURN(1);
 	}
@@ -1184,7 +1184,6 @@ uniq (...)
 		hv_store_ent(hv, ST(i), &PL_sv_yes, 0);
 	    }
 	}
-	SvREFCNT_dec(hv);
 	XSRETURN(count);
     }
 
