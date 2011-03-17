@@ -450,21 +450,23 @@ sub test_each_array {
         ok( arrayeq( \@b, [ 2, 4, 6 ] ) );
     }
 
-    TODO: {
-        local $TODO = $ENV{LIST_MOREUTILS_PP} ? undef : 'Known leaks in each_array';
-        leak_free_ok(each_array => sub {
-            my @a = (1);
-            my $it = each_array @a;
-            while ( my ($a) = $it->() ) {
-            }
-        });
-        leak_free_ok(each_arrayref => sub {
-            my @a = (1);
-            my $it = each_arrayref \@a;
-            while ( my ($a) = $it->() ) {
-            }
-        });
-    }
+    # Note that the leak_free_ok tests for each_array and each_arrayref
+    # should not be run until either of them has been called at least once
+    # in the current perl.  That's because calling them the first time
+    # causes the runtime to allocate some memory used for the OO structures
+    # that their implementation uses internally.
+    leak_free_ok(each_array => sub {
+        my @a = (1);
+        my $it = each_array @a;
+        while ( my ($a) = $it->() ) {
+        }
+    });
+    leak_free_ok(each_arrayref => sub {
+        my @a = (1);
+        my $it = each_arrayref \@a;
+        while ( my ($a) = $it->() ) {
+        }
+    });
 }
 
 sub test_pairwise {

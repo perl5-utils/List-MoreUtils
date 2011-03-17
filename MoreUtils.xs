@@ -895,7 +895,6 @@ _array_iterator (method = "")
 	    AV *av = args->avs[i];
 	    if (args->curidx <= av_len(av)) {
 		ST(i) = sv_2mortal(newSVsv(*av_fetch(av, args->curidx, FALSE)));
-		SvREFCNT_inc(ST(i));
 		exhausted = 0;
 		continue;
 	    }
