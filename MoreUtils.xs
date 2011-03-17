@@ -1089,9 +1089,8 @@ _natatime_iterator ()
 	EXTEND(SP, nret);
 
 	for (i = 0; i < args->natatime; i++) {
-	    if (args->nsvs) {
+	    if (args->curidx < args->nsvs) {
 		ST(i) = sv_2mortal(newSVsv(args->svs[args->curidx++]));
-		args->nsvs--;
 	    }
 	    else {
 		XSRETURN(i);

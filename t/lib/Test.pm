@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 154;
+    plan tests => 155;
 
     test_any();
     test_all();
@@ -444,6 +444,14 @@ sub test_natatime {
         push @r, @vals;
     }
     is( arrayeq( \@r, \@a ), 1, "natatime2" );
+
+    leak_free_ok('natatime leaks no memory', sub {
+        my @y = 1;
+        my $it = natatime 2, @y;
+        while ( my @vals = $it->() ) {
+            # do nothing
+        }
+    });
 }
 
 sub test_zip {
@@ -652,6 +660,16 @@ sub arrayeq {
         }
     }
     return 1;
+}
+
+sub leak_free_ok {
+    my $desc = shift;
+    my $code = shift;
+    SKIP: {
+        skip 'Test::LeakTrace not installed', 1
+            unless eval { require Test::LeakTrace; 1 };
+        &Test::LeakTrace::no_leaks_ok($code, $desc);
+    }
 }
 
 1;
