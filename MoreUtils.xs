@@ -1266,7 +1266,6 @@ minmax (...)
 	XSRETURN(2);
     }
 
-#if 0
 void
 part (code, ...)
     SV *code;
@@ -1316,18 +1315,15 @@ CODE:
 
     EXTEND(SP, last);
     for (i = 0; i < last; ++i) {
-	if (!tmp[i]) {
-	    ST(i) = &PL_sv_undef;
-	    continue;
-	}
-	ST(i) = newRV_noinc((SV*)tmp[i]);
+        if (tmp[i])
+            ST(i) = sv_2mortal(newRV_noinc((SV*)tmp[i]));
+        else
+            ST(i) = &PL_sv_undef;
     }
     
     Safefree(tmp);
     XSRETURN(last);
 }
-
-#endif
 
 #if 0
 void

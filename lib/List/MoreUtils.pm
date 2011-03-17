@@ -38,15 +38,6 @@ BEGIN {
     } unless $ENV{LIST_MOREUTILS_PP};
 }
 
-# Always use Perl part() until memory leaks are resolved.
-sub part (&@) {
-    my ($code, @list) = @_;
-    my @parts;
-    push @{ $parts[ $code->($_) ] }, $_  foreach @list;
-    return @parts;
-}
-
-# Load the pure-Perl versions of the other functions if needed
 eval <<'END_PERL' unless defined &any;
 
 # Use pure scalar boolean return values for compatibility with XS
@@ -339,6 +330,13 @@ sub minmax (@) {
     }
 
     return ($min, $max);
+}
+
+sub part (&@) {
+    my ($code, @list) = @_;
+    my @parts;
+    push @{ $parts[ $code->($_) ] }, $_  foreach @list;
+    return @parts;
 }
 
 sub _XScompiled {
