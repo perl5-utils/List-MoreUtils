@@ -1054,7 +1054,6 @@ pairwise (code, ...)
 	    for (j = nret-1; j >= 0; j--) {
 		/* POPs would return elements in reverse order */
 		buf[d] = sp[-j];
-		SvREFCNT_inc(buf[d]);
 		d++;
 	    }
 	    sp -= nret;

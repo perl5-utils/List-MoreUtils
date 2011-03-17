@@ -531,14 +531,11 @@ sub test_pairwise {
     eval { pairwise { die "I died\n" } @a, @b };
     is( $@, "I died\n" );
 
-    TODO: {
-        local $TODO = $ENV{LIST_MOREUTILS_PP} ? undef : 'Known memory leaks in pairwise';
-        leak_free_ok(pairwise => sub {
-            @a = (1);
-            @b = (2);
-            @c = pairwise { $a + $b } @a, @b;
-        });
-    }
+    leak_free_ok(pairwise => sub {
+        @a = (1);
+        @b = (2);
+        @c = pairwise { $a + $b } @a, @b;
+    });
 }
 
 sub test_natatime {
