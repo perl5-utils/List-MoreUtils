@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 155;
+    plan tests => 181;
 
     test_any();
     test_all();
@@ -55,6 +55,11 @@ sub test_any {
     is_false( any { not defined } @list );
     is_true( any { not defined } undef );
     is_false( any { } );
+
+    leak_free_ok(any => sub {
+        my $ok = any { $_ == 5000 } @list;
+        my $ok2 = any { $_ == 5000 } 1 .. 10000;
+    });
 }
 
 sub test_all {
@@ -64,6 +69,11 @@ sub test_all {
     is_true( all { $_ > 0 } @list );
     is_false( all { $_ < 5000 } @list );
     is_true( all { } );
+
+    leak_free_ok(all => sub {
+        my $ok  = all { $_ == 5000 } @list;
+        my $ok2 = all { $_ == 5000 } 1 .. 10000;
+    });
 }
 
 sub test_none {
@@ -73,6 +83,11 @@ sub test_none {
     is_true( none { $_ > 10000 } @list );
     is_false( none { defined } @list );
     is_true( none { } );
+
+    leak_free_ok(none => sub {
+        my $ok  = none { $_ == 5000 } @list;
+        my $ok2 = none { $_ == 5000 } 1 .. 10000;
+    });
 }
 
 sub test_notall {
@@ -82,6 +97,11 @@ sub test_notall {
     is_true( notall { $_ < 10000 } @list );
     is_false( notall { $_ <= 10000 } @list );
     is_false( notall { } );
+
+    leak_free_ok(notall => sub {
+        my $ok  = notall { $_ == 5000 } @list;
+        my $ok2 = notall { $_ == 5000 } 1 .. 10000;
+    });
 }
 
 sub test_true {
@@ -96,6 +116,11 @@ sub test_true {
     is( 10000, true { defined } @list );
     is( 0, true { not defined } @list );
     is( 1, true { $_ == 5000 } @list );
+
+    leak_free_ok(true => sub {
+        my $n  = true { $_ == 5000 } @list;
+        my $n2 = true { $_ == 5000 } 1 .. 10000;
+    });
 }
 
 sub test_false {
@@ -110,6 +135,11 @@ sub test_false {
     is( 10000, false { not defined } @list );
     is( 0, false { defined } @list );
     is( 1, false { $_ > 1 } @list );
+
+    leak_free_ok(false => sub {
+        my $n  = false { $_ == 5000 } @list;
+        my $n2 = false { $_ == 5000 } 1 .. 10000;
+    });
 }
 
 sub test_firstidx {
@@ -124,6 +154,11 @@ sub test_firstidx {
     is( -1, first_index { not defined } @list );
     is( 0, first_index { defined } @list );
     is( -1, first_index { } );
+
+    leak_free_ok(firstidx => sub {
+        my $i = firstidx { $_ >= 5000 } @list;
+        my $i2 = firstidx { $_ >= 5000 } 1 .. 10000;
+    });
 }
 
 sub test_lastidx {
@@ -138,6 +173,11 @@ sub test_lastidx {
     is( -1, last_index { not defined } @list );
     is( 9999, last_index { defined } @list );
     is( -1, last_index { } );
+
+    leak_free_ok(lastidx => sub {
+        my $i = lastidx { $_ >= 5000 } @list;
+        my $i2 = lastidx { $_ >= 5000 } 1 .. 10000;
+    });
 }
 
 sub test_insert_after {
@@ -152,6 +192,11 @@ sub test_insert_after {
     insert_after { not defined($_) } "longer" => @list;
     $list[2] = "a";
     is( join(' ', @list), "This is a longer list" );
+
+    leak_free_ok(insert_after => sub {
+        @list = qw{This is a list};
+        insert_after { $_ eq 'a' } "longer" => @list;
+    });
 }
 
 sub test_insert_after_string {
@@ -165,6 +210,11 @@ sub test_insert_after_string {
     @list = ( "This\0", "is\0", "a\0", "list\0" );
     insert_after_string "a\0", "longer\0", @list;
     is( join(' ', @list), "This\0 is\0 a\0 longer\0 list\0" );
+
+    leak_free_ok(insert_after_string => sub {
+        @list = qw{This is a list};
+        insert_after_string "a", "longer", @list;
+    });
 }
 
 sub test_apply {
@@ -197,6 +247,14 @@ sub test_apply {
         ok( arrayeq( \@list, [ 1 .. 4 ] ) );
         ok( arrayeq( \@list1, [ ( 5 ) x 4 ] ) );
     }
+
+    leak_free_ok(apply => sub {
+        @list = ( 1 .. 4 );
+        @list1 = apply {
+            grow_stack();
+            $_ = 5;
+        } @list;
+    });
 }
 
 sub test_indexes {
@@ -204,6 +262,11 @@ sub test_indexes {
     ok( arrayeq( \@x, [ 2..5 ] ) );
     @x = indexes { $_ > 5 } ( 1 .. 4 );
     is_deeply( \@x, [ ], 'Got the null list' );
+
+    leak_free_ok(indexes => sub {
+        @x = indexes { $_ > 5 } ( 4 .. 9 );
+        @x = indexes { $_ > 5 } ( 1 .. 4 );
+    });
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -215,6 +278,10 @@ sub test_before {
     is_deeply( \@x, [ ], 'Got the null list' );
     @x = before { /f/ } @dummy = qw{ bar baz foo };
     ok( arrayeq( \@x, [ qw{ bar baz } ] ) );
+
+    leak_free_ok(before => sub {
+        @x = before { /f/ } @dummy = qw{ bar baz foo };
+    });
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -226,6 +293,10 @@ sub test_before_incl {
     ok( arrayeq( \@x, [ qw{ bar baz } ] ) );
     @x = before_incl { /f/ } @dummy = qw{ bar baz foo };
     ok( arrayeq( \@x, [ qw{ bar baz foo } ] ) );
+
+    leak_free_ok(before_incl => sub {
+        @x = before_incl { /z/ } @dummy = qw{ bar baz foo };
+    });
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -237,6 +308,10 @@ sub test_after {
     is_deeply( \@x, [ ], 'Got the null list' );
     @x = after { /b/ } @dummy = qw{ bar baz foo };
     ok( arrayeq( \@x, [ qw{ baz foo } ] ) );
+
+    leak_free_ok(after => sub {
+        @x = after { /z/ } @dummy = qw{ bar baz foo };
+    });
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -248,6 +323,10 @@ sub test_after_incl {
     is_deeply( \@x, [ ], 'Got the null list' );
     @x = after_incl { /b/ } @dummy = qw{ bar baz foo };
     ok( arrayeq( \@x, [ qw{ bar baz foo } ] ) );
+
+    leak_free_ok(after_incl => sub {
+        @x = after_incl { /z/ } @dummy = qw{ bar baz foo };
+    });
 }
 
 sub test_firstval {
@@ -261,6 +340,10 @@ sub test_firstval {
     is( $x, 6 );
     $x = first_value { $_ > 5 }  1..4;
     is( $x, undef );
+
+    leak_free_ok(firstval => sub {
+        $x = firstval { $_ > 5 } 4 .. 9;
+    });
 }
 
 sub test_lastval {
@@ -274,6 +357,10 @@ sub test_lastval {
     is( $x, 9 );
     $x = last_value { $_ > 5 }  1..4;
     is( $x, undef );
+
+    leak_free_ok(lastval => sub {
+        $x = lastval { $_ > 5 } 4 .. 9;
+    });
 }
 
 sub test_each_array {
@@ -362,6 +449,22 @@ sub test_each_array {
         ok( arrayeq( \@a, [ 1, 3, 5 ] ) );
         ok( arrayeq( \@b, [ 2, 4, 6 ] ) );
     }
+
+    TODO: {
+        local $TODO = $ENV{LIST_MOREUTILS_PP} ? undef : 'Known leaks in each_array';
+        leak_free_ok(each_array => sub {
+            my @a = (1);
+            my $it = each_array @a;
+            while ( my ($a) = $it->() ) {
+            }
+        });
+        leak_free_ok(each_arrayref => sub {
+            my @a = (1);
+            my $it = each_arrayref \@a;
+            while ( my ($a) = $it->() ) {
+            }
+        });
+    }
 }
 
 sub test_pairwise {
@@ -425,6 +528,15 @@ sub test_pairwise {
     # Test that a die inside the code-reference will not be trapped
     eval { pairwise { die "I died\n" } @a, @b };
     is( $@, "I died\n" );
+
+    TODO: {
+        local $TODO = $ENV{LIST_MOREUTILS_PP} ? undef : 'Known memory leaks in pairwise';
+        leak_free_ok(pairwise => sub {
+            @a = (1);
+            @b = (2);
+            @c = pairwise { $a + $b } @a, @b;
+        });
+    }
 }
 
 sub test_natatime {
@@ -445,7 +557,7 @@ sub test_natatime {
     }
     is( arrayeq( \@r, \@a ), 1, "natatime2" );
 
-    leak_free_ok('natatime leaks no memory', sub {
+    leak_free_ok(natatime => sub {
         my @y = 1;
         my $it = natatime 2, @y;
         while ( my @vals = $it->() ) {
@@ -483,6 +595,12 @@ sub test_zip {
             ] )
         );
     }
+
+    leak_free_ok(zip => sub {
+        my @x = qw/a b c d/;
+        my @y = qw/1 2 3 4/;
+        my @z = zip @x, @y;
+    });
 }
 
 sub test_mesh {
@@ -514,6 +632,12 @@ sub test_mesh {
             ] )
         );
     }
+
+    leak_free_ok(mesh => sub {
+        my @x = qw/a b c d/;
+        my @y = qw/1 2 3 4/;
+        my @z = mesh @x, @y;
+    });
 }
 
 sub test_uniq {
@@ -544,6 +668,11 @@ sub test_uniq {
         # is_deeply( [ uniq @foo ], \@foo, 'undef is supported correctly' );
         # is_deeply( \@warnings, [ ], 'No warnings during uniq check' );
     # }
+
+    leak_free_ok(uniq => sub {
+        my @a = map { ( 1 .. 1000 ) } 0 .. 1;
+        my @u = uniq @a;
+    });
 }
 
 sub test_part {
@@ -586,6 +715,12 @@ sub test_part {
     foreach ( 1 .. 10 ) {
         ok( arrayeq($list[$_], [ $_ ]) );
     }
+
+    leak_free_ok(part => sub {
+        my @list = 1 .. 12;
+        my $i    = 0;
+        my @part = part { $i++ % 3 } @list;
+    });
 }
 
 sub test_minmax {
@@ -620,6 +755,11 @@ sub test_minmax {
     is( $max, -1 );
     $min = 2;
     is( $max, -1 );
+
+    leak_free_ok(minmax => sub {
+        @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );
+        ($min, $max) = minmax @list;
+    });
 }
 
 
@@ -663,12 +803,12 @@ sub arrayeq {
 }
 
 sub leak_free_ok {
-    my $desc = shift;
+    my $name = shift;
     my $code = shift;
     SKIP: {
         skip 'Test::LeakTrace not installed', 1
             unless eval { require Test::LeakTrace; 1 };
-        &Test::LeakTrace::no_leaks_ok($code, $desc);
+        &Test::LeakTrace::no_leaks_ok($code, "No memory leaks in $name");
     }
 }
 
