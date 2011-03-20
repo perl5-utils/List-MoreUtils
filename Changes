@@ -1,4 +1,11 @@
-Revision history for Perl extension List-Any/List-MoreUtils
+Revision history for Perl extension List-MoreUtils
+
+0.31_01 Mon 21 Mar 2011
+	- Updating copyright year (ADAMK)
+	- Teak documentation of all() and none() (WYANT)
+	- Memory leak fixed for apply() and XS version restored (ARC)
+	- Memory leak fixed for indexes() and XS version restored (ARC)
+	- Memory leak fixed for part() and XS version restored (ARC)
 
 0.30 Thu 16 Dec 2010
 	- Change the way we localise PERL_DL_NONLAZY to false to remove

@@ -7,7 +7,8 @@ use DynaLoader ();
 
 use vars qw{ $VERSION @ISA @EXPORT_OK %EXPORT_TAGS };
 BEGIN {
-    $VERSION   = '0.30';
+    $VERSION   = '0.31_01';
+    $VERSION   = eval $VERSION;
     @ISA       = qw{ Exporter DynaLoader };
     @EXPORT_OK = qw{
         any all none notall true false
@@ -831,9 +832,13 @@ L<List::Util>
 
 =head1 AUTHOR
 
+Adam Kennedy E<lt>adamk@cpan.orgE<gt>
+
 Tassilo von Parseval E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
+
+Some parts copyright 2011 Aaron Crane.
 
 Copyright 2004 - 2010 by Tassilo von Parseval
 
