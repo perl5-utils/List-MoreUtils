@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.31_02 Mon 21 Mar 2011
+	- More accurate detection of XS support (ADAMK)
+
 0.31_01 Mon 21 Mar 2011
 	- Updating copyright year (ADAMK)
 	- Teak documentation of all() and none() (WYANT)
