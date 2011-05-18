@@ -606,7 +606,7 @@ the index of the last fetched set of values, as a scalar.
 Like each_array, but the arguments are references to arrays, not the
 plain arrays.
 
-=item natatime BLOCK LIST
+=item natatime EXPR, LIST
 
 Creates an array iterator, for looping over an array in chunks of
 C<$n> items at a time.  (n at a time, get it?).  An example is
