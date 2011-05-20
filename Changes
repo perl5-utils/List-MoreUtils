@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.32 Fri May 20 2011    
+	- Production release, no other changes
+
 0.31_02 Mon 21 Mar 2011
 	- More accurate detection of XS support (ADAMK)
 

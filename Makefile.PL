@@ -27,7 +27,7 @@ WriteMakefile(
 		'ExtUtils::CBuilder'  => '0.27',
 	},
 	BUILD_REQUIRES => {
-		'Test::More'          => '0.42',
+		'Test::More' => '0.42',
 	},
 	PREREQ_PM => {
 		'Test::More' => '0.82',
