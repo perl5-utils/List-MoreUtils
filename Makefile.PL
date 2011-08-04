@@ -90,14 +90,14 @@ sub can_xs {
 	}
 
 	# Do a simple compile that consumes the headers we need
-	my $object = undef;
-	my @libs   = ();
+	my @libs    = ();
+	my $object  = undef;
+	my $builder = ExtUtils::CBuilder->new( quiet => 1 );
+	unless ( $builder->have_compiler ) {
+		# Lack of a compiler at all
+		return 0;
+	}
 	eval {
-		my $builder = ExtUtils::CBuilder->new( quiet => 1 );
-		unless ( $builder->have_compiler ) {
-			# Simple lack of a compiler at all
-			return 0;
-		}
 		$object = $builder->compile(
 			source => 'sanexs.c',
 		);
