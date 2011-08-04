@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.33 Thu 4 Aug 2011
+	- Updated can_xs to fix a bug in it
+
 0.32 Fri May 20 2011    
 	- Production release, no other changes
 
