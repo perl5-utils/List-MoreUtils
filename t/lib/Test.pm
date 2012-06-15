@@ -7,7 +7,7 @@ use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 184;
+    plan tests => 186;
 
     test_any();
     test_all();
@@ -35,6 +35,8 @@ sub run {
     test_uniq();
     test_part();
     test_minmax();
+    test_sort_by();
+    test_nsort_by();
 }
 
 
@@ -780,6 +782,16 @@ sub test_minmax {
         @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );
         ($min, $max) = minmax @list;
     });
+}
+
+sub test_sort_by {
+    my @list = map { [$_] } 1 .. 100;
+    is_deeply([sort_by { $_->[0] } @list], [map { [$_] } sort { $a cmp $b } 1..100]);
+}
+
+sub test_nsort_by {
+    my @list = map { [$_] } 1 .. 100;
+    is_deeply([nsort_by { $_->[0] } @list], [map { [$_] } sort { $a <=> $b } 1..100]);
 }
 
 

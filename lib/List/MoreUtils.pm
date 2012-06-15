@@ -21,6 +21,7 @@ BEGIN {
         pairwise natatime
         mesh zip uniq distinct
         minmax part
+        sort_by nsort_by
     };
     %EXPORT_TAGS = (
         all => \@EXPORT_OK,
@@ -354,6 +355,22 @@ die $@ if $@;
 *last_value  = \&lastval;
 *zip         = \&mesh;
 *distinct    = \&uniq;
+
+sub sort_by(&@) {
+    my ($code, @list) = @_;
+    return map { $_->[0] }
+          sort { $a->[1] cmp $b->[1] }
+           map { [$_, scalar($code->())] }
+               @list;
+}
+
+sub nsort_by(&@) {
+    my ($code, @list) = @_;
+    return map { $_->[0] }
+          sort { $a->[1] <=> $b->[1] }
+           map { [$_, scalar($code->())] }
+               @list;
+}
 
 1;
 
@@ -701,6 +718,28 @@ Negative values are only ok when they refer to a partition previously created:
     my @idx  = ( 0, 1, -1 );
     my $i    = 0;
     my @part = part { $idx[$++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
+
+=item sort_by BLOCK LIST
+
+Returns the list of values sorted according to the string values returned by the KEYFUNC block or function. A typical use of this may be to sort objects according to the string value of some accessor, such as
+
+    sort_by { $_->name } @people
+
+The key function is called in scalar context, being passed each value in turn as both $_ and the only argument in the parameters, @_. The values are then sorted according to string comparisons on the values returned.
+This is equivalent to
+
+    sort { $a->name cmp $b->name } @people
+
+except that it guarantees the name accessor will be executed only once per value.
+One interesting use-case is to sort strings which may have numbers embedded in them "naturally", rather than lexically.
+
+    sort_by { s/(\d+)/sprintf "%09d", $1/eg; $_ } @strings
+
+This sorts strings by generating sort keys which zero-pad the embedded numbers to some level (9 digits in this case), helping to ensure the lexical sort puts them in the correct order.
+
+=item nsort_by BLOCK LIST
+
+Similar to sort_by but compares its key values numerically.
 
 =back
 
