@@ -4,6 +4,8 @@ Revision history for Perl extension List-MoreUtils
     - Reformat Changes as per CPAN::Changes::Spec
     - taking FIRSTCOME power and move repository to GitHub
     - merge Tassilo's 0.25_nn dev releases back
+        * mark "any" and "all" as "to be discussed"
+	  ==> API changes made by Alias/ADAMK 
     - bump version to clarify new age (contributors welcome!)
 
 0.33	2011-08-04
@@ -75,6 +77,43 @@ Revision history for Perl extension List-MoreUtils
 0.23_01	2010-09-25
     - First attempt at repackaging the List::MoreUtils code in
       Makefile.PL and release toolchain similar to Params::Util
+
+0.25_02	2009-08-01
+    - MS VC++ 7 doesn't like inline nor 'long long'
+      (patch provided by Taro Nishino (taro DOT nishino AT gmail.com)
+    - Newx isbn't around in older perls so use New(0,...) instead
+
+0.25_01	2009-07-30
+    - it seems the only way of handling the stack that works on all 
+      flavors of the multicall API is by making a shallow copy of it
+      and use that between the PUSH/POP_MULTICALL bracket
+    - fix awkward ok() override in List-MoreUtils.t so that it reports
+      line numbers in test failures properly
+
+0.24	2009-07-19
+    - List::MoreUtils was not handling the stack properly when the stack was grown
+      from inside code-references
+    - a couple of tests for each_arrayref were calling each_array 
+
+0.23	2009-04-19
+    - BACKWARDS INCOMPATIBLE CHANGE:
+      fixed: Returning undef when none is passed an empty array is counterintuitive
+      (http://rt.cpan.org/Ticket/Display.html?id=40905)
+    - fixed: minmax error: unpredictable results with lists of 1 element 
+      (http://rt.cpan.org/Ticket/Display.html?id=39847)
+    - fixed: bug: uniq doesn't like undef values.
+	     uniq warns on undef values
+      (http://rt.cpan.org/Ticket/Display.html?id=37533)
+      (http://rt.cpan.org/Ticket/Display.html?id=43214)
+    - fixed: bug in pairwise when $a and $b are lexically defined using my
+      (http://rt.cpan.org/Ticket/Display.html?id=44518)
+    - fixed: Big memory leak with XS part()
+      (http://rt.cpan.org/Ticket/Display.html?id=41097)
+    - fixed: memory leak in indexes() [XS]
+      (http://rt.cpan.org/Public/Bug/Display.html?id=41494)
+    - reduced memory-requirements for the part() tests as that was responsible
+      for a lot of unnecessary test-failures
+    - new function bsearch() which performs a binary search
 
 0.22	2006-07-02
     - SvPV_nolen doesn't exist on pre 5.6 perls

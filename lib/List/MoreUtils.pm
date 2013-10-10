@@ -1,6 +1,6 @@
 package List::MoreUtils;
 
-use 5.00503;
+use 5.008003;
 use strict;
 use Exporter   ();
 use DynaLoader ();
@@ -22,6 +22,7 @@ BEGIN {
         mesh zip uniq distinct
         minmax part
         sort_by nsort_by
+        bsearch
     };
     %EXPORT_TAGS = (
         all => \@EXPORT_OK,
@@ -341,6 +342,34 @@ sub part (&@) {
     return @parts;
 }
 
+sub bsearch(&@) {
+    my $code = shift;
+
+    my $rc;
+    my $i = 0;
+    my $j = @_;
+    do {
+        my $k = int(($i + $j) / 2);
+
+        $k >= @_ and return;
+
+        local *_ = \$_[$k];
+        $rc = $code->();
+
+        $rc == 0 and
+            return wantarray ? $_ : 1;
+
+        if ($rc < 0) {
+            $i = $k + 1;
+        }
+	else {
+            $j = $k - 1;
+        }
+    } until $i > $j;
+
+    return;
+}
+
 sub _XScompiled {
     return 0;
 }
@@ -419,6 +448,8 @@ BLOCK. Sets C<$_> for each item in LIST in turn:
 
 Returns false otherwise, or if LIST is empty.
 
+B<The behaviour without LIST needs to be discussed!>
+
 =item all BLOCK LIST
 
 Returns a true value if all items in LIST meet the criterion given through
@@ -428,6 +459,8 @@ BLOCK, or if LIST is empty. Sets C<$_> for each item in LIST in turn:
         if all { defined($_) } @list;
 
 Returns false otherwise.
+
+B<The behaviour without LIST needs to be discussed!>
 
 =item none BLOCK LIST
 
@@ -450,6 +483,8 @@ turn:
         if notall { defined($_) } @list;
 
 Returns false otherwise, or if LIST is empty.
+
+B<The behaviour without LIST needs to be discussed!>
 
 =item true BLOCK LIST
 
@@ -719,23 +754,39 @@ Negative values are only ok when they refer to a partition previously created:
     my $i    = 0;
     my @part = part { $idx[$++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
 
+=item bsearch BLOCK LIST
+
+Performs a binary search on LIST which must be a sorted list of values. BLOCK
+must return a negative value if the current element (stored in C<$_>) is smaller,
+a positive value if it is bigger and zero if it matches.
+
+Returns a boolean value in scalar context. In list context, it returns the element
+if it was found, otherwise the empty list.
+
 =item sort_by BLOCK LIST
 
-Returns the list of values sorted according to the string values returned by the KEYFUNC block or function. A typical use of this may be to sort objects according to the string value of some accessor, such as
+Returns the list of values sorted according to the string values returned by the
+KEYFUNC block or function. A typical use of this may be to sort objects according
+to the string value of some accessor, such as
 
     sort_by { $_->name } @people
 
-The key function is called in scalar context, being passed each value in turn as both $_ and the only argument in the parameters, @_. The values are then sorted according to string comparisons on the values returned.
+The key function is called in scalar context, being passed each value in turn as
+both $_ and the only argument in the parameters, @_. The values are then sorted
+according to string comparisons on the values returned.
 This is equivalent to
 
     sort { $a->name cmp $b->name } @people
 
 except that it guarantees the name accessor will be executed only once per value.
-One interesting use-case is to sort strings which may have numbers embedded in them "naturally", rather than lexically.
+One interesting use-case is to sort strings which may have numbers embedded in them
+"naturally", rather than lexically.
 
     sort_by { s/(\d+)/sprintf "%09d", $1/eg; $_ } @strings
 
-This sorts strings by generating sort keys which zero-pad the embedded numbers to some level (9 digits in this case), helping to ensure the lexical sort puts them in the correct order.
+This sorts strings by generating sort keys which zero-pad the embedded numbers to
+some level (9 digits in this case), helping to ensure the lexical sort puts them
+in the correct order.
 
 =item nsort_by BLOCK LIST
 
@@ -871,6 +922,8 @@ L<List::Util>
 
 =head1 AUTHOR
 
+Jens Rehsack E<lt>rehsack AT cpan.orgE<gt>
+
 Adam Kennedy E<lt>adamk@cpan.orgE<gt>
 
 Tassilo von Parseval E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
@@ -880,6 +933,7 @@ Tassilo von Parseval E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
 Some parts copyright 2011 Aaron Crane.
 
 Copyright 2004 - 2010 by Tassilo von Parseval
+Copyright 2013 by Jens Rehsack
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
