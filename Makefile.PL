@@ -32,6 +32,7 @@ WriteMakefile(
 	PREREQ_PM => {
 		'Test::More' => '0.82',
 	},
+	test  => { TESTS => 't/*.t xt/*.t' },
 
 	# Special stuff
 	CONFIGURE => sub {

@@ -1,179 +1,185 @@
 Revision history for Perl extension List-MoreUtils
 
-0.33 Thu 4 Aug 2011
-	- Updated can_xs to fix a bug in it
+0.400	2013-10-nn
+    - Reformat Changes as per CPAN::Changes::Spec
+    - taking FIRSTCOME power and move repository to GitHub
+    - merge Tassilo's 0.25_nn dev releases back
+    - bump version to clarify new age (contributors welcome!)
 
-0.32 Fri May 20 2011    
-	- Production release, no other changes
+0.33	2011-08-04
+    - Updated can_xs to fix a bug in it
 
-0.31_02 Mon 21 Mar 2011
-	- More accurate detection of XS support (ADAMK)
+0.32	2011-05-20
+    - Production release, no other changes
 
-0.31_01 Mon 21 Mar 2011
-	- Updating copyright year (ADAMK)
-	- Teak documentation of all() and none() (WYANT)
-	- Memory leak fixed for apply() and XS version restored (ARC)
-	- Memory leak fixed for indexes() and XS version restored (ARC)
-	- Memory leak fixed for part() and XS version restored (ARC)
+0.31_02	2011-03-21
+    - More accurate detection of XS support (ADAMK)
 
-0.30 Thu 16 Dec 2010
-	- Change the way we localise PERL_DL_NONLAZY to false to remove
-	  a warning that some people were seeing. The new approach is taken
-	  from the way that List::Util does it.
+0.31_01	2011-03-21
+    - Updating copyright year (ADAMK)
+    - Teak documentation of all() and none() (WYANT)
+    - Memory leak fixed for apply() and XS version restored (ARC)
+    - Memory leak fixed for indexes() and XS version restored (ARC)
+    - Memory leak fixed for part() and XS version restored (ARC)
 
-0.29 Wed 8 Dec 2010
-	- Removed an erroneous Test::NoWarnings dependency
+0.30	2010-12-16
+    - Change the way we localise PERL_DL_NONLAZY to false to remove
+      a warning that some people were seeing. The new approach is taken
+      from the way that List::Util does it.
 
-0.28 Tue 7 Dec 2010
-	- Switching to a production release
-	- Restored the regression test for RT #38630 from 0.23.
-	  As apply() was disabled in 0.27_04 this test will only act
-	  to validate the future XS restoration of apply().
-	- Adding uniq warning tests, disabled initially
+0.29	2010-12-08
+    - Removed an erroneous Test::NoWarnings dependency
 
-0.27_04 Mon 6 Dec 2010
-	- The behaviour of any/all/none/notall has changed when
-	  passed a null list to treat a null list as a legitimate list.
-	  Instead of returning C<undef> the functions now return the
-	  following: any {} == false, all {} == true, none {} == true,
-	  notall {} == false.
-	  Resolves #40905: Returning undef when none is passed an empty
-	- Disabled the leaking XS versions of part(), apply() and indexes()
+0.28	2010-12-07
+    - Switching to a production release
+    - Restored the regression test for RT #38630 from 0.23.
+      As apply() was disabled in 0.27_04 this test will only act
+      to validate the future XS restoration of apply().
+    - Adding uniq warning tests, disabled initially
 
-0.27_03 Mon 6 Dec 2010
-	- General house cleaning
+0.27_04	2010-12-06
+    - The behaviour of any/all/none/notall has changed when
+      passed a null list to treat a null list as a legitimate list.
+      Instead of returning C<undef> the functions now return the
+      following: any {} == false, all {} == true, none {} == true,
+      notall {} == false.
+      Resolves #40905: Returning undef when none is passed an empty
+    - Disabled the leaking XS versions of part(), apply() and indexes()
 
-0.27_02 Wed 1 Dec 2010
-	- Reduced test suite peak memory consumption by 5-10 meg
-	- Added the 'distinct' alias for the uniq function, for people that
-	  like their chained map/grep/sort pipelines with a SQL'ish flavour.
-	- Expanded test suite for the any() group of functions.
-	- The any() group of functions now strictly always return scalar
-	  boolean true, false and undef to match the XS version.
+0.27_03	2010-12-06
+    - General house cleaning
 
-0.27_01 Wed 1 Dec 2010
-	- Refactored the split test scripts into a common test module
-	  to be shared between both the Perl and XS versions.
-	- Reapply fix for http://rt.cpan.org/Ticket/Display.html?id=39847
-	  "minmax error: unpredictable results with lists of 1 element"
+0.27_02	2010-12-01
+    - Reduced test suite peak memory consumption by 5-10 meg
+    - Added the 'distinct' alias for the uniq function, for people that
+      like their chained map/grep/sort pipelines with a SQL'ish flavour.
+    - Expanded test suite for the any() group of functions.
+    - The any() group of functions now strictly always return scalar
+      boolean true, false and undef to match the XS version.
 
-0.26 Tue 23 Nov 2010
-	- No changes
-	- Some parts of the CPAN cloud were confusing my 0.24
-	  release with the older deleted 0.24. Bumping version
-	  past Tassilo's to clarify things.
+0.27_01 2012-12-01
+    - Refactored the split test scripts into a common test module
+      to be shared between both the Perl and XS versions.
+    - Reapply fix for http://rt.cpan.org/Ticket/Display.html?id=39847
+      "minmax error: unpredictable results with lists of 1 element"
 
-0.24 Mon 22 Nov 2010
-	- No changes, switching to a production version
+0.26	2010-11-23
+    - No changes
+    - Some parts of the CPAN cloud were confusing my 0.24
+      release with the older deleted 0.24. Bumping version
+      past Tassilo's to clarify things.
 
-0.23_01 Sat 25 Sep 2010
-	- First attempt at repackaging the List::MoreUtils code in
-	  Makefile.PL and release toolchain similar to Params::Util
+0.24	2010-11-22
+    - No changes, switching to a production version
 
-0.22  Sun Jul  2 11:25:39 EDT 2006
-	- SvPV_nolen doesn't exist on pre 5.6 perls
+0.23_01	2010-09-25
+    - First attempt at repackaging the List::MoreUtils code in
+      Makefile.PL and release toolchain similar to Params::Util
 
-0.21  Sun Jun 18 07:59:06 EDT 2006
-	- propagate dies from inside the code-reference of pairwise to 
-	  caller
+0.22	2006-07-02
+    - SvPV_nolen doesn't exist on pre 5.6 perls
 
-0.20  Tue Apr 25 15:43:57 EDT 2006
-	- part() would destroy the list elements when changing
-	  an array in place (@list = part { ... } @list)
+0.21	2006-06-18
+    - propagate dies from inside the code-reference of pairwise to 
+      caller
 
-0.19  Mon Mar 13 19:07:37 CET 2006
-	- working down myself the queue of suggestions:
-	  part() added
-	  (Ricardo SIGNES <rjbs AT cpan DOT org>)
+0.20	2006-04-25
+    - part() would destroy the list elements when changing
+      an array in place (@list = part { ... } @list)
 
-0.18  Sat Feb 25 08:55:48 CET 2006
-	- each_arrayref (XS) couldn't deal with refs to list literals
-	  (brought up by David Filmer <usenet AT DavidFilmer DOT com>
-	   in comp.lang.perl.misc)
+0.19	2006-03-13
+    - working down myself the queue of suggestions:
+      part() added
+      (Ricardo SIGNES <rjbs AT cpan DOT org>)
 
-0.17  Wed Dec  7 10:45:43 CET 2005
-	- each_arrayref had no XS implementation and wasn't
-	  mentioned in the PODs
-	  (patch by Anno Siegel <siegel AT zrz DOT tu-berlin DOT de>)
+0.18	2006-02-25
+    - each_arrayref (XS) couldn't deal with refs to list literals
+      (brought up by David Filmer <usenet AT DavidFilmer DOT com>
+       in comp.lang.perl.misc)
 
-0.16  Mon Nov 14 09:57:28 CET 2005
-	- a dangling semicolon in some macros prevented
-	  the XS portion to compile on some compilers
-	  (Lars Thegler <lars AT thegler DOT dk>)
+0.17	2005-12-07
+    - each_arrayref had no XS implementation and wasn't
+      mentioned in the PODs
+      (patch by Anno Siegel <siegel AT zrz DOT tu-berlin DOT de>)
 
-0.15  Fri Nov 11 09:23:29 CET 2005
-	- 0.13 and 0.14 broke the module on 5.6.x
-	  (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)
-	- internals changed to make use of the new MULTICALL API 
-	  which had to be backported to 5.005_x
+0.16	2005-11-14
+    - a dangling semicolon in some macros prevented
+      the XS portion to compile on some compilers
+      (Lars Thegler <lars AT thegler DOT dk>)
 
-0.14  Thu Nov 10 13:08:03 CET 2005
-	- 0.13 fixed the leaks but rendered the XS part uncompilable
-	  for perls < 5.6.0: Fixed
-	  (spotted by Lars Thegler <lars AT thegler DOT dk>)
+0.15	2005-11-11
+    - 0.13 and 0.14 broke the module on 5.6.x
+      (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)
+    - internals changed to make use of the new MULTICALL API 
+      which had to be backported to 5.005_x
 
-0.13  Wed Nov  9 16:29:02 CET 2005
-	- nearly all functions receiving a CODE-block as first
-	  argument had a hefty memory-leak: Fixed
-	  (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)
+0.14	2005-11-10
+    - 0.13 fixed the leaks but rendered the XS part uncompilable
+      for perls < 5.6.0: Fixed
+      (spotted by Lars Thegler <lars AT thegler DOT dk>)
 
-0.12  Wed Sep 28 08:09:08 CEST 2005
-	- first_index and each_arrayref weren't exportable
-	  (spotted by Darren Duncan)
+0.13	2005-11-09
+    - nearly all functions receiving a CODE-block as first
+      argument had a hefty memory-leak: Fixed
+      (spotted by Thomas A. Lowery <tlowery AT cc3 DOT com>)
 
-0.11  Tue Sep 27 08:15:22 CEST 2005
-	- make sure that Test::Pod and Test::Pod::Coverage are
-	  installed in the required minimum versions
-	  (thanks to Ricardo Signes <rjbs AT cpan DOT org>)
+0.12	2005-09-28
+    - first_index and each_arrayref weren't exportable
+      (spotted by Darren Duncan)
 
-0.10  Fri Apr  1 19:43:48 CEST 2005
-	- new function minmax() with comparisons in O(3n/2 - 2)
-	- some POD corrections (Adam Kennedy)
-	- POD- and POD-coverage tests
+0.11	2005-09-27
+    - make sure that Test::Pod and Test::Pod::Coverage are
+      installed in the required minimum versions
+      (thanks to Ricardo Signes <rjbs AT cpan DOT org>)
 
-0.09  Sat Dec  4 07:17:10 CET 2004
-	- 0.08 only fixed uniq() for scalar context
+0.10	2005-04-01
+    - new function minmax() with comparisons in O(3n/2 - 2)
+    - some POD corrections (Adam Kennedy)
+    - POD- and POD-coverage tests
 
-0.08  Fri Dec  3 17:11:14 CET 2004
-	- uniq() was not mentioned in the perldocs and only had
-	  the XS implementation
-	- uniq() also produced wrong results on 5.8.0
-	  (thanks to Slaven Rezic for spotting it and suggesting
-	  a workaround)
-	- the test-suite triggered a bug in 5.6.x perls
-	- the test-suite now tests both the XS- and Perl-implementation
-	- a wrong example in the perldocs fixed (Ron Savage)
+0.09	2004-12-04
+    - 0.08 only fixed uniq() for scalar context
 
-0.07  Wed Dec  1 07:56:08 CET 2004
-	- new functions:
-	    after, after_incl, before, before_incl, indexes
-	    lastval, firstval, pairwise, each_array, natatime,
-	    mesh (all from Eric J. Roodes' List::MoreUtil).
+0.08	2004-12-03
+    - uniq() was not mentioned in the perldocs and only had
+      the XS implementation
+    - uniq() also produced wrong results on 5.8.0
+      (thanks to Slaven Rezic for spotting it and suggesting
+      a workaround)
+    - the test-suite triggered a bug in 5.6.x perls
+    - the test-suite now tests both the XS- and Perl-implementation
+    - a wrong example in the perldocs fixed (Ron Savage)
 
-0.06  Sun Nov 14 06:33:52 CET 2004
-	- new function 'apply' on behalf of Brian McCauley
-	  (<nobull AT mail DOT com>)
+0.07	2004-12-01
+    - new functions:
+      after, after_incl, before, before_incl, indexes
+      lastval, firstval, pairwise, each_array, natatime,
+      mesh (all from Eric J. Roodes' List::MoreUtil).
 
-0.05  Sat Sep 18 09:06:22 CEST 2004
-	- merged in insert_after() and insert_after_string() from
-	  List::Utils which is now obsolete
-	  (thanks to James Keenan <jkeen AT verizon DOT net> and
-	  Terrence Brannon <terry AT hcoop DOT net>)
+0.06	2004-11-14
+    - new function 'apply' on behalf of Brian McCauley
+      (<nobull AT mail DOT com>)
 
-0.04  Sat Jul 10 08:00:11 CEST 2004
-	- renamed to List::MoreUtils on suggestion by
-	  Steve Purkis <spurkis AT quiup DOT com>
+0.05	2004-09-18
+    - merged in insert_after() and insert_after_string() from
+      List::Utils which is now obsolete
+      (thanks to James Keenan <jkeen AT verizon DOT net> and
+      Terrence Brannon <terry AT hcoop DOT net>)
 
-0.03  Fri Jul  9 07:54:09 CEST 2004
-	- some compilers don't like the stale goto labels
-	  without any statement following. Fixed.
-	  (Robert Rothenberg <wlkngowl AT i-2000 DOT com>)
+0.04	2004-07-10
+    - renamed to List::MoreUtils on suggestion by
+      Steve Purkis <spurkis AT quiup DOT com>
 
-0.02  Thu Jul  8 08:07:39 CEST 2004
-	- added Perl implementations of all functions 
-	  as a fallback 
-	  (Adam Kennedy <adam AT phase-n DOT com>)
+0.03	2004-07-09
+    - some compilers don't like the stale goto labels
+      without any statement following. Fixed.
+      (Robert Rothenberg <wlkngowl AT i-2000 DOT com>)
 
-0.01  Mon Jul  5 07:58:40 2004
-	- original version; created by h2xs 1.23 with options
-	  -b 5.5.3 -A -n List::Any
+0.02	2004-07-08
+    - added Perl implementations of all functions 
+      as a fallback 
+      (Adam Kennedy <adam AT phase-n DOT com>)
+
+0.01	2004-07-05
+    - original version; created by h2xs 1.23 with options
+      -b 5.5.3 -A -n List::Any
