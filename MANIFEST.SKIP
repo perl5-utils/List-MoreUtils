@@ -32,4 +32,6 @@ _Inline/.*
 \bxt
 ^MYMETA\.json$
 ^MYMETA\..*$
-^threads-variables-reap-.*
+^List-MoreUtils-.*
+\.[co]
+\.bs
