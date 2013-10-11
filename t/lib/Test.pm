@@ -1,14 +1,15 @@
 package t::lib::Test;
 
-use 5.00503;
+use 5.008003;
+
 use strict;
+#use warnings;
+
 use Test::More;
 use List::MoreUtils ':all';
 
 # Run all tests
 sub run {
-    plan tests => 186;
-
     test_any();
     test_all();
     test_none();
@@ -35,12 +36,12 @@ sub run {
     test_uniq();
     test_part();
     test_minmax();
+    test_bsearch();
     test_sort_by();
     test_nsort_by();
+
+    done_testing();
 }
-
-
-
 
 
 ######################################################################
@@ -233,12 +234,12 @@ sub test_apply {
     # Normal cases
     my @list  = ( 0 .. 9 );
     my @list1 = apply { $_++ } @list;
-    ok( arrayeq( \@list,  [ 0 .. 9  ] ) );
-    ok( arrayeq( \@list1, [ 1 .. 10 ] ) );
+    ok( is_deeply( \@list,  [ 0 .. 9  ] ) );
+    ok( is_deeply( \@list1, [ 1 .. 10 ] ) );
     @list  = ( " foo ", " bar ", "     ", "foobar" );
     @list1 = apply { s/^\s+|\s+$//g } @list;
-    ok( arrayeq( \@list,  [ " foo ", " bar ", "     ", "foobar" ] ) );
-    ok( arrayeq( \@list1, [ "foo", "bar", "", "foobar" ] ) );
+    ok( is_deeply( \@list,  [ " foo ", " bar ", "     ", "foobar" ] ) );
+    ok( is_deeply( \@list1, [ "foo", "bar", "", "foobar" ] ) );
     my $item = apply { s/^\s+|\s+$//g } @list;
     is( $item, "foobar" );
 
@@ -250,8 +251,8 @@ sub test_apply {
             grow_stack();
             $_ = 5;
         } @list;
-        ok( arrayeq( \@list, [ 1 .. 4 ] ) );
-        ok( arrayeq( \@list1, [ ( 5 ) x 4 ] ) );
+        ok( is_deeply( \@list, [ 1 .. 4 ] ) );
+        ok( is_deeply( \@list1, [ ( 5 ) x 4 ] ) );
     }
 
     leak_free_ok(apply => sub {
@@ -265,7 +266,7 @@ sub test_apply {
 
 sub test_indexes {
     my @x = indexes { $_ > 5 } ( 4 .. 9 );
-    ok( arrayeq( \@x, [ 2..5 ] ) );
+    ok( is_deeply( \@x, [ 2..5 ] ) );
     @x = indexes { $_ > 5 } ( 1 .. 4 );
     is_deeply( \@x, [ ], 'Got the null list' );
 
@@ -279,11 +280,11 @@ sub test_indexes {
 # a parser glitch in the 5.6.x series.
 sub test_before {
     my @x = before { $_ % 5 == 0 } 1 .. 9;    
-    ok( arrayeq( \@x, [ 1, 2, 3, 4 ] ) );
+    ok( is_deeply( \@x, [ 1, 2, 3, 4 ] ) );
     @x = before { /b/ } my @dummy = qw{ bar baz };
     is_deeply( \@x, [ ], 'Got the null list' );
     @x = before { /f/ } @dummy = qw{ bar baz foo };
-    ok( arrayeq( \@x, [ qw{ bar baz } ] ) );
+    ok( is_deeply( \@x, [ qw{ bar baz } ] ) );
 
     leak_free_ok(before => sub {
         @x = before { /f/ } @dummy = qw{ bar baz foo };
@@ -294,11 +295,11 @@ sub test_before {
 # a parser glitch in the 5.6.x series.
 sub test_before_incl {
     my @x = before_incl { $_ % 5 == 0 } 1 .. 9;
-    ok( arrayeq( \@x, [ 1, 2, 3, 4, 5 ] ) );
+    ok( is_deeply( \@x, [ 1, 2, 3, 4, 5 ] ) );
     @x = before_incl { /foo/ } my @dummy = qw{ bar baz };
-    ok( arrayeq( \@x, [ qw{ bar baz } ] ) );
+    ok( is_deeply( \@x, [ qw{ bar baz } ] ) );
     @x = before_incl { /f/ } @dummy = qw{ bar baz foo };
-    ok( arrayeq( \@x, [ qw{ bar baz foo } ] ) );
+    ok( is_deeply( \@x, [ qw{ bar baz foo } ] ) );
 
     leak_free_ok(before_incl => sub {
         @x = before_incl { /z/ } @dummy = qw{ bar baz foo };
@@ -309,11 +310,11 @@ sub test_before_incl {
 # a parser glitch in the 5.6.x series.
 sub test_after {
     my @x = after { $_ % 5 == 0 } 1 .. 9;
-    ok( arrayeq( \@x, [ 6, 7, 8, 9 ] ) );
+    ok( is_deeply( \@x, [ 6, 7, 8, 9 ] ) );
     @x = after { /foo/ } my @dummy = qw{ bar baz };
     is_deeply( \@x, [ ], 'Got the null list' );
     @x = after { /b/ } @dummy = qw{ bar baz foo };
-    ok( arrayeq( \@x, [ qw{ baz foo } ] ) );
+    ok( is_deeply( \@x, [ qw{ baz foo } ] ) );
 
     leak_free_ok(after => sub {
         @x = after { /z/ } @dummy = qw{ bar baz foo };
@@ -324,11 +325,11 @@ sub test_after {
 # a parser glitch in the 5.6.x series.
 sub test_after_incl {
     my @x = after_incl { $_ % 5 == 0 } 1 .. 9;
-    ok( arrayeq( \@x, [ 5, 6, 7, 8, 9 ] ) );
+    ok( is_deeply( \@x, [ 5, 6, 7, 8, 9 ] ) );
     @x = after_incl { /foo/ } my @dummy = qw{ bar baz };
     is_deeply( \@x, [ ], 'Got the null list' );
     @x = after_incl { /b/ } @dummy = qw{ bar baz foo };
-    ok( arrayeq( \@x, [ qw{ bar baz foo } ] ) );
+    ok( is_deeply( \@x, [ qw{ bar baz foo } ] ) );
 
     leak_free_ok(after_incl => sub {
         @x = after_incl { /z/ } @dummy = qw{ bar baz foo };
@@ -383,8 +384,8 @@ sub test_each_array {
         # Do I segfault? I shouldn't. 
         $it->();
 
-        ok( arrayeq( \@r, [ 7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef ] ) );
-        ok( arrayeq( \@idx, [ 0 .. 4 ] ) );
+        ok( is_deeply( \@r, [ 7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef ] ) );
+        ok( is_deeply( \@idx, [ 0 .. 4 ] ) );
 
         # Testing two iterators on the same arrays in parallel
         @a = ( 1, 3, 5 );
@@ -395,11 +396,11 @@ sub test_each_array {
         while ( my ($a, $b) = $i1->() and my ($c, $d) = $i2->() ) {
             push @r, $a, $b, $c, $d;
         }
-        ok( arrayeq( \@r, [ 1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6 ] ) );
+        ok( is_deeply( \@r, [ 1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6 ] ) );
 
         # Input arrays must not be modified
-        ok( arrayeq( \@a, [ 1, 3, 5 ] ) );
-        ok( arrayeq( \@b, [ 2, 4, 6 ] ) );
+        ok( is_deeply( \@a, [ 1, 3, 5 ] ) );
+        ok( is_deeply( \@b, [ 2, 4, 6 ] ) );
 
         # This used to give "semi-panic: attempt to dup freed string"
         # See: <news:1140827861.481475.111380@z34g2000cwc.googlegroups.com>
@@ -408,8 +409,8 @@ sub test_each_array {
         while ( my ($a, $b) = $ea->() ) {
             push @a, $a; push @b, $b;
         }
-        ok( arrayeq( \@a, [ 1 .. 26 ] ) );
-        ok( arrayeq( \@b, [ 'A' .. 'Z' ] ) );
+        ok( is_deeply( \@a, [ 1 .. 26 ] ) );
+        ok( is_deeply( \@b, [ 'A' .. 'Z' ] ) );
 
         # And this even used to dump core
         my @nums = 1 .. 26;
@@ -418,9 +419,9 @@ sub test_each_array {
         while ( my ($a, $b) = $ea->() ) {
             push @a, $a; push @b, $b;
         }
-        ok( arrayeq( \@a, [ 1 .. 26 ] ) );
-        ok( arrayeq( \@a, \@nums ) );
-        ok( arrayeq( \@b, ['A' .. 'Z' ] ) );
+        ok( is_deeply( \@a, [ 1 .. 26 ] ) );
+        ok( is_deeply( \@a, \@nums ) );
+        ok( is_deeply( \@b, ['A' .. 'Z' ] ) );
     }
 
     SCOPE: {
@@ -437,8 +438,8 @@ sub test_each_array {
         # Do I segfault? I shouldn't. 
         $it->();
 
-        ok( arrayeq( \@r, [ 7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef ] ) );
-        ok( arrayeq( \@idx, [ 0..4 ] ) );
+        ok( is_deeply( \@r, [ 7, 'a', 3, 2, 'a', -1, undef, 'x', 'r', undef ] ) );
+        ok( is_deeply( \@idx, [ 0..4 ] ) );
 
         # Testing two iterators on the same arrays in parallel
         @a = (1, 3, 5);
@@ -449,11 +450,11 @@ sub test_each_array {
         while ( my ($a, $b) = $i1->() and my ($c, $d) = $i2->() ) {
             push @r, $a, $b, $c, $d;
         }
-        ok( arrayeq( \@r, [ 1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6 ] ) );
+        ok( is_deeply( \@r, [ 1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6 ] ) );
 
         # Input arrays must not be modified
-        ok( arrayeq( \@a, [ 1, 3, 5 ] ) );
-        ok( arrayeq( \@b, [ 2, 4, 6 ] ) );
+        ok( is_deeply( \@a, [ 1, 3, 5 ] ) );
+        ok( is_deeply( \@b, [ 2, 4, 6 ] ) );
     }
 
     # Note that the leak_free_ok tests for each_array and each_arrayref
@@ -479,21 +480,21 @@ sub test_pairwise {
     my @a = (1, 2, 3, 4, 5);
     my @b = (2, 4, 6, 8, 10);
     my @c = pairwise { $a + $b } @a, @b;
-    is( arrayeq( \@c, [ 3, 6, 9, 12, 15 ] ), 1, "pw1" );
+    is( is_deeply( \@c, [ 3, 6, 9, 12, 15 ] ), 1, "pw1" );
 
     @c = pairwise { $a * $b } @a, @b; # returns (2, 8, 18)
-    is( arrayeq( \@c, [ 2, 8, 18, 32, 50 ] ), 1, "pw2" );
+    is( is_deeply( \@c, [ 2, 8, 18, 32, 50 ] ), 1, "pw2" );
 
     # Did we modify the input arrays?
-    is( arrayeq( \@a, [ 1, 2, 3, 4, 5 ] ), 1, "pw3" );
-    is( arrayeq( \@b, [ 2, 4, 6, 8, 10 ] ), 1, "pw4" );
+    is( is_deeply( \@a, [ 1, 2, 3, 4, 5 ] ), 1, "pw3" );
+    is( is_deeply( \@b, [ 2, 4, 6, 8, 10 ] ), 1, "pw4" );
 
     # $a and $b should be aliases: test
     @b = @a = (1, 2, 3);
     @c = pairwise { $a++; $b *= 2 } @a, @b;
-    is( arrayeq( \@a, [ 2, 3, 4 ] ), 1, "pw5" );
-    is( arrayeq( \@b, [ 2, 4, 6 ] ), 1, "pw6" );
-    is( arrayeq( \@c, [ 2, 4, 6 ] ), 1, "pw7" );
+    is( is_deeply( \@a, [ 2, 3, 4 ] ), 1, "pw5" );
+    is( is_deeply( \@b, [ 2, 4, 6 ] ), 1, "pw6" );
+    is( is_deeply( \@c, [ 2, 4, 6 ] ), 1, "pw7" );
 
     # Test this one more thoroughly: the XS code looks flakey
     # correctness of pairwise_perl proved by human auditing. :-)
@@ -526,12 +527,12 @@ sub test_pairwise {
     local $^W = 0;
     my @res1 = pairwise {$a+$b} @a, @b;
     my @res2 = pairwise_perl {$a+$b} @a, @b;
-    ok( arrayeq(\@res1, \@res2) );
+    ok( is_deeply(\@res1, \@res2) );
 
     @a = qw/a b c/;
     @b = qw/1 2 3/;
     @c = pairwise { ($a, $b) } @a, @b;
-    ok( arrayeq( \@c, [ qw/a 1 b 2 c 3/ ] ) ); # 88
+    ok( is_deeply( \@c, [ qw/a 1 b 2 c 3/ ] ) ); # 88
 
     # Test that a die inside the code-reference will not be trapped
     eval { pairwise { die "I died\n" } @a, @b };
@@ -552,7 +553,7 @@ sub test_natatime {
     while ( my @vals = $it->() ) {
         push @r, "@vals";
     }
-    is( arrayeq( \@r, [ 'a b c', 'd e f', 'g' ] ), 1, "natatime1" );
+    is( is_deeply( \@r, [ 'a b c', 'd e f', 'g' ] ), 1, "natatime1" );
 
     my @a = ( 1 .. 1000 );
     $it = natatime 1, @a;
@@ -560,7 +561,7 @@ sub test_natatime {
     while ( my @vals = &$it ) {
         push @r, @vals;
     }
-    is( arrayeq( \@r, \@a ), 1, "natatime2" );
+    is( is_deeply( \@r, \@a ), 1, "natatime2" );
 
     leak_free_ok(natatime => sub {
         my @y = 1;
@@ -576,7 +577,7 @@ sub test_zip {
         my @x = qw/a b c d/;
         my @y = qw/1 2 3 4/;
         my @z = zip @x, @y;
-        ok( arrayeq(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]) );
+        ok( is_deeply(\@z, ['a', 1, 'b', 2, 'c', 3, 'd', 4]) );
     }
 
     SCOPE: {
@@ -584,7 +585,7 @@ sub test_zip {
         my @b = ( '1', '2' );
         my @c = qw/zip zap zot/;
         my @z = zip @a, @b, @c;
-        ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
+        ok( is_deeply( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
     }
 
     SCOPE: {
@@ -594,7 +595,7 @@ sub test_zip {
         $#d = 9; 
         my @z = zip @a, @d;
         ok(
-            arrayeq( \@z, [
+            is_deeply( \@z, [
                 1, undef, 2, undef, 3, undef, 4, undef, 5, undef, 
                 6, undef, 7, undef, 8, undef, 9, undef, 10, undef,
             ] )
@@ -613,7 +614,7 @@ sub test_mesh {
         my @x = qw/a b c d/;
         my @y = qw/1 2 3 4/;
         my @z = mesh @x, @y;
-        ok( arrayeq( \@z, [ 'a', 1, 'b', 2, 'c', 3, 'd', 4 ] ) );
+        ok( is_deeply( \@z, [ 'a', 1, 'b', 2, 'c', 3, 'd', 4 ] ) );
     }
 
     SCOPE: {
@@ -621,7 +622,7 @@ sub test_mesh {
         my @b = ('1', '2');
         my @c = qw/zip zap zot/;
         my @z = mesh @a, @b, @c;
-        ok( arrayeq( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
+        ok( is_deeply( \@z, [ 'x', 1, 'zip', undef, 2, 'zap', undef, undef, 'zot' ] ) );
     }
 
     # Make array with holes
@@ -631,7 +632,7 @@ sub test_mesh {
         $#d = 9;
         my @z = mesh @a, @d;
         ok(
-            arrayeq( \@z, [
+            is_deeply( \@z, [
                 1, undef, 2, undef, 3, undef, 4, undef, 5, undef,
                 6, undef, 7, undef, 8, undef, 9, undef, 10, undef,
             ] )
@@ -649,7 +650,7 @@ sub test_uniq {
     SCOPE: {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;
         my @u = uniq @a;
-        ok( arrayeq( \@u, [ 1 .. 1000 ] ) );
+        ok( is_deeply( \@u, [ 1 .. 1000 ] ) );
         my $u = uniq @a;
         is( 1000, $u );
     }
@@ -658,7 +659,7 @@ sub test_uniq {
     SCOPE: {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;
         my @u = distinct @a;
-        ok( arrayeq( \@u, [ 1 .. 1000 ] ) );
+        ok( is_deeply( \@u, [ 1 .. 1000 ] ) );
         my $u = distinct @a;
         is( 1000, $u );
     }
@@ -696,15 +697,15 @@ sub test_part {
     my @list = 1 .. 12;
     my $i    = 0;
     my @part = part { $i++ % 3 } @list;
-    ok( arrayeq($part[0], [ 1, 4, 7, 10 ]) );
-    ok( arrayeq($part[1], [ 2, 5, 8, 11 ]) );
-    ok( arrayeq($part[2], [ 3, 6, 9, 12 ]) );
+    ok( is_deeply($part[0], [ 1, 4, 7, 10 ]) );
+    ok( is_deeply($part[1], [ 2, 5, 8, 11 ]) );
+    ok( is_deeply($part[2], [ 3, 6, 9, 12 ]) );
 
     @part = part { 3 } @list;
     is( $part[0], undef );
     is( $part[1], undef );
     is( $part[2], undef ); 
-    ok( arrayeq($part[3], [ 1 .. 12 ]) );
+    ok( is_deeply($part[3], [ 1 .. 12 ]) );
 
     eval {
         @part = part { -1 } @list;
@@ -713,14 +714,14 @@ sub test_part {
 
     $i = 0;
     @part = part { $i++ == 0 ? 0 : -1 } @list;
-    ok( arrayeq($part[0], [ 1 .. 12 ]) );
+    ok( is_deeply($part[0], [ 1 .. 12 ]) );
 
     local $^W = 0;
     @part = part { undef } @list;
-    ok( arrayeq($part[0], [ 1 .. 12 ]) );
+    ok( is_deeply($part[0], [ 1 .. 12 ]) );
 
     @part = part { 10000 } @list;
-    ok( arrayeq($part[10000], [ @list ]) );
+    ok( is_deeply($part[10000], [ @list ]) );
     is( $part[0], undef );
     is( $part[@part / 2], undef );
     is( $part[9999], undef );
@@ -730,7 +731,7 @@ sub test_part {
     @list = 1 .. 10;
     @list = part { $_ } @list;
     foreach ( 1 .. 10 ) {
-        ok( arrayeq($list[$_], [ $_ ]) );
+        ok( is_deeply($list[$_], [ $_ ]) );
     }
 
     leak_free_ok(part => sub {
@@ -784,6 +785,39 @@ sub test_minmax {
     });
 }
 
+sub test_bsearch {
+    my @list = my @in = 1 .. 1000;
+    for my $elem (@in) {
+        ok(scalar bsearch { $_ - $elem } @list);
+    }
+    for my $elem (@in) {
+        my ($e) =  bsearch { $_ - $elem } @list;
+        ok($e == $elem);
+    }
+    my @out = (-10 .. 0, 1001 .. 1011);
+    for my $elem (@out) {
+        my $r = bsearch { $_ - $elem } @list;
+        ok(!defined $r);
+    }
+
+    leak_free_ok(bsearch => sub {
+	my $elem = int(rand(1000));
+	scalar bsearch { $_ - $elem } @list;
+    });
+
+    leak_free_ok('bsearch with stack-growing' => sub {
+	my $elem = int(rand(1000));
+	scalar bsearch { grow_stack(); $_ - $elem } @list;
+    });
+
+    leak_free_ok('bsearch with stack-growing and exception' => sub {
+	my $elem = int(rand(1000));
+	eval {
+	    scalar bsearch { grow_stack(); $_ - $elem or die "Goal!"; $_ - $elem } @list;
+	};
+    });
+}
+
 sub test_sort_by {
     my @list = map { [$_] } 1 .. 100;
     is_deeply([sort_by { $_->[0] } @list], [map { [$_] } sort { $a cmp $b } 1..100]);
@@ -802,13 +836,15 @@ sub test_nsort_by {
 # Support Functions
 
 sub is_true {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     die "Expected 1 param" unless @_ == 1;
-    is( $_[0], !0 );
+    ok( $_[0], "is_true ()" );
 }
 
 sub is_false {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     die "Expected 1 param" unless @_ == 1;
-    is( $_[0], !1 );
+    ok( !$_[0], "is_false()" );
 }
 
 my @bigary = ( 1 ) x 500;
@@ -819,27 +855,13 @@ sub grow_stack {
     func(@bigary);
 }
 
-sub arrayeq {
-    local $^W = 0;
-    my $left  = shift;
-    my $right = shift;
-    return 0 if @$left != @$right;
-    foreach ( 0 .. $#$left ) {
-        if ($left->[$_] ne $right->[$_]) {
-            local $" = ", ";
-            warn "(@$left) != (@$right)\n";
-            return 0;
-        }
-    }
-    return 1;
-}
-
 sub leak_free_ok {
     my $name = shift;
     my $code = shift;
     SKIP: {
         skip 'Test::LeakTrace not installed', 1
             unless eval { require Test::LeakTrace; 1 };
+	local $Test::Builder::Level = $Test::Builder::Level + 1;
         &Test::LeakTrace::no_leaks_ok($code, "No memory leaks in $name");
     }
 }
