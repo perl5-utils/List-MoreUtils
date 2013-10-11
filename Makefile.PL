@@ -1,6 +1,6 @@
 use strict;
 BEGIN {
-	require 5.00503;
+	require 5.008003;
 }
 use Config              ();
 use ExtUtils::MakeMaker ();
@@ -21,7 +21,7 @@ WriteMakefile(
 	VERSION_FROM       => 'lib/List/MoreUtils.pm',
 	AUTHOR             => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
 	LICENSE            => 'perl',
-	MIN_PERL_VERSION   => '5.00503',
+	MIN_PERL_VERSION   => '5.008003',
 	CONFIGURE_REQUIRES => {
 		'ExtUtils::MakeMaker' => '6.52',
 		'ExtUtils::CBuilder'  => '0.27',
