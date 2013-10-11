@@ -843,7 +843,68 @@ pure-Perl or possibly both).
 
 Bugs should always be submitted via the CPAN bug tracker.
 
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=List-MoreUtils>
+You can find documentation for this module with the perldoc command.
+
+    perldoc List::MoreUtils
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=List-MoreUtils>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/List-MoreUtils>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/l/List-MoreUtils>
+
+=item * CPAN Search
+
+L<http://search.cpan.org/dist/List-MoreUtils/>
+
+=item * Got Repository
+
+L<https://github.com/perl5-utils/List-MoreUtils>
+
+=back
+
+=head2 Where can I go for help?
+
+If you have a bug report, a patch or a suggestion, please open a new
+report ticket at CPAN (but please check previous reports first in case
+your issue has already been addressed).
+
+Report tickets should contain a detailed description of the bug or
+enhancement request and at least an easily verifiable way of
+reproducing the issue or fix. Patches are always welcome, too - and
+it's cheap to send pull-requests on GitHub. Please keep in mind that
+code changes are more likely accepted when they're bundled with an
+approving test.
+
+If you think you've found a bug then please read
+"How to Report Bugs Effectively" by Simon Tatham:
+L<http://www.chiark.greenend.org.uk/~sgtatham/bugs.html>.
+
+=head2 Where can I go for help with a concrete version?
+
+Bugs and feature requests are accepted against the latest version
+only. To get patches for earlier versions, you need to get an
+agreement with a developer of your choice - who may or not report the
+issue and a suggested fix upstream (depends on the license you have
+chosen).
+
+=head2 Business support and maintenance
+
+For business support you can contact Jens via his CPAN email
+address rehsackATcpan.org. Please keep in mind that business
+support is neither available for free nor are you eligible to
+receive any support based on the license distributed with this
+package.
 
 =head1 THANKS
 
