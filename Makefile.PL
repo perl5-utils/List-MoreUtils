@@ -19,7 +19,8 @@ WriteMakefile(
 	NAME               => 'List::MoreUtils',
 	ABSTRACT           => 'Provide the stuff missing in List::Util',
 	VERSION_FROM       => 'lib/List/MoreUtils.pm',
-	AUTHOR             => 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
+	AUTHOR             => [ 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
+	                        'Adam Kennedy <adamk@cpan.org>' , 'Jens Rehsack <rehsack@cpan.org>' ],
 	LICENSE            => 'perl',
 	MIN_PERL_VERSION   => '5.008003',
 	CONFIGURE_REQUIRES => {
@@ -27,12 +28,12 @@ WriteMakefile(
 		'ExtUtils::CBuilder'  => '0.27',
 	},
 	BUILD_REQUIRES => {
-		'Test::More' => '0.42',
-	},
-	PREREQ_PM => {
-		'Test::More' => '0.82',
+		'Test::More' => '0.88',
 	},
 	test  => { TESTS => 't/*.t xt/*.t' },
+	META_MERGE => {
+	    resources => { repository => "https://github.com/perl5-utils/List-MoreUtils", },
+	},
 
 	# Special stuff
 	CONFIGURE => sub {
