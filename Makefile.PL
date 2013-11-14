@@ -1,7 +1,7 @@
 #!perl
 
 use strict;
-require 5.008003;
+require 5.008001;
 BEGIN {
 }
 use Config              ();
@@ -26,7 +26,7 @@ WriteMakefile(
 	AUTHOR             => [ 'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
 	                        'Adam Kennedy <adamk@cpan.org>' , 'Jens Rehsack <rehsack@cpan.org>' ],
 	LICENSE            => 'perl',
-	MIN_PERL_VERSION   => '5.008003',
+	MIN_PERL_VERSION   => '5.008001',
 	CONFIGURE_REQUIRES => {
 		'ExtUtils::MakeMaker' => '6.52',
 		'Config::AutoConf'  => '0.19',
