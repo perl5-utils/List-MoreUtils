@@ -157,7 +157,7 @@ sv_tainted(SV *sv)
 	register int i;									\
 	arrayeach_args * args;								\
 	HV *stash = gv_stashpv("List::MoreUtils_ea", TRUE);				\
-	CV *closure = newXS(NULL, XS_List__MoreUtils__array_iterator, __FILE__);	\
+	CV *closure = newXS(NULL, XS_List__MoreUtils__Impl__Tassilo__array_iterator, __FILE__);	\
 											\
 	/* prototype */									\
 	sv_setpv((SV*)closure, ";$");							\
@@ -198,7 +198,7 @@ typedef struct {
 
 void
 insert_after (int idx, SV *what, AV *av) {
-    register int i, len;
+    int i, len;
     av_extend(av, (len = av_len(av) + 1));
     
     for (i = len; i > idx+1; i--) {
@@ -211,7 +211,7 @@ insert_after (int idx, SV *what, AV *av) {
 
 }
 
-MODULE = List::MoreUtils		PACKAGE = List::MoreUtils
+MODULE = List::MoreUtils::Impl::Tassilo		PACKAGE = List::MoreUtils::Impl::Tassilo
 
 void
 any (code,...)
@@ -228,7 +228,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_NO;
+	XSRETURN_UNDEF;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -261,7 +261,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_YES;
+	XSRETURN_UNDEF;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -295,7 +295,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_YES;
+	XSRETURN_UNDEF;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -328,7 +328,7 @@ CODE:
     CV *cv;
 
     if (items <= 1)
-	XSRETURN_NO;
+	XSRETURN_UNDEF;
 
     cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(cv);
@@ -1106,7 +1106,7 @@ natatime (n, ...)
 	natatime_args * args;
 	HV *stash = gv_stashpv("List::MoreUtils_na", TRUE);
 
-	CV *closure = newXS(NULL, XS_List__MoreUtils__natatime_iterator, __FILE__);
+	CV *closure = newXS(NULL, XS_List__MoreUtils__Impl__Tassilo__natatime_iterator, __FILE__);
 
 	/* must NOT set prototype on iterator:
 	 * otherwise one cannot write: &$it */
@@ -1460,7 +1460,7 @@ _XScompiled ()
 	XSRETURN_YES;
 
 
-MODULE = List::MoreUtils                PACKAGE = List::MoreUtils_ea
+MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
 
 void
 DESTROY(sv)
@@ -1480,7 +1480,7 @@ DESTROY(sv)
     }
 
 
-MODULE = List::MoreUtils                PACKAGE = List::MoreUtils_na
+MODULE = List::MoreUtils_na             PACKAGE = List::MoreUtils_na
 
 void
 DESTROY(sv)

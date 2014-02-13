@@ -16,17 +16,15 @@ foreach (@ARGV)
     /^-pm/ and $make_xs = 0;
     /^-xs/ and $make_xs = 1;
 }
-unless ( defined $make_xs )
-{
-    $make_xs = can_xs();
-}
+
+defined $make_xs or $make_xs = can_xs();
 
 my %RUN_DEPS = (
                  'perl'          => '5.008001',
                  'Sub::Exporter' => 0,
                );
 my %CONFIGURE_DEPS = (
-                       'ExtUtils::MakeMaker' => '6.52',
+                       'ExtUtils::MakeMaker' => '6.86',
                        'Config::AutoConf'    => '0.19',
                      );
 my %BUILD_DEPS = ();
@@ -34,8 +32,8 @@ my %BUILD_DEPS = ();
 my %TEST_DEPS = (
                   'Test::More' => 0.90,
                 );
-my @XS_FILES =
-  qw(lib/List/MoreUtils/Impl/Alias.xs lib/List/MoreUtils/Impl/Modern.xs lib/List/MoreUtils/Impl/Tassilo.xs);
+my @XS_FILES = qw(Alias.xs Modern.xs Sno.xs Tassilo.xs);
+  #qw(lib/List/MoreUtils/Impl/Alias.xs lib/List/MoreUtils/Impl/Modern.xs lib/List/MoreUtils/Impl/Tassilo.xs);
 
 WriteMakefile1(
     MIN_PERL_VERSION => '5.008001',
@@ -83,7 +81,9 @@ WriteMakefile1(
        $make_xs
        ? (
            XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
-           OBJECT => join(" ", map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ),
+	   MAGICXS => 1,
+           #OBJECT => [ map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ],
+           #OBJECT => join(" ", map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ),
 	   INC => "-I."
          )
        : ()
