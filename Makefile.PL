@@ -32,7 +32,8 @@ my %BUILD_DEPS = ();
 my %TEST_DEPS = (
                   'Test::More' => 0.90,
                 );
-my @XS_FILES = qw(Alias.xs Modern.xs Sno.xs Tassilo.xs);
+my @XS_FILES = qw(MoreUtils.xs);
+  #qw(Alias.xs Modern.xs Sno.xs Tassilo.xs);
   #qw(lib/List/MoreUtils/Impl/Alias.xs lib/List/MoreUtils/Impl/Modern.xs lib/List/MoreUtils/Impl/Tassilo.xs);
 
 WriteMakefile1(
