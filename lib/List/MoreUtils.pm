@@ -37,7 +37,7 @@ use Sub::Exporter '-setup' => {
              qw(first_index last_index first_value last_value zip distinct)
         ),
     ],
-    groups => { map { $_ => \&_build_lmu_group } @tag_hist }
+    groups => { map { $_ => \&_build_lmu_group } (@tag_hist, "all") }
                            };
 
 my %pkg_tags = (
@@ -102,8 +102,6 @@ sub _build_imp
 
     my @impls = ( "HASH" eq ref $arg and $arg->{impl} ) ? $arg->{impl} : @tag_hist;
     defined $alias_list{$name} and $name = $alias_list{$name};
-    use DDP;
-    p(@impls);
 
     foreach my $impl (@impls)
     {
@@ -133,12 +131,12 @@ sub _build_lmu_group
         @caller = caller( $i++ );
     } while ( $caller[0] eq "Sub::Exporter" );
 
+    !ref $group and $group eq "all" and $group = \@tag_hist;
     my @impls = "ARRAY" eq ref $group ? @$group : ($group);
 
     my %exp_subs;
     foreach my $impl (@impls)
     {
-        print( STDERR "<--\n" );
         foreach my $func ( keys %{ $pkg_tags{$impl}->{functions} } )
         {
             defined $exp_subs{$func} and next;
@@ -146,10 +144,16 @@ sub _build_lmu_group
 
             use_module( $pkg_tags{$impl}->{module} );
             $exp_subs{$func} = $pkg_tags{$impl}->{module}->can($func);
-            defined $alias_list{$func} and $exp_subs{ $alias_list{$func} } = $exp_subs{$func};
+            # defined $alias_list{$func} and $exp_subs{ $alias_list{$func} } = $exp_subs{$func};
 
             $impl_by_caller{ $caller[0] }->{$func}->{$func} = $impl;
         }
+    }
+
+    foreach my $alias (keys %alias_list)
+    {
+	my $func = $alias_list{$alias};
+	$exp_subs{$alias} = $exp_subs{$func};
     }
 
     return \%exp_subs;
