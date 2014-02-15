@@ -1,6 +1,6 @@
 package t::lib::Test;
 
-use 5.008003;
+use 5.008001;
 
 use strict;
 #use warnings;
@@ -716,9 +716,11 @@ sub test_part {
     @part = part { $i++ == 0 ? 0 : -1 } @list;
     ok( is_deeply($part[0], [ 1 .. 12 ]) );
 
-    local $^W = 0;
-    @part = part { undef } @list;
-    ok( is_deeply($part[0], [ 1 .. 12 ]) );
+    {
+	local $^W = 0;
+	@part = part { undef } @list;
+	ok( is_deeply($part[0], [ 1 .. 12 ]) );
+    }
 
     @part = part { 10000 } @list;
     ok( is_deeply($part[10000], [ @list ]) );
