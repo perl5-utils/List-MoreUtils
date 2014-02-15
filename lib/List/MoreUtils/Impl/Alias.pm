@@ -9,11 +9,26 @@ our $VERSION   = '0.400';
 unless( defined &any)
 {
     my @pp_imp = map { "*$_ = \\&List::MoreUtils::Impl::Alias::PP::$_;" }
-	qw(any all none notall
-           sort_by nsort_by);
+	qw(any all none notall);
     my $pp_stuff = join( "\n", "use List::MoreUtils::Impl::Alias::PP;", @pp_imp );
     eval $pp_stuff;
     die $@ if $@;
+}
+
+sub sort_by(&@) {
+    my ($code, @list) = @_;
+    return map { $_->[0] }
+          sort { $a->[1] cmp $b->[1] }
+           map { [$_, scalar($code->())] }
+               @list;
+}
+
+sub nsort_by(&@) {
+    my ($code, @list) = @_;
+    return map { $_->[0] }
+          sort { $a->[1] <=> $b->[1] }
+           map { [$_, scalar($code->())] }
+               @list;
 }
 
 1;

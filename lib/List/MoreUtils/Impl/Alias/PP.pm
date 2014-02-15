@@ -36,20 +36,4 @@ sub notall (&@) {
     return 0;
 }
 
-sub sort_by(&@) {
-    my ($code, @list) = @_;
-    return map { $_->[0] }
-          sort { $a->[1] cmp $b->[1] }
-           map { [$_, scalar($code->())] }
-               @list;
-}
-
-sub nsort_by(&@) {
-    my ($code, @list) = @_;
-    return map { $_->[0] }
-          sort { $a->[1] <=> $b->[1] }
-           map { [$_, scalar($code->())] }
-               @list;
-}
-
 1;
