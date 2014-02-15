@@ -1,10 +1,8 @@
-package List::MoreUtils;
+package List::MoreUtils::XS;
 
 use 5.008001;
 use strict;
 use warnings;
-
-use XSLoader ();
 
 use vars qw{$VERSION @ISA};
 
@@ -14,15 +12,21 @@ BEGIN
 
     # Load the XS at compile-time so that redefinition warnings will be
     # thrown correctly if the XS versions of part or indexes loaded
-    eval {
+    my $ldr = <<EOLDR;
+	package List::MoreUtils;
+
 	# PERL_DL_NONLAZY must be false, or any errors in loading will just
 	# cause the perl code to be tested
-	local $ENV{PERL_DL_NONLAZY} = 0 if $ENV{PERL_DL_NONLAZY};
+	local \$ENV{PERL_DL_NONLAZY} = 0 if \$ENV{PERL_DL_NONLAZY};
 
-	XSLoader::load 'List::MoreUtils', $VERSION;
+	use XSLoader;
+	XSLoader::load();
+
 	1;
+EOLDR
 
-    } unless $ENV{LIST_MOREUTILS_PP};
+    eval $ldr unless $ENV{LIST_MOREUTILS_PP};
+    $@ and die $@;
 }
 
 1;
