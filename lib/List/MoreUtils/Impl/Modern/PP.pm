@@ -1,4 +1,4 @@
-package List::MoreUtils::Impl::Alias::PP;
+package List::MoreUtils::Impl::Modern::PP;
 
 use strict;
 use warnings;
