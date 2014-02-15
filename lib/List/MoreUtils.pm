@@ -111,10 +111,7 @@ sub _build_imp
           and $exp_sub = $pkg_tags{$impl}->{module}->can($name);
 
         my $nm = defined $arg->{as} ? $arg->{as} : $name;
-        # $exp_sub and $impl_by_caller{$caller[0]}->{$name}->{$nm} = $impl and return $exp_sub;
         $exp_sub and $impl_by_caller{ $caller[0] }->{$name}->{$nm} = $impl;
-        #use DDP;
-        #p(%impl_by_caller);
         $exp_sub and return $exp_sub;
     }
 
@@ -144,7 +141,6 @@ sub _build_lmu_group
 
             use_module( $pkg_tags{$impl}->{module} );
             $exp_subs{$func} = $pkg_tags{$impl}->{module}->can($func);
-            # defined $alias_list{$func} and $exp_subs{ $alias_list{$func} } = $exp_subs{$func};
 
             $impl_by_caller{ $caller[0] }->{$func}->{$func} = $impl;
         }
