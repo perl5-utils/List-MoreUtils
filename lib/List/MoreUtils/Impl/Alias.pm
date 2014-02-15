@@ -6,7 +6,9 @@ use warnings;
 
 our $VERSION   = '0.400';
 
-unless( defined &any)
+use List::MoreUtils::XS qw(); # try load XS stuff ...
+
+unless(defined &any)
 {
     my @pp_imp = map { "*$_ = \\&List::MoreUtils::Impl::Alias::PP::$_;" }
 	qw(any all none notall);
