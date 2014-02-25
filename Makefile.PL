@@ -9,16 +9,9 @@ use ExtUtils::MakeMaker;
 use lib 'inc';
 use Config::AutoConf::LMU ();
 
+Config::AutoConf::LMU->_set_argv(@ARGV); # XXX hack because we cannot construct for global use
+
 # Should we build the XS version?
-my $make_xs;
-foreach (@ARGV)
-{
-    /^-pm/ and $make_xs = 0;
-    /^-xs/ and $make_xs = 1;
-}
-
-defined $make_xs or $make_xs = can_xs();
-
 my %RUN_DEPS = (
                  'perl'          => '5.008001',
                  'Sub::Exporter' => 0,
@@ -79,7 +72,7 @@ WriteMakefile1(
     BUILD_REQUIRES => \%BUILD_DEPS,
     TEST_REQUIRES  => \%TEST_DEPS,
     (
-       $make_xs
+       Config::AutoConf::LMU->with_xs
        ? (
            XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
 	   MAGICXS => 1,
@@ -144,11 +137,4 @@ sub WriteMakefile1
     }
 
     WriteMakefile(%params);
-}
-
-# Secondary compile testing via ExtUtils::CBuilder
-sub can_xs
-{
-    my $autoconf = Config::AutoConf::LMU->new();
-    $autoconf->check_sane_xs();
 }
