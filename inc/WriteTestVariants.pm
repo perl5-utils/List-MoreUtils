@@ -43,6 +43,7 @@ use Class::Tiny {
 sub write_test_variants {
     my ($self, $output_dir, $providers) = @_;
 
+    # XXX how about using WTV for augmenting existing tests? $self->assert_new ?
     croak "output_test_dir $output_dir already exists"
         if -d $output_dir;
 
