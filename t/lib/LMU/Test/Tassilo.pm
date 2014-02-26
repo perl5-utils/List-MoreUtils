@@ -1,4 +1,4 @@
-package t::lib::Test;
+package t::lib::LMU::Test::Tassilo;
 
 use 5.008001;
 
@@ -6,7 +6,8 @@ use strict;
 #use warnings;
 
 use Test::More;
-use List::MoreUtils ':all';
+use Test::LMU;
+use List::MoreUtils ':tassilo';
 
 # Run all tests
 sub run {
@@ -37,12 +38,9 @@ sub run {
     test_part();
     test_minmax();
     test_bsearch();
-    test_sort_by();
-    test_nsort_by();
 
     done_testing();
 }
-
 
 ######################################################################
 # Test code intentionally ignorant of implementation (Pure Perl or XS)
@@ -819,20 +817,6 @@ sub test_bsearch {
 	};
     });
 }
-
-sub test_sort_by {
-    my @list = map { [$_] } 1 .. 100;
-    is_deeply([sort_by { $_->[0] } @list], [map { [$_] } sort { $a cmp $b } 1..100]);
-}
-
-sub test_nsort_by {
-    my @list = map { [$_] } 1 .. 100;
-    is_deeply([nsort_by { $_->[0] } @list], [map { [$_] } sort { $a <=> $b } 1..100]);
-}
-
-
-
-
 
 ######################################################################
 # Support Functions
