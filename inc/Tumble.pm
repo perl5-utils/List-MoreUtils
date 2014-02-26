@@ -22,7 +22,7 @@ use Context;
 use WriteTestVariants;
 
 $| = 1;
-my $output_dir = "out";
+my $output_dir = "gt"; # generated tests, in opposite to t => tests and xt => extra/author tests
 
 sub tumble
 {

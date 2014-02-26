@@ -83,7 +83,7 @@ WriteMakefile1(
        : ()
     ),
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => 't/*.t xt/*.t' },
+    test   => { TESTS               => 't/*.t xt/*.t gt/*.t' },
     # Otherwise 'cxinc' isn't defined
     DEFINE => '-DPERL_EXT',
               );
