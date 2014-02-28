@@ -1,4 +1,4 @@
-package t::lib::LMU::Test::Tassilo;
+package LMU::Test::Tassilo;
 
 use 5.008001;
 
@@ -10,7 +10,7 @@ use Test::LMU;
 use List::MoreUtils ':tassilo';
 
 # Run all tests
-sub run {
+sub run_tests {
     test_any();
     test_all();
     test_none();

@@ -1,4 +1,4 @@
-package t::lib::Test::LMU::Alias;
+package LMU::Test::Alias;
 
 use 5.008001;
 
@@ -10,7 +10,7 @@ use Test::LMU;
 use List::MoreUtils ':alias';
 
 # Run all tests
-sub run {
+sub run_tests {
     test_any();
     test_all();
     test_none();

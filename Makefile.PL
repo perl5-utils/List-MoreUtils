@@ -8,8 +8,11 @@ require 5.008001;
 use ExtUtils::MakeMaker;
 use lib 'inc';
 use Config::AutoConf::LMU ();
+use Tumble;
 
 Config::AutoConf::LMU->_set_argv(@ARGV); # XXX hack because we cannot construct for global use
+
+Tumble->tumble;
 
 # Should we build the XS version?
 my %RUN_DEPS = (
@@ -83,7 +86,7 @@ WriteMakefile1(
        : ()
     ),
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => 't/*.t xt/*.t gt/*.t' },
+    test   => { TESTS               => 't/*.t xt/*.t gt/*/*.t' },
     # Otherwise 'cxinc' isn't defined
     DEFINE => '-DPERL_EXT',
               );

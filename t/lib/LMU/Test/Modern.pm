@@ -1,4 +1,4 @@
-package t::lib::Test::LMU::Modern;
+package LMU::Test::Modern;
 
 use 5.008001;
 
@@ -10,7 +10,7 @@ use Test::LMU;
 use List::MoreUtils ':modern';
 
 # Run all tests
-sub run {
+sub run_tests {
     test_any();
     test_all();
     test_none();
