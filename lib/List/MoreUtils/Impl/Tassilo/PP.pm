@@ -3,7 +3,7 @@ package List::MoreUtils::Impl::Tassilo::PP;
 use strict;
 use warnings;
 
-our $VERSION   = '0.400';
+our $VERSION = '0.400';
 
 =pod
 
@@ -18,150 +18,152 @@ List::MoreUtils::Impl::Tassilo::PP - Provide List::MoreUtils implementation by T
 
 =cut
 
-# Use pure scalar boolean return values for compatibility with XS
-use constant YES => ! 0;
-use constant NO  => ! 1;
-
-sub any (&@) {
+sub any (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
-        return YES if $f->();
-    }
-    return NO;
+    return if !@_;
+    $f->() and return 1 foreach(@_);
+    return 0;
 }
 
-sub all (&@) {
+sub all (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
-        return NO unless $f->();
-    }
-    return YES;
+    return if !@_;
+    $f->() or return 0 foreach(@_);
+    return 1;
 }
 
-sub none (&@) {
+sub none (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
-        return NO if $f->();
-    }
-    return YES;
+    return if !@_;
+    $f->() and return 0 foreach(@_);
+    return 1;
 }
 
-sub notall (&@) {
+sub notall (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
-        return YES unless $f->();
-    }
-    return NO;
+    return if !@_;
+    $f->() or return 1 foreach(@_);
+    return 0;
 }
 
-sub true (&@) {
+sub true (&@)
+{
     my $f     = shift;
     my $count = 0;
-    foreach ( @_ ) {
-        $count++ if $f->();
-    }
+     $f->() and ++$count foreach (@_);
     return $count;
 }
 
-sub false (&@) {
+sub false (&@)
+{
     my $f     = shift;
     my $count = 0;
-    foreach ( @_ ) {
-        $count++ unless $f->();
-    }
+    $f->() or ++$count foreach (@_);
     return $count;
 }
 
-sub firstidx (&@) {
+sub firstidx (&@)
+{
     my $f = shift;
-    foreach my $i ( 0 .. $#_ ) {
+    foreach my $i ( 0 .. $#_ )
+    {
         local *_ = \$_[$i];
         return $i if $f->();
     }
     return -1;
 }
 
-sub lastidx (&@) {
+sub lastidx (&@)
+{
     my $f = shift;
-    foreach my $i ( reverse 0 .. $#_ ) {
+    foreach my $i ( reverse 0 .. $#_ )
+    {
         local *_ = \$_[$i];
         return $i if $f->();
     }
     return -1;
 }
 
-sub insert_after (&$\@) {
-    my ($f, $val, $list) = @_;
+sub insert_after (&$\@)
+{
+    my ( $f, $val, $list ) = @_;
     my $c = -1;
     local *_;
-    foreach my $i ( 0 .. $#$list ) {
+    foreach my $i ( 0 .. $#$list )
+    {
         $_ = $list->[$i];
         $c = $i, last if $f->();
     }
-    @$list = (
-        @{$list}[ 0 .. $c ],
-        $val,
-        @{$list}[ $c + 1 .. $#$list ],
-    ) and return 1 if $c != -1;
+    @$list = ( @{$list}[ 0 .. $c ], $val, @{$list}[ $c + 1 .. $#$list ], ) and return 1 if $c != -1;
     return 0;
 }
 
-sub insert_after_string ($$\@) {
-    my ($string, $val, $list) = @_;
+sub insert_after_string ($$\@)
+{
+    my ( $string, $val, $list ) = @_;
     my $c = -1;
-    foreach my $i ( 0 .. $#$list ) {
+    foreach my $i ( 0 .. $#$list )
+    {
         local $^W = 0;
         $c = $i, last if $string eq $list->[$i];
     }
-    @$list = (
-        @{$list}[ 0 .. $c ],
-        $val,
-        @{$list}[ $c + 1 .. $#$list ],
-    ) and return 1 if $c != -1;
+    @$list = ( @{$list}[ 0 .. $c ], $val, @{$list}[ $c + 1 .. $#$list ], ) and return 1 if $c != -1;
     return 0;
 }
 
-sub apply (&@) {
+sub apply (&@)
+{
     my $action = shift;
     &$action foreach my @values = @_;
     wantarray ? @values : $values[-1];
 }
 
-sub after (&@) {
+sub after (&@)
+{
     my $test = shift;
     my $started;
     my $lag;
-    grep $started ||= do {
+    grep $started ||= do
+    {
         my $x = $lag;
         $lag = $test->();
-        $x
+        $x;
     }, @_;
 }
 
-sub after_incl (&@) {
+sub after_incl (&@)
+{
     my $test = shift;
     my $started;
     grep $started ||= $test->(), @_;
 }
 
-sub before (&@) {
+sub before (&@)
+{
     my $test = shift;
     my $more = 1;
-    grep $more &&= ! $test->(), @_;
+    grep $more &&= !$test->(), @_;
 }
 
-sub before_incl (&@) {
+sub before_incl (&@)
+{
     my $test = shift;
     my $more = 1;
     my $lag  = 1;
-    grep $more &&= do {
+    grep $more &&= do
+    {
         my $x = $lag;
-        $lag = ! $test->();
-        $x
+        $lag = !$test->();
+        $x;
     }, @_;
 }
 
-sub indexes (&@) {
+sub indexes (&@)
+{
     my $test = shift;
     grep {
         local *_ = \$_[$_];
@@ -169,10 +171,12 @@ sub indexes (&@) {
     } 0 .. $#_;
 }
 
-sub lastval (&@) {
+sub lastval (&@)
+{
     my $test = shift;
     my $ix;
-    for ( $ix = $#_; $ix >= 0; $ix-- ) {
+    for ( $ix = $#_; $ix >= 0; $ix-- )
+    {
         local *_ = \$_[$ix];
         my $testval = $test->();
 
@@ -183,15 +187,18 @@ sub lastval (&@) {
     return undef;
 }
 
-sub firstval (&@) {
+sub firstval (&@)
+{
     my $test = shift;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         return $_ if $test->();
     }
     return undef;
 }
 
-sub pairwise (&\@\@) {
+sub pairwise (&\@\@)
+{
     my $op = shift;
 
     # Symbols for caller's input arrays
@@ -199,38 +206,43 @@ sub pairwise (&\@\@) {
     local ( *A, *B ) = @_;
 
     # Localise $a, $b
-    my ( $caller_a, $caller_b ) = do {
+    my ( $caller_a, $caller_b ) = do
+    {
         my $pkg = caller();
         no strict 'refs';
-        \*{$pkg.'::a'}, \*{$pkg.'::b'};
+        \*{ $pkg . '::a' }, \*{ $pkg . '::b' };
     };
 
     # Loop iteration limit
-    my $limit = $#A > $#B? $#A : $#B;
+    my $limit = $#A > $#B ? $#A : $#B;
 
     # This map expression is also the return value
-    local( *$caller_a, *$caller_b );
+    local ( *$caller_a, *$caller_b );
     map {
         # Assign to $a, $b as refs to caller's array elements
         ( *$caller_a, *$caller_b ) = \( $A[$_], $B[$_] );
 
         # Perform the transformation
         $op->();
-    }  0 .. $limit;
+    } 0 .. $limit;
 }
 
-sub each_array (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
+sub each_array (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
+{
     return each_arrayref(@_);
 }
 
-sub each_arrayref {
-    my @list  = @_; # The list of references to the arrays
-    my $index = 0;  # Which one the caller will get next
-    my $max   = 0;  # Number of elements in longest array
+sub each_arrayref
+{
+    my @list  = @_;    # The list of references to the arrays
+    my $index = 0;     # Which one the caller will get next
+    my $max   = 0;     # Number of elements in longest array
 
     # Get the length of the longest input array
-    foreach ( @list ) {
-        unless ( ref $_ eq 'ARRAY' ) {
+    foreach (@list)
+    {
+        unless ( ref $_ eq 'ARRAY' )
+        {
             require Carp;
             Carp::croak("each_arrayref: argument is not an array reference\n");
         }
@@ -239,15 +251,17 @@ sub each_arrayref {
 
     # Return the iterator as a closure wrt the above variables.
     return sub {
-        if ( @_ ) {
+        if (@_)
+        {
             my $method = shift;
-            unless ( $method eq 'index' ) {
+            unless ( $method eq 'index' )
+            {
                 require Carp;
                 Carp::croak("each_array: unknown argument '$method' passed to iterator.");
             }
 
             # Return current (last fetched) index
-            return undef if $index == 0  ||  $index > $max;
+            return undef if $index == 0 || $index > $max;
             return $index - 1;
         }
 
@@ -256,88 +270,105 @@ sub each_arrayref {
         my $i = $index++;
 
         # Return ith elements
-        return map $_->[$i], @list; 
-    }
+        return map $_->[$i], @list;
+      }
 }
 
-sub natatime ($@) {
+sub natatime ($@)
+{
     my $n    = shift;
     my @list = @_;
     return sub {
         return splice @list, 0, $n;
-    }
+      }
 }
 
-sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@) {
+sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
+{
     my $max = -1;
     $max < $#$_ && ( $max = $#$_ ) foreach @_;
     map {
         my $ix = $_;
         map $_->[$ix], @_;
-    } 0 .. $max; 
+    } 0 .. $max;
 }
 
-sub uniq (@) {
+sub uniq (@)
+{
     my %seen = ();
     grep { not $seen{$_}++ } @_;
 }
 
-sub minmax (@) {
+sub minmax (@)
+{
     return unless @_;
     my $min = my $max = $_[0];
 
-    for ( my $i = 1; $i < @_; $i += 2 ) {
-        if ( $_[$i-1] <= $_[$i] ) {
-            $min = $_[$i-1] if $min > $_[$i-1];
-            $max = $_[$i]   if $max < $_[$i];
-        } else {
-            $min = $_[$i]   if $min > $_[$i];
-            $max = $_[$i-1] if $max < $_[$i-1];
+    for ( my $i = 1; $i < @_; $i += 2 )
+    {
+        if ( $_[ $i - 1 ] <= $_[$i] )
+        {
+            $min = $_[ $i - 1 ] if $min > $_[ $i - 1 ];
+            $max = $_[$i]       if $max < $_[$i];
+        }
+        else
+        {
+            $min = $_[$i]       if $min > $_[$i];
+            $max = $_[ $i - 1 ] if $max < $_[ $i - 1 ];
         }
     }
 
-    if ( @_ & 1 ) {
+    if ( @_ & 1 )
+    {
         my $i = $#_;
-        if ($_[$i-1] <= $_[$i]) {
-            $min = $_[$i-1] if $min > $_[$i-1];
-            $max = $_[$i]   if $max < $_[$i];
-        } else {
-            $min = $_[$i]   if $min > $_[$i];
-            $max = $_[$i-1] if $max < $_[$i-1];
+        if ( $_[ $i - 1 ] <= $_[$i] )
+        {
+            $min = $_[ $i - 1 ] if $min > $_[ $i - 1 ];
+            $max = $_[$i]       if $max < $_[$i];
+        }
+        else
+        {
+            $min = $_[$i]       if $min > $_[$i];
+            $max = $_[ $i - 1 ] if $max < $_[ $i - 1 ];
         }
     }
 
-    return ($min, $max);
+    return ( $min, $max );
 }
 
-sub part (&@) {
-    my ($code, @list) = @_;
+sub part (&@)
+{
+    my ( $code, @list ) = @_;
     my @parts;
-    push @{ $parts[ $code->($_) ] }, $_  foreach @list;
+    push @{ $parts[ $code->($_) ] }, $_ foreach @list;
     return @parts;
 }
 
-sub bsearch(&@) {
+sub bsearch(&@)
+{
     my $code = shift;
 
     my $rc;
     my $i = 0;
     my $j = @_;
-    do {
-        my $k = int(($i + $j) / 2);
+    do
+    {
+        my $k = int( ( $i + $j ) / 2 );
 
         $k >= @_ and return;
 
         local *_ = \$_[$k];
         $rc = $code->();
 
-        $rc == 0 and
-            return wantarray ? $_ : 1;
+        $rc == 0
+          and return wantarray ? $_ : 1;
 
-        if ($rc < 0) {
+        if ( $rc < 0 )
+        {
             $i = $k + 1;
         }
-	else {
+        else
+        {
             $j = $k - 1;
         }
     } until $i > $j;

@@ -55,7 +55,7 @@ sub test_any {
     is_true( any { defined } @list );
     is_false( any { not defined } @list );
     is_true( any { not defined } undef );
-    is_false( any { } );
+    is_undef( any { } );
 
     leak_free_ok(any => sub {
         my $ok = any { $_ == 5000 } @list;
@@ -73,7 +73,7 @@ sub test_all {
     is_true( all { defined } @list );
     is_true( all { $_ > 0 } @list );
     is_false( all { $_ < 5000 } @list );
-    is_true( all { } );
+    is_undef( all { } );
 
     leak_free_ok(all => sub {
         my $ok  = all { $_ == 5000 } @list;
@@ -87,7 +87,7 @@ sub test_none {
     is_true( none { not defined } @list );
     is_true( none { $_ > 10000 } @list );
     is_false( none { defined } @list );
-    is_true( none { } );
+    is_undef( none { } );
 
     leak_free_ok(none => sub {
         my $ok  = none { $_ == 5000 } @list;
@@ -101,7 +101,7 @@ sub test_notall {
     is_true( notall { ! defined } @list );
     is_true( notall { $_ < 10000 } @list );
     is_false( notall { $_ <= 10000 } @list );
-    is_false( notall { } );
+    is_undef( notall { } );
 
     leak_free_ok(notall => sub {
         my $ok  = notall { $_ == 5000 } @list;
@@ -816,47 +816,6 @@ sub test_bsearch {
 	    scalar bsearch { grow_stack(); $_ - $elem or die "Goal!"; $_ - $elem } @list;
 	};
     });
-}
-
-######################################################################
-# Support Functions
-
-sub is_true {
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    die "Expected 1 param" unless @_ == 1;
-    ok( $_[0], "is_true ()" );
-}
-
-sub is_false {
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    die "Expected 1 param" unless @_ == 1;
-    ok( !$_[0], "is_false()" );
-}
-
-my @bigary = ( 1 ) x 500;
-
-sub func { }
-
-sub grow_stack {
-    func(@bigary);
-}
-
-sub leak_free_ok {
-    my $name = shift;
-    my $code = shift;
-    SKIP: {
-        skip 'Test::LeakTrace not installed', 1
-            unless eval { require Test::LeakTrace; 1 };
-	local $Test::Builder::Level = $Test::Builder::Level + 1;
-        &Test::LeakTrace::no_leaks_ok($code, "No memory leaks in $name");
-    }
-}
-
-{
-    package DieOnStringify;
-    use overload '""' => \&stringify;
-    sub new { bless {}, shift }
-    sub stringify { die 'DieOnStringify exception' }
 }
 
 1;
