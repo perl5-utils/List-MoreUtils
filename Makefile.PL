@@ -10,7 +10,7 @@ use lib 'inc';
 use Config::AutoConf::LMU ();
 use Tumble;
 
-Config::AutoConf::LMU->_set_argv(@ARGV); # XXX hack because we cannot construct for global use
+Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
 Tumble->tumble;
 
@@ -20,8 +20,11 @@ my %RUN_DEPS = (
                  'Sub::Exporter' => 0,
                );
 my %CONFIGURE_DEPS = (
-                       'ExtUtils::MakeMaker' => '6.86',
-                       'Config::AutoConf'    => '0.19',
+                       'ExtUtils::MakeMaker'       => '6.86',
+                       'Carp'                      => 0,
+                       'Class::Tiny'               => 0,
+                       'Config::AutoConf'          => '0.19',
+                       'Module::Pluggable::Object' => '5.1',
                      );
 my %BUILD_DEPS = ();
 
@@ -29,8 +32,8 @@ my %TEST_DEPS = (
                   'Test::More' => 0.90,
                 );
 my @XS_FILES = qw(MoreUtils.xs);
-  #qw(Alias.xs Modern.xs Sno.xs Tassilo.xs);
-  #qw(lib/List/MoreUtils/Impl/Alias.xs lib/List/MoreUtils/Impl/Modern.xs lib/List/MoreUtils/Impl/Tassilo.xs);
+#qw(Alias.xs Modern.xs Sno.xs Tassilo.xs);
+#qw(lib/List/MoreUtils/Impl/Alias.xs lib/List/MoreUtils/Impl/Modern.xs lib/List/MoreUtils/Impl/Tassilo.xs);
 
 WriteMakefile1(
     MIN_PERL_VERSION => '5.008001',
@@ -42,11 +45,11 @@ WriteMakefile1(
                   prereqs => {
                                develop => {
                                             requires => {
-                                                         'Test::CPAN::Changes'                 => 0,
-                                                         'Test::CheckManifest'                 => 0,
-                                                         'Test::Pod'                           => 0,
-                                                         'Test::Pod::Coverage'                 => 0,
-                                                         'Test::Pod::Spelling::CommonMistakes' => 0,
+                                                          'Test::CPAN::Changes'                 => 0,
+                                                          'Test::CheckManifest'                 => 0,
+                                                          'Test::Pod'                           => 0,
+                                                          'Test::Pod::Coverage'                 => 0,
+                                                          'Test::Pod::Spelling::CommonMistakes' => 0,
                                                         },
                                           },
                                configure => {
@@ -78,10 +81,10 @@ WriteMakefile1(
        Config::AutoConf::LMU->with_xs
        ? (
            XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
-	   MAGICXS => 1,
+           MAGICXS => 1,
            #OBJECT => [ map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ],
            #OBJECT => join(" ", map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ),
-	   INC => "-I."
+           INC => "-I."
          )
        : ()
     ),
