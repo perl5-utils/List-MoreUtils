@@ -1629,68 +1629,6 @@ CODE:
 }
 
 MODULE = List::MoreUtils::Impl::Modern		PACKAGE = List::MoreUtils::Impl::Modern
-void
-first(block,...)
-    SV *block
-PROTOTYPE: &@
-CODE:
-{
-    int index;
-    GV *gv;
-    HV *stash;
-    SV **args = &PL_stack_base[ax];
-    CV *cv    = sv_2cv(block, &stash, &gv, 0);
-
-    if(cv == Nullcv)
-        croak("Not a subroutine reference");
-
-    if(items <= 1)
-        XSRETURN_UNDEF;
-
-    SAVESPTR(GvSV(PL_defgv));
-#ifdef dMULTICALL
-    if(!CvISXSUB(cv)) {
-        dMULTICALL;
-        I32 gimme = G_SCALAR;
-        PUSH_MULTICALL(cv);
-
-        for(index = 1 ; index < items ; index++) {
-            GvSV(PL_defgv) = args[index];
-            MULTICALL;
-            if(SvTRUEx(*PL_stack_sp)) {
-#  ifdef PERL_HAS_BAD_MULTICALL_REFCOUNT
-                if(CvDEPTH(multicall_cv) > 1)
-                    SvREFCNT_inc_simple_void_NN(multicall_cv);
-#  endif
-                POP_MULTICALL;
-                ST(0) = ST(index);
-                XSRETURN(1);
-            }
-        }
-#  ifdef PERL_HAS_BAD_MULTICALL_REFCOUNT
-        if(CvDEPTH(multicall_cv) > 1)
-            SvREFCNT_inc_simple_void_NN(multicall_cv);
-#  endif
-        POP_MULTICALL;
-    }
-    else
-#endif
-    {
-        for(index = 1 ; index < items ; index++) {
-            dSP;
-            GvSV(PL_defgv) = args[index];
-
-            PUSHMARK(SP);
-            call_sv((SV*)cv, G_SCALAR);
-            if(SvTRUEx(*PL_stack_sp)) {
-                ST(0) = ST(index);
-                XSRETURN(1);
-            }
-        }
-    }
-    XSRETURN_UNDEF;
-}
-
 
 void
 any(block,...)
