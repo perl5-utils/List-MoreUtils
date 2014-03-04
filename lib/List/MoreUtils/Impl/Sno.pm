@@ -18,6 +18,10 @@ List::MoreUtils::Impl::Sno - Provide after merge List::MoreUtils implementation
 
   use List::MoreUtils qw(:sno);
 
+=head1 FUNCTIONS
+
+Currently none
+
 =head1 SEE ALSO
 
 L<List::Util>

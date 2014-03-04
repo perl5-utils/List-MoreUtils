@@ -47,6 +47,81 @@ List::MoreUtils::Impl::Alias - Provide List::MoreUtils implementation by Adam Ke
 
   use List::MoreUtils qw(:alias);
 
+=head1 FUNCTIONS
+
+=head2 any BLOCK LIST
+
+Returns a true value if any item in LIST meets the criterion given through
+BLOCK. Sets C<$_> for each item in LIST in turn:
+
+  print "At least one value undefined"
+    if any { ! defined($_) } @list;
+
+Returns false otherwise, or if LIST is empty.
+
+B<The behaviour without LIST needs to be discussed!>
+
+=head2 all BLOCK LIST
+
+Returns a true value if all items in LIST meet the criterion given through
+BLOCK, or if LIST is empty. Sets C<$_> for each item in LIST in turn:
+
+  print "All items defined"
+    if all { defined($_) } @list;
+
+Returns false otherwise.
+
+=head2 none BLOCK LIST
+
+Logically the negation of C<any>. Returns a true value if no item in LIST meets
+the criterion given through BLOCK, or if LIST is empty. Sets C<$_> for each item
+in LIST in turn:
+
+  print "No value defined"
+    if none { defined($_) } @list;
+
+Returns false otherwise.
+
+=head2 notall BLOCK LIST
+
+Logically the negation of C<all>. Returns a true value if not all items in LIST
+meet the criterion given through BLOCK. Sets C<$_> for each item in LIST in
+turn:
+
+  print "Not all values defined"
+    if notall { defined($_) } @list;
+
+Returns false otherwise, or if LIST is empty.
+
+=head2 sort_by BLOCK LIST
+
+Returns the list of values sorted according to the string values returned by the
+KEYFUNC block or function. A typical use of this may be to sort objects according
+to the string value of some accessor, such as
+
+  sort_by { $_->name } @people
+
+The key function is called in scalar context, being passed each value in turn as
+both $_ and the only argument in the parameters, @_. The values are then sorted
+according to string comparisons on the values returned.
+This is equivalent to
+
+  sort { $a->name cmp $b->name } @people
+
+except that it guarantees the name accessor will be executed only once per value.
+One interesting use-case is to sort strings which may have numbers embedded in them
+"naturally", rather than lexically.
+
+  sort_by { s/(\d+)/sprintf "%09d", $1/eg; $_ } @strings
+
+This sorts strings by generating sort keys which zero-pad the embedded numbers to
+some level (9 digits in this case), helping to ensure the lexical sort puts them
+in the correct order.
+
+=head2 nsort_by BLOCK LIST
+
+Similar to sort_by but compares its key values numerically.
+
 =head1 SEE ALSO
 
 L<List::Util>
