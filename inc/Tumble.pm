@@ -21,10 +21,11 @@ use FindBin qw();
 use Context;
 
 $| = 1;
-my $output_dir = "gt";    # generated tests, in opposite to t => tests and xt => extra/author tests
 
 sub tumble
 {
+    my ( $class, $output_dir ) = @_;
+
     my $plug_dir = Cwd::abs_path( File::Spec->catdir( $FindBin::RealBin, "t", "lib" ) );
 
     my $test_writer =

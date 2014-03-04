@@ -8,11 +8,13 @@ require 5.008001;
 use ExtUtils::MakeMaker;
 use lib 'inc';
 use Config::AutoConf::LMU ();
+use File::Path;
 use Tumble;
 
 Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
-Tumble->tumble;
+-d "gt" and rmtree("gt");
+Tumble->tumble("gt");
 
 # Should we build the XS version?
 my %RUN_DEPS = (
@@ -32,8 +34,6 @@ my %TEST_DEPS = (
                   'Test::More' => 0.90,
                 );
 my @XS_FILES = qw(MoreUtils.xs);
-#qw(Alias.xs Modern.xs Sno.xs Tassilo.xs);
-#qw(lib/List/MoreUtils/Impl/Alias.xs lib/List/MoreUtils/Impl/Modern.xs lib/List/MoreUtils/Impl/Tassilo.xs);
 
 WriteMakefile1(
     MIN_PERL_VERSION => '5.008001',
