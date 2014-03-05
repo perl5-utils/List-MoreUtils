@@ -142,13 +142,3 @@ sub WriteMakefile1
 
     WriteMakefile(%params);
 }
-
-# hack cpanfile for travis
-if ( -d "xt" && eval "use CPAN::Meta; use Module::CPANfile; 1" )
-{
-    # read MYMETA, then feed the prereqs to create Module::CPANfile
-    my $meta = CPAN::Meta->load_file('MYMETA.json');
-    my $file = Module::CPANfile->from_prereqs( $meta->prereqs );
-    $file->save('cpanfile');
-}
-$@ and die $@;
