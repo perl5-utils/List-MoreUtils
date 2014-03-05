@@ -1,8 +1,9 @@
 ---
 install:
-  - cpanm --quiet --notest --skip-satisfied Class::Tiny Config::AutoConf Module::Pluggable::Object Carp App::mymeta_requires
+  - cpanm --notest --skip-satisfied Class::Tiny Config::AutoConf Module::Pluggable::Object Carp App::mymeta_requires
   - perl Makefile.PL
-  - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm -quiet
+  - make manifest
+  - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm
 language: perl
 perl:
   - "5.18"
