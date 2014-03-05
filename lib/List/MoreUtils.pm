@@ -12,7 +12,7 @@ my @tag_hist;
 
 BEGIN
 {
-    $VERSION  = '0.400';
+    $VERSION  = '0.400_002';
     @tag_hist = qw(alias sno tassilo modern);
 }
 
