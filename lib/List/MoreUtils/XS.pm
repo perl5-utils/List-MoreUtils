@@ -20,7 +20,7 @@ BEGIN
 	local \$ENV{PERL_DL_NONLAZY} = 0 if \$ENV{PERL_DL_NONLAZY};
 
 	use XSLoader;
-	XSLoader::load();
+	XSLoader::load("List::MoreUtils", $VERSION);
 
 	1;
 EOLDR
