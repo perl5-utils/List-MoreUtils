@@ -1,3 +1,6 @@
+---
+install:
+  - cpanm  --quiet  --notest --skip-satisfied Class::Tiny Config::AutoConf Module::Pluggable::Object Carp
 language: perl
 perl:
   - "5.18"
