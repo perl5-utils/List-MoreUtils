@@ -19,7 +19,7 @@ Tumble->tumble("gt");
 # Should we build the XS version?
 my %RUN_DEPS = (
                  'perl'          => '5.008001',
-		 'XSLoader'      => 0,
+                 'XSLoader'      => 0,
                  'Sub::Exporter' => 0,
                );
 my %CONFIGURE_DEPS = (
@@ -38,34 +38,34 @@ my @XS_FILES = qw(MoreUtils.xs);
 
 WriteMakefile1(
     MIN_PERL_VERSION => '5.008001',
-    META_ADD         => {
-                  'meta-spec' => { version => 2 },
-                  resources   => {
-                                 repository => "https://github.com/perl5-utils/List-MoreUtils",
-                               },
-                  prereqs => {
-                               develop => {
-                                            requires => {
-                                                          'Test::CPAN::Changes'                 => 0,
-                                                          'Test::CheckManifest'                 => 0,
-                                                          'Test::Pod'                           => 0,
-                                                          'Test::Pod::Coverage'                 => 0,
-                                                          'Test::Pod::Spelling::CommonMistakes' => 0,
-                                                        },
-                                          },
-                               configure => {
-                                              requires => {%CONFIGURE_DEPS},
-                                            },
-                               build   => { requires => {%BUILD_DEPS} },
-                               test    => { requires => {%TEST_DEPS} },
-                               runtime => {
-                                            recommends => {
-                                                            'perl' => '5.018001',
+    META_MERGE       => {
+                    'meta-spec' => { version => 2 },
+                    resources   => {
+                                   repository => "https://github.com/perl5-utils/List-MoreUtils",
+                                 },
+                    prereqs => {
+                                 develop => {
+                                              requires => {
+                                                            'Test::CPAN::Changes'                 => 0,
+                                                            'Test::CheckManifest'                 => 0,
+                                                            'Test::Pod'                           => 0,
+                                                            'Test::Pod::Coverage'                 => 0,
+                                                            'Test::Pod::Spelling::CommonMistakes' => 0,
                                                           },
-                                            requires => { %RUN_DEPS, },
-                                          },
-                             },
-                },
+                                            },
+                                 configure => {
+                                                requires => {%CONFIGURE_DEPS},
+                                              },
+                                 build   => { requires => {%BUILD_DEPS} },
+                                 test    => { requires => {%TEST_DEPS} },
+                                 runtime => {
+                                              recommends => {
+                                                              'perl' => '5.018001',
+                                                            },
+                                              requires => { %RUN_DEPS, },
+                                            },
+                               },
+                  },
     NAME         => 'List::MoreUtils',
     ABSTRACT     => 'Provide the stuff missing in List::Util',
     VERSION_FROM => 'lib/List/MoreUtils.pm',
@@ -74,10 +74,7 @@ WriteMakefile1(
                 'Adam Kennedy <adamk@cpan.org>',
                 'Jens Rehsack <rehsack@cpan.org>'
               ],
-    LICENSE        => 'perl',
-    PREREQ_PM      => \%RUN_DEPS,
-    BUILD_REQUIRES => \%BUILD_DEPS,
-    TEST_REQUIRES  => \%TEST_DEPS,
+    LICENSE => 'perl',
     (
        Config::AutoConf::LMU->with_xs
        ? (
@@ -145,3 +142,13 @@ sub WriteMakefile1
 
     WriteMakefile(%params);
 }
+
+# hack cpanfile for travis
+if ( -d "xt" && eval "use CPAN::Meta; use Module::CPANfile; 1" )
+{
+    # read MYMETA, then feed the prereqs to create Module::CPANfile
+    my $meta = CPAN::Meta->load_file('MYMETA.json');
+    my $file = Module::CPANfile->from_prereqs( $meta->prereqs );
+    $file->save('cpanfile');
+}
+$@ and die $@;
