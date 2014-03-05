@@ -19,7 +19,7 @@ BEGIN
 	# cause the perl code to be tested
 	local \$ENV{PERL_DL_NONLAZY} = 0 if \$ENV{PERL_DL_NONLAZY};
 
-	use XSLoader;
+	use XSLoader ();
 	XSLoader::load("List::MoreUtils", $VERSION);
 
 	1;
