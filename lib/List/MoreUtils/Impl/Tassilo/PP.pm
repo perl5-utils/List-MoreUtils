@@ -91,13 +91,7 @@ sub lastidx (&@)
 sub insert_after (&$\@)
 {
     my ( $f, $val, $list ) = @_;
-    my $c = -1;
-    local *_;
-    foreach my $i ( 0 .. $#$list )
-    {
-        $_ = $list->[$i];
-        $c = $i, last if $f->();
-    }
+    my $c = &firstidx( $f, @$list );
     @$list = ( @{$list}[ 0 .. $c ], $val, @{$list}[ $c + 1 .. $#$list ], ) and return 1 if $c != -1;
     return 0;
 }
@@ -105,12 +99,7 @@ sub insert_after (&$\@)
 sub insert_after_string ($$\@)
 {
     my ( $string, $val, $list ) = @_;
-    my $c = -1;
-    foreach my $i ( 0 .. $#$list )
-    {
-        local $^W = 0;
-        $c = $i, last if $string eq $list->[$i];
-    }
+    my $c = firstidx { defined $_ and $string eq $_ } @$list;
     @$list = ( @{$list}[ 0 .. $c ], $val, @{$list}[ $c + 1 .. $#$list ], ) and return 1 if $c != -1;
     return 0;
 }
