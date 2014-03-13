@@ -225,12 +225,14 @@ sub test_insert_after_string {
 sub test_apply {
     # Test the null case
     my $null_scalar = apply { };
-    my @null_list   = apply { };
     is( $null_scalar, undef, 'apply(null) returns undef' );
+
+    my @null_list   = apply { };
     is_deeply( \@null_list, [ ], 'apply(null) returns null list' );
 
     # Normal cases
     my @list  = ( 0 .. 9 );
+    my @list1  = ( 0 .. 9 );
     my @list1 = apply { $_++ } @list;
     ok( is_deeply( \@list,  [ 0 .. 9  ] ) );
     ok( is_deeply( \@list1, [ 1 .. 10 ] ) );
@@ -712,12 +714,16 @@ sub test_part {
 
     $i = 0;
     @part = part { $i++ == 0 ? 0 : -1 } @list;
-    ok( is_deeply($part[0], [ 1 .. 12 ]) );
+    is_deeply($part[0], [ 1 .. 12 ], "part with negative indices");
 
     {
-	local $^W = 0;
+	local $TODO = "needs to be spit out in XS";
+	my @warns = ();
+	local $SIG{__WARN__} = sub { push @warns, [@_] };
 	@part = part { undef } @list;
-	ok( is_deeply($part[0], [ 1 .. 12 ]) );
+	is_deeply($part[0], [ 1 .. 12 ], "part with undef");
+	like($warns[0], qr/Use of uninitialized value in array element.*line\s+\d+\.$/, "warning of undef");
+	is_deeply( \@warns, [ ($warns[0]) x 12 ], "amount of similar undef warnings" );
     }
 
     @part = part { 10000 } @list;
