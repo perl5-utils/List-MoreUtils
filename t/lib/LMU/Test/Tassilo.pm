@@ -811,6 +811,11 @@ sub test_minmax {
     is( $min, $uvmax-10, "minmax finds uvmax-10" );
     is( $max, $uvmax, "minmax finds uvmax" );
 
+    my @mixed_nums = map { ($ivmin + $_, $uvmax - $_) } (0..10);
+    ($min, $max) = minmax @mixed_nums;
+    is( $min, $ivmin, "minmax finds ivmin" );
+    is( $max, $uvmax, "minmax finds uvmax" );
+
     leak_free_ok(minmax => sub {
         @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );
         ($min, $max) = minmax @list;
