@@ -91,7 +91,7 @@ my_cxinc(pTHX)
  */
 #if PERL_VERSION < 18
 #undef SvIV_please_nomg
-#define SvIV_please_nomg(sv) \
+#  define SvIV_please_nomg(sv) \
 	(!SvIOKp(sv) && (SvNOK(sv) || SvPOK(sv)) \
 	    ? (SvIV_nomg(sv), SvIOK(sv))	  \
 	    : SvIOK(sv))
@@ -149,8 +149,13 @@ ncmp(pTHX_ SV* left, SV * right)
     }
     else
     {
+#ifdef SvNV_nomg
         NV const rnv = SvNV_nomg(right);
         NV const lnv = SvNV_nomg(left);
+#else
+        NV const rnv = slu_sv_value(right);
+        NV const lnv = slu_sv_value(left);
+#endif
 
 #if defined(NAN_COMPARE_BROKEN) && defined(Perl_isnan)
         if (Perl_isnan(lnv) || Perl_isnan(rnv)) {
