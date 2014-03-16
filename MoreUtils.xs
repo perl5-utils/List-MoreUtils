@@ -86,6 +86,17 @@ my_cxinc(pTHX)
 #  define slu_sv_value(sv) (SvIOK(sv)) ? (NV)(SvIVX(sv)) : (SvNV(sv))
 #endif
 
+/*
+ * Perl < 5.18 had some kind of different SvIV_please_nomg
+ */
+#if PERL_VERSION < 18
+#undef SvIV_please_nomg
+#define SvIV_please_nomg(sv) \
+	(!SvIOKp(sv) && (SvNOK(sv) || SvPOK(sv)) \
+	    ? (SvIV_nomg(sv), SvIOK(sv))	  \
+	    : SvIOK(sv))
+#endif
+
 /* compare left and right SVs. Returns:
  * -1: <
  *  0: ==
