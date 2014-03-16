@@ -9,6 +9,8 @@ use Test::More;
 use Test::LMU;
 use List::MoreUtils ':tassilo';
 
+use Config;
+
 # Run all tests
 sub run_tests {
     test_any();
@@ -784,6 +786,15 @@ sub test_minmax {
     is( $max, -1 );
     $min = 2;
     is( $max, -1 );
+
+    # prove overrun
+    my $uvmax = ~0;
+    my $ivmax = $uvmax >> 1;
+    my $ivmin = (0-$ivmax)-1;
+    my @low_ints = map { $ivmin + $_ } (0..10);
+    ($min, $max) = minmax @low_ints;
+    is( $min, $ivmin, "minmax finds ivmin" );
+    is( $max, $ivmin+10, "minmax finds ivmin + 10" );
 
     leak_free_ok(minmax => sub {
         @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );

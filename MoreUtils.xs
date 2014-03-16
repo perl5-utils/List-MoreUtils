@@ -86,6 +86,79 @@ my_cxinc(pTHX)
 #  define slu_sv_value(sv) (SvIOK(sv)) ? (NV)(SvIVX(sv)) : (SvNV(sv))
 #endif
 
+/* compare left and right SVs. Returns:
+ * -1: <
+ *  0: ==
+ *  1: >
+ *  2: left or right was a NaN
+ */
+static I32
+ncmp(pTHX_ SV* left, SV * right)
+{
+    /* Fortunately it seems NaN isn't IOK */
+    if(SvAMAGIC(left) || SvAMAGIC(right))
+	return SvIVX(amagic_call(left, right, ncmp_amg, 0));
+
+    if (SvIV_please_nomg(right) && SvIV_please_nomg(left)) {
+	if (!SvUOK(left)) {
+	    const IV leftiv = SvIVX(left);
+	    if (!SvUOK(right)) {
+		/* ## IV <=> IV ## */
+		const IV rightiv = SvIVX(right);
+		return (leftiv > rightiv) - (leftiv < rightiv);
+	    }
+	    /* ## IV <=> UV ## */
+	    if (leftiv < 0)
+		/* As (b) is a UV, it's >=0, so it must be < */
+		return -1;
+	    {
+		const UV rightuv = SvUVX(right);
+		return ((UV)leftiv > rightuv) - ((UV)leftiv < rightuv);
+	    }
+	}
+
+	if (SvUOK(right)) {
+	    /* ## UV <=> UV ## */
+	    const UV leftuv = SvUVX(left);
+	    const UV rightuv = SvUVX(right);
+	    return (leftuv > rightuv) - (leftuv < rightuv);
+	}
+	/* ## UV <=> IV ## */
+	{
+	    const IV rightiv = SvIVX(right);
+	    if (rightiv < 0)
+		/* As (a) is a UV, it's >=0, so it cannot be < */
+		return 1;
+	    {
+		const UV leftuv = SvUVX(left);
+		return (leftuv > (UV)rightiv) - (leftuv < (UV)rightiv);
+	    }
+	}
+	assert(0); /* NOTREACHED */
+    }
+    else
+    {
+        NV const rnv = SvNV_nomg(right);
+        NV const lnv = SvNV_nomg(left);
+
+#if defined(NAN_COMPARE_BROKEN) && defined(Perl_isnan)
+        if (Perl_isnan(lnv) || Perl_isnan(rnv)) {
+	    return 2;
+        }
+        return (lnv > rnv) - (lnv < rnv);
+#else
+        if (lnv < rnv)
+	    return -1;
+        if (lnv > rnv)
+	    return 1;
+        if (lnv == rnv)
+            return 0;
+        return 2;
+#endif
+    }
+}
+
+
 #ifndef Drand01
 #    define Drand01()           ((rand() & 0x7FFF) / (double) ((unsigned long)1 << 15))
 #endif
@@ -1193,15 +1266,13 @@ minmax (...)
     PROTOTYPE: @
     CODE:
     {
-	register int i;
-	register SV *minsv, *maxsv, *asv, *bsv;
-	register double min, max, a, b;
-	
+	I32 i;
+	SV *minsv, *maxsv;
+
 	if (!items)
 	    XSRETURN_EMPTY;
 
 	minsv = maxsv = ST(0);
-	min = max = slu_sv_value(minsv);
 
         if (items == 1) {
             EXTEND(SP, 1);
@@ -1210,54 +1281,37 @@ minmax (...)
         }
 
 	for (i = 1; i < items; i += 2) {
-	    asv = ST(i-1);
-	    bsv = ST(i);
-	    a = slu_sv_value(asv);
-	    b = slu_sv_value(bsv);
-	    if (a <= b) {
-		if (min > a) {
-		    min = a;
+	    SV *asv = ST(i-1);
+	    SV *bsv = ST(i);
+	    int cmp = ncmp(asv, bsv);
+	    if (cmp < 0) {
+		int min_cmp = ncmp(minsv, asv);
+		int max_cmp = ncmp(maxsv, bsv);
+		if (min_cmp > 0) {
 		    minsv = asv;
 		}
-		if (max < b) {
-		    max = b;
+		if (max_cmp < 0) {
 		    maxsv = bsv;
 		}
 	    } else {
-		if (min > b) {
-		    min = b;
+		int min_cmp = ncmp(minsv, bsv);
+		int max_cmp = ncmp(maxsv, asv);
+		if (min_cmp > 0) {
 		    minsv = bsv;
 		}
-		if (max < a) {
-		    max = a;
+		if (max_cmp < 0) {
 		    maxsv = asv;
 		}
 	    }
 	}
 
 	if (items & 1) {
-	    asv = ST(items-2);
-	    bsv = ST(items-1);
-	    a = slu_sv_value(asv);
-	    b = slu_sv_value(bsv);
-	    if (a <= b) {
-		if (min > a) {
-		    min = a;
-		    minsv = asv;
-		}
-		if (max < b) {
-		    max = b;
-		    maxsv = bsv;
-		}
-	    } else {
-		if (min > b) {
-		    min = b;
-		    minsv = bsv;
-		}
-		if (max < a) {
-		    max = a;
-		    maxsv = asv;
-		}
+	    SV *rsv = ST(items-1);
+	    if (ncmp(minsv, rsv) > 0) {
+		minsv = rsv;
+	    }
+	    else if (ncmp(maxsv, rsv) < 0) {
+		maxsv = rsv;
 	    }
 	}
 	ST(0) = minsv;
