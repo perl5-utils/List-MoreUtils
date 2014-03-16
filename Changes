@@ -1,10 +1,12 @@
 Revision history for Perl extension List-MoreUtils
 
-0.400_002	2014-03-nn
+0.400_002	2014-03-16
     - reduce minimum perl version to 5.8.1
     - split implementations between existing authors
-    - use DBI::Test technology to improve tests
     - switch to DynaLoader and Sub::Exporter
+    - rely for testing on Test::WriteVariants and Data::Tumbler
+      (DBI::Test technology to improve tests)
+    - fix 64-bit integer precision (RT#93207 reported by Dana Jacobsen)
 
 0.400_001	2013-10-11
     - Reformat Changes as per CPAN::Changes::Spec
