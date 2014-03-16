@@ -42,7 +42,16 @@ WriteMakefile1(
     META_MERGE       => {
                     'meta-spec' => { version => 2 },
                     resources   => {
-                                   repository => "https://github.com/perl5-utils/List-MoreUtils",
+                                   homepage   => 'https://metacpan.org/release/List-MoreUtils',
+                                   repository => {
+                                                   url  => 'git@github.com:perl5-utils/List-MoreUtils.git',
+                                                   web  => 'https://github.com/perl5-utils/List-MoreUtils',
+                                                   type => 'git',
+                                                 },
+                                   bugtracker => {
+                                                   web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=List-MoreUtils',
+                                                   mailto => 'list-moreutils@example.com',
+                                                 },
                                  },
                     prereqs => {
                                  develop => {
