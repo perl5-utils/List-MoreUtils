@@ -1,4 +1,4 @@
-package LMU::Test::Tassilo;
+package LMU::Test::Tassilo::Funcs;
 
 use 5.008001;
 

@@ -10,60 +10,36 @@ use File::Path;
 use File::Spec qw();
 use File::Basename;
 use Data::Dumper;
-#use Package::Stash qw();
-#use Module::Runtime;
-use Module::Pluggable::Object;
+use Test::WriteVariants;
 
 use Config::AutoConf::LMU ();
-
 use FindBin qw();
-
-use Context;
 
 $| = 1;
 
 sub tumble
 {
-    my ( $class, $output_dir ) = @_;
+    my ( $class ) = @_;
 
     my $plug_dir = Cwd::abs_path( File::Spec->catdir( $FindBin::RealBin, "t", "lib" ) );
+    my $test_writer = Test::WriteVariants->new();
 
-    my $test_writer =
-      Tumble::WriteTestVariants->new( test_case_default_namespace => "LMU::Test",
-                                      test_case_search_dirs       => [$plug_dir], );
-
-    $test_writer->write_test_variants( $output_dir, [ \&lmu_settings_provider, ], );
-}
-
-sub lmu_settings_provider
-{
-    my %settings = (
-                     Default => Context->new,
-                   );
-    my $use_lib_setting;
-    Config::AutoConf::LMU->with_xs
-      and $use_lib_setting = Context->new_module_use( lib => [ File::Spec->catdir(qw(t lib)) ] )
-      and %settings = (
-                        pureperl => Context->new(
-                                                  Context->new_env_var(
-                                                                        LIST_MOREUTILS_PP => 1,
-                                                                      ),
-                                                  $use_lib_setting
-                                                ),
-                        xs => Context->new(
-                                            Context->new_env_var(
-                                                                  LIST_MOREUTILS_PP => 0,
-                                                                ),
-                                            $use_lib_setting
-                                          ),
-                      );
-
-    return %settings;
+    $test_writer->write_test_variants(
+	input_tests => $test_writer->find_input_test_modules(
+	    search_path => [ 'LMU::Test' ],
+	    search_dirs => [ $plug_dir ],
+	    test_prefix => '',
+	),
+	variant_providers => [
+	    "LMU::TestVariants",
+	],
+	output_dir => "gt",
+    );
 }
 
 package Tumble::WriteTestVariants;
 
-use parent "WriteTestVariants";
+use parent "Test::WriteVariants";
 
 use Carp qw/croak/;
 use File::Path qw/mkpath/;
@@ -155,6 +131,26 @@ sub process_template
     $tpl =~ s/\n{2,}/\n\n/g;    # simulate [%- .. -%]
     $tpl =~ s/\n+$/\n/g;
     return $tpl;
+}
+
+package LMU::TestVariants::CanXS;
+
+use strict;
+use warnings;
+
+sub provider {
+    my ($self, $path, $context, $tests, $variants) = @_;
+    my $mod_ctx = $context->new_module_use( lib => [ File::Spec->catdir(qw(t lib)) ] );
+
+    if(Config::AutoConf::LMU->with_xs)
+    {
+	$variants->{pureperl} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 1,), $mod_ctx );
+	$variants->{xs} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 0,), $mod_ctx );
+    }
+    else
+    {
+	$variants->{Default} = $context->new( $mod_ctx );
+    }
 }
 
 1;

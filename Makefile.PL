@@ -25,7 +25,8 @@ my %RUN_DEPS = (
 my %CONFIGURE_DEPS = (
                        'ExtUtils::MakeMaker'       => '6.86',
                        'Carp'                      => 0,
-                       'Class::Tiny'               => 0,
+                       'Test::WriteVariants'       => '0.003',
+                       'Data::Tumbler'             => '0.003',
                        'Config::AutoConf'          => '0.19',
                        'Module::Pluggable::Object' => '5.1',
                      );
@@ -87,7 +88,7 @@ WriteMakefile1(
        : ()
     ),
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => 't/*.t xt/*.t gt/*/*.t' },
+    test   => { TESTS               => 'xt/*.t gt/*/*/*.t' },
     # Otherwise 'cxinc' isn't defined
     DEFINE => '-DPERL_EXT',
               );

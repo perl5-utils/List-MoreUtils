@@ -1,4 +1,4 @@
-package LMU::Test::Alias;
+package LMU::Test::Alias::Funcs;
 
 use 5.008001;
 

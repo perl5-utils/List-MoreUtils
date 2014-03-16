@@ -1,4 +1,4 @@
-package LMU::Test::Modern;
+package LMU::Test::Modern::Funcs;
 
 use 5.008001;
 
