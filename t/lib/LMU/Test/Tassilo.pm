@@ -796,6 +796,21 @@ sub test_minmax {
     is( $min, $ivmin, "minmax finds ivmin" );
     is( $max, $ivmin+10, "minmax finds ivmin + 10" );
 
+    my @high_ints = map { $ivmax - $_ } (0..10);
+    ($min, $max) = minmax @high_ints;
+    is( $min, $ivmax-10, "minmax finds ivmax-10" );
+    is( $max, $ivmax, "minmax finds ivmax" );
+
+    my @mixed_ints = map { ($ivmin + $_, $ivmax - $_) } (0..10);
+    ($min, $max) = minmax @mixed_ints;
+    is( $min, $ivmin, "minmax finds ivmin" );
+    is( $max, $ivmax, "minmax finds ivmax" );
+
+    my @high_uints = map { $uvmax - $_ } (0..10);
+    ($min, $max) = minmax @high_uints;
+    is( $min, $uvmax-10, "minmax finds uvmax-10" );
+    is( $max, $uvmax, "minmax finds uvmax" );
+
     leak_free_ok(minmax => sub {
         @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );
         ($min, $max) = minmax @list;
