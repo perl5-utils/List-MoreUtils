@@ -1,5 +1,15 @@
 Revision history for Perl extension List-MoreUtils
 
+0.400_003	2014-03-18
+    - fix compile error on threaded perls (RT#93934 - thanks Andreas
+      Koenig for reporting)
+    - fix exporter configuration (RT#93929 - thanks Andreas Koenig for
+      reporting)
+    - fix RT#40905 by allowing choose an appropriate implementation
+    - add test for RT#76749 - seems not reproducable (but hopefully
+      reporter David J. Oswald can fix the test to help fixing the
+      issue beyond)
+
 0.400_002	2014-03-16
     - reduce minimum perl version to 5.8.1
     - split implementations between existing authors
