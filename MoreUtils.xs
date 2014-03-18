@@ -104,7 +104,7 @@ my_cxinc(pTHX)
  *  2: left or right was a NaN
  */
 static I32
-ncmp(pTHX_ SV* left, SV * right)
+ncmp(SV* left, SV * right)
 {
     /* Fortunately it seems NaN isn't IOK */
     if(SvAMAGIC(left) || SvAMAGIC(right))
