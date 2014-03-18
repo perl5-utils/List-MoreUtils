@@ -18,7 +18,8 @@ sub run_tests {
               pairwise natatime
               mesh uniq
               minmax part
-              bsearch) );
+              bsearch
+              first_index last_index first_value last_value zip distinct) );
     done_testing();
 }
 
