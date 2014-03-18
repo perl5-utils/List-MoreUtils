@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 use Module::Runtime qw(use_module);
-use List::MoreUtils::XS qw(); # try loading XS
+use List::MoreUtils::XS qw();    # try loading XS
 
 use vars qw{$VERSION @ISA};
 my @tag_hist;
@@ -18,27 +18,26 @@ BEGIN
 
 use Sub::Exporter '-setup' => {
     exports => [
-        qw(true false
-          firstidx lastidx
-          insert_after insert_after_string
-          apply indexes
-          after after_incl before before_incl
-          lastval
-          each_array each_arrayref
-          pairwise natatime
-          mesh uniq
-          minmax part
-          bsearch),
-        # following ones have several implementations
-        ( map { $_ => \&_build_imp } qw(any all none notall firstval sort_by nsort_by) ),
-        # those are just aliases
-        (
-           map { $_ => \&_build_imp }
-             qw(first_index last_index first_value last_value zip distinct)
-        ),
-    ],
-    groups => { map { $_ => \&_build_lmu_group } (@tag_hist, "all") }
-                           };
+        map { $_ => \&_build_imp } (
+            qw(true false
+              firstidx lastidx
+              insert_after insert_after_string
+              apply indexes
+              after after_incl before before_incl
+              lastval
+              each_array each_arrayref
+              pairwise natatime
+              mesh uniq
+              minmax part
+              bsearch),
+            # following ones have several implementations
+            qw(any all none notall firstval sort_by nsort_by),
+            # those are just aliases
+            qw(first_index last_index first_value last_value zip distinct)
+                                   )
+               ],
+    groups => { map { $_ => \&_build_lmu_group } ( @tag_hist, "all" ) }
+                              };
 
 my %pkg_tags = (
     tassilo => {
@@ -73,7 +72,7 @@ my %pkg_tags = (
            },
     modern => {
                 module    => "List::MoreUtils::Impl::Modern",
-                functions => { map { $_ => 1 } qw(any all none notall firstval) },
+                functions => { map { $_ => 1 } qw(any all none notall) },
               }
 );
 
@@ -146,10 +145,10 @@ sub _build_lmu_group
         }
     }
 
-    foreach my $alias (keys %alias_list)
+    foreach my $alias ( keys %alias_list )
     {
-	my $func = $alias_list{$alias};
-	$exp_subs{$alias} = $exp_subs{$func};
+        my $func = $alias_list{$alias};
+        $exp_subs{$alias} = $exp_subs{$func};
     }
 
     return \%exp_subs;
