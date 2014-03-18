@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.400_004	2014-03-
+    - Switch from Sub::Exporter to Exporter::Tiny (Toby Inkster)
+
 0.400_003	2014-03-18
     - fix compile error on threaded perls (RT#93934 - thanks Andreas
       Koenig for reporting)
