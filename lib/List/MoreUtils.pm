@@ -4,41 +4,34 @@ use 5.008001;
 use strict;
 use warnings;
 
+BEGIN {
+    our $VERSION  = '0.400_004';
+}
+
+use Exporter::Tiny qw();
 use Module::Runtime qw(use_module);
 use List::MoreUtils::XS qw();    # try loading XS
 
-use vars qw{$VERSION @ISA};
-my @tag_hist;
+our @ISA = qw(Exporter::Tiny);
+our @EXPORT_OK = (
+    qw(true false
+      firstidx lastidx
+      insert_after insert_after_string
+      apply indexes
+      after after_incl before before_incl
+      lastval
+      each_array each_arrayref
+      pairwise natatime
+      mesh uniq
+      minmax part
+      bsearch),
+    # following ones have several implementations
+    qw(any all none notall firstval sort_by nsort_by),
+    # those are just aliases
+    qw(first_index last_index first_value last_value zip distinct)
+);
 
-BEGIN
-{
-    $VERSION  = '0.400_004';
-    @tag_hist = qw(alias sno tassilo modern);
-}
-
-use Sub::Exporter '-setup' => {
-    exports => [
-        map { $_ => \&_build_imp } (
-            qw(true false
-              firstidx lastidx
-              insert_after insert_after_string
-              apply indexes
-              after after_incl before before_incl
-              lastval
-              each_array each_arrayref
-              pairwise natatime
-              mesh uniq
-              minmax part
-              bsearch),
-            # following ones have several implementations
-            qw(any all none notall firstval sort_by nsort_by),
-            # those are just aliases
-            qw(first_index last_index first_value last_value zip distinct)
-                                   )
-               ],
-    groups => { map { $_ => \&_build_lmu_group } ( @tag_hist, "all" ) }
-                              };
-
+my @tag_hist = qw(alias sno tassilo modern);
 my %pkg_tags = (
     tassilo => {
         module    => "List::MoreUtils::Impl::Tassilo",
@@ -85,74 +78,39 @@ my %alias_list = (
                    distinct    => "uniq",
                  );
 
-my %impl_by_caller;
-
-my $default_imp = "alias";
-
-sub _build_imp
+sub _exporter_expand_sub
 {
-    my ( $class, $name, $arg ) = @_;
-    my $i = 0;
-    my @caller;
-    do
-    {
-        @caller = caller( $i++ );
-    } while ( $caller[0] eq "Sub::Exporter" );
+    my ( $class, $name, $arg, $globals ) = @_;
 
     my @impls = ( "HASH" eq ref $arg and $arg->{impl} ) ? $arg->{impl} : @tag_hist;
-    defined $alias_list{$name} and $name = $alias_list{$name};
+    my $seek  = defined($alias_list{$name}) ? $alias_list{$name} : $name;
 
     foreach my $impl (@impls)
     {
         my $exp_sub;
-        defined $pkg_tags{$impl}->{functions}->{$name}
+        defined $pkg_tags{$impl}->{functions}->{$seek}
           and use_module( $pkg_tags{$impl}->{module} )
-          and $exp_sub = $pkg_tags{$impl}->{module}->can($name);
-
-        my $nm = defined $arg->{as} ? $arg->{as} : $name;
-        $exp_sub and $impl_by_caller{ $caller[0] }->{$name}->{$nm} = $impl;
-        $exp_sub and return $exp_sub;
+          and $exp_sub = $pkg_tags{$impl}->{module}->can($seek);
+        $exp_sub and return ($name => $exp_sub);
     }
 
-    return;
+    return $class->SUPER::_exporter_expand_sub($name, $arg, $globals);
 }
 
-sub _build_lmu_group
+sub _exporter_expand_tag
 {
-    my ( $class, $group, $arg ) = @_;
-    my $i = 0;
-    my @caller;
-    do
+    my ( $class, $group, $arg, $globals ) = @_;
+
+    if ($pkg_tags{$group})
     {
-        @caller = caller( $i++ );
-    } while ( $caller[0] eq "Sub::Exporter" );
-
-    !ref $group and $group eq "all" and $group = \@tag_hist;
-    my @impls = "ARRAY" eq ref $group ? @$group : ($group);
-
-    my %exp_subs;
-    foreach my $impl (@impls)
-    {
-        foreach my $func ( keys %{ $pkg_tags{$impl}->{functions} } )
-        {
-            defined $exp_subs{$func} and next;
-            defined $impl_by_caller{ $caller[0] }->{$func}->{$func} and next;
-
-            use_module( $pkg_tags{$impl}->{module} );
-            $exp_subs{$func} = $pkg_tags{$impl}->{module}->can($func);
-
-            $impl_by_caller{ $caller[0] }->{$func}->{$func} = $impl;
-        }
+        my %functions = %{ $pkg_tags{$group}->{functions} };
+        $functions{$alias_list{$_}} && $functions{$_}++ for keys(%alias_list);
+        return map [ $_ => { impl => $group, %{$arg||{}} } ], keys(%functions);
     }
-
-    foreach my $alias ( keys %alias_list )
-    {
-        my $func = $alias_list{$alias};
-        $exp_subs{$alias} = $exp_subs{$func};
-    }
-
-    return \%exp_subs;
+    
+    return $class->SUPER::_exporter_expand_tag($group, $arg, $globals);
 }
+
 
 =pod
 
@@ -171,9 +129,9 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
     use List::MoreUtils any => { impl => 'modern' },
                         all =>  { impl => 'tassilo' },
-			'none', 'notall', # above precedence
-			'firstidx' => { impl => 'tassilo' },
-			all => { impl => 'modern', as => 'modern_all' };
+                        'none', 'notall', # above precedence
+                        'firstidx' => { impl => 'tassilo' },
+                        all => { impl => 'modern', as => 'modern_all' };
 
 =head1 DESCRIPTION
 
