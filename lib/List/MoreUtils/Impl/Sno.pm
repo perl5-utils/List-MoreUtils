@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION   = '0.400_002';
+our $VERSION   = '0.400_003';
 
 use List::MoreUtils::XS qw(); # try load XS stuff ...
 

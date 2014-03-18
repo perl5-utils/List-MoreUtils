@@ -3,7 +3,7 @@ package List::MoreUtils::Impl::Tassilo::PP;
 use strict;
 use warnings;
 
-our $VERSION = '0.400_002';
+our $VERSION = '0.400_003';
 
 =pod
 
