@@ -29,6 +29,7 @@ my %CONFIGURE_DEPS = (
                        'Data::Tumbler'             => '0.003',
                        'Config::AutoConf'          => '0.19',
                        'Module::Pluggable::Object' => '5.1',
+                       'Module::Runtime'           => 0,
                      );
 my %BUILD_DEPS = ();
 
