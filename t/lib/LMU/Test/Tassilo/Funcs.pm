@@ -275,17 +275,18 @@ sub test_indexes {
     @x = indexes { $_ > 5 } ( 1 .. 4 );
     is_deeply( \@x, [ ], 'Got the null list' );
 
-    my (@s,@n,@o,@e);
+    my ($lr,@s,@n,@o,@e);
     leak_free_ok(indexes => sub {
-        @s = indexes { $_ > 5 } ( 4 .. 9 );
+        $lr = 1;
+	@s = indexes { $_ > 5 } ( 4 .. 9 );
         @n = indexes { $_ > 5 } ( 1 .. 5 );
 	@o = indexes { $_ & 1 } ( 10 .. 15 );
 	@e = indexes { !($_ & 1) } ( 10 .. 15 );
     });
-    is_deeply(\@s, [2..5], "indexes/leak: some");
-    is_deeply(\@n, [], "indexes/leak: none");
-    is_deeply(\@o, [1,3,5], "indexes/leak: odd");
-    is_deeply(\@e, [0,2,4], "indexes/leak: even");
+    $lr and is_deeply(\@s, [2..5], "indexes/leak: some");
+    $lr and is_deeply(\@n, [], "indexes/leak: none");
+    $lr and is_deeply(\@o, [1,3,5], "indexes/leak: odd");
+    $lr and is_deeply(\@e, [0,2,4], "indexes/leak: even");
 
     leak_free_ok(indexes => sub {
         @s = indexes { grow_stack; $_ > 5 } ( 4 .. 9 );
@@ -294,10 +295,10 @@ sub test_indexes {
 	@e = indexes { grow_stack; !($_ & 1) } ( 10 .. 15 );
     });
 
-    is_deeply(\@s, [2..5], "indexes/leak: some");
-    is_deeply(\@n, [], "indexes/leak: none");
-    is_deeply(\@o, [1,3,5], "indexes/leak: odd");
-    is_deeply(\@e, [0,2,4], "indexes/leak: even");
+    $lr and is_deeply(\@s, [2..5], "indexes/leak: some");
+    $lr and is_deeply(\@n, [], "indexes/leak: none");
+    $lr and is_deeply(\@o, [1,3,5], "indexes/leak: odd");
+    $lr and is_deeply(\@e, [0,2,4], "indexes/leak: even");
 
     if($have_scalar_util) {
 	my $ref = \(indexes(sub{1}, 123));
