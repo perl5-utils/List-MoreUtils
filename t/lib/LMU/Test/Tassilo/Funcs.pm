@@ -11,6 +11,9 @@ use List::MoreUtils ':tassilo';
 
 use Config;
 
+my $have_scalar_util;
+eval { use Scalar::Util; $have_scalar_util = 1; };
+
 # Run all tests
 sub run_tests {
     test_any();
@@ -272,10 +275,35 @@ sub test_indexes {
     @x = indexes { $_ > 5 } ( 1 .. 4 );
     is_deeply( \@x, [ ], 'Got the null list' );
 
+    my (@s,@n,@o,@e);
     leak_free_ok(indexes => sub {
-        @x = indexes { $_ > 5 } ( 4 .. 9 );
-        @x = indexes { $_ > 5 } ( 1 .. 4 );
+        @s = indexes { $_ > 5 } ( 4 .. 9 );
+        @n = indexes { $_ > 5 } ( 1 .. 5 );
+	@o = indexes { $_ & 1 } ( 10 .. 15 );
+	@e = indexes { !($_ & 1) } ( 10 .. 15 );
     });
+    is_deeply(\@s, [2..5], "indexes/leak: some");
+    is_deeply(\@n, [], "indexes/leak: none");
+    is_deeply(\@o, [1,3,5], "indexes/leak: odd");
+    is_deeply(\@e, [0,2,4], "indexes/leak: even");
+
+    leak_free_ok(indexes => sub {
+        @s = indexes { grow_stack; $_ > 5 } ( 4 .. 9 );
+        @n = indexes { grow_stack; $_ > 5 } ( 1 .. 4 );
+	@o = indexes { grow_stack; $_ & 1 } ( 10 .. 15 );
+	@e = indexes { grow_stack; !($_ & 1) } ( 10 .. 15 );
+    });
+
+    is_deeply(\@s, [2..5], "indexes/leak: some");
+    is_deeply(\@n, [], "indexes/leak: none");
+    is_deeply(\@o, [1,3,5], "indexes/leak: odd");
+    is_deeply(\@e, [0,2,4], "indexes/leak: even");
+
+    if($have_scalar_util) {
+	my $ref = \(indexes(sub{1}, 123));
+	Scalar::Util::weaken($ref);
+	is($ref, undef, "weakened away");
+    }
 }
 
 # In the following, the @dummy variable is needed to circumvent
