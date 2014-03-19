@@ -67,11 +67,14 @@ WriteMakefile1(
                                  configure => {
                                                 requires => {%CONFIGURE_DEPS},
                                               },
-                                 build   => { requires => {%BUILD_DEPS} },
-                                 test    => { requires => {%TEST_DEPS} },
+                                 build => { requires => {%BUILD_DEPS} },
+                                 test  => {
+                                           requires   => {%TEST_DEPS},
+                                           recommends => { 'Test::LeakTrace' => 0 }
+                                         },
                                  runtime => {
                                               recommends => {
-                                                              'perl' => '5.018001',
+                                                              'perl' => $^V,
                                                             },
                                               requires => { %RUN_DEPS, },
                                             },
