@@ -50,6 +50,10 @@
 	SPAGAIN
 #endif
 
+#ifndef CvISXSUB
+#  define CvISXSUB(cv) CvXSUB(cv)
+#endif
+
 /* Some platforms have strict exports. And before 5.7.3 cxinc (or Perl_cxinc)
    was not exported. Therefore platforms like win32, VMS etc have problems
    so we redefine it here -- GMB
