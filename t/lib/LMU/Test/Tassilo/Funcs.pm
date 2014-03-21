@@ -3,7 +3,7 @@ package LMU::Test::Tassilo::Funcs;
 use 5.008001;
 
 use strict;
-#use warnings;
+use warnings;
 
 use Test::More;
 use Test::LMU;
@@ -237,7 +237,6 @@ sub test_apply {
 
     # Normal cases
     my @list  = ( 0 .. 9 );
-    my @list1  = ( 0 .. 9 );
     my @list1 = apply { $_++ } @list;
     ok( is_deeply( \@list,  [ 0 .. 9  ] ) );
     ok( is_deeply( \@list1, [ 1 .. 10 ] ) );
@@ -555,10 +554,12 @@ sub test_pairwise {
     (@a, @b) = ();
     push @a, int rand(1000) for 0 .. rand(1000);
     push @b, int rand(1000) for 0 .. rand(1000);
-    local $^W = 0;
-    my @res1 = pairwise {$a+$b} @a, @b;
-    my @res2 = pairwise_perl {$a+$b} @a, @b;
-    ok( is_deeply(\@res1, \@res2) );
+    SCOPE: {
+	local $SIG{__WARN__} = sub {}; # XXX 
+	my @res1 = pairwise {$a+$b} @a, @b;
+	my @res2 = pairwise_perl {$a+$b} @a, @b;
+	ok( is_deeply(\@res1, \@res2) );
+    }
 
     @a = qw/a b c/;
     @b = qw/1 2 3/;

@@ -3,6 +3,7 @@ package List::MoreUtils;
 use 5.008001;
 use strict;
 use warnings;
+use Carp qw/carp/;
 
 BEGIN {
     our $VERSION  = '0.400_004';
@@ -78,6 +79,16 @@ my %alias_list = (
                    distinct    => "uniq",
                  );
 
+sub _export_tags
+{
+    map { $_ => [ keys %{ $pkg_tags{$_}{functions} } ] } keys %pkg_tags;
+}
+
+sub _export_alias_names
+{
+    alias_names => [ keys %alias_list ];
+}
+
 sub _exporter_expand_sub
 {
     my ( $class, $name, $arg, $globals ) = @_;
@@ -111,6 +122,7 @@ sub _exporter_expand_tag
     return $class->SUPER::_exporter_expand_tag($group, $arg, $globals);
 }
 
+{ List::MoreUtils->import(':all'); }
 
 =pod
 
@@ -154,6 +166,55 @@ It may make more sense though to only import the stuff your program actually
 needs:
 
     use List::MoreUtils qw{ any firstidx };
+
+=head2 IMPLEMENTATIONS
+
+B<List::MoreUtils> supports several implementations of some functions. The
+available ones are:
+
+=over 4
+
+=item tassilo
+
+This is the original author of List::MoreUtils. His implementations shall
+be default and will be probably later.
+
+=item alias
+
+This is a self-volunteered author who accidently broke the API of the
+original author but it was recognized to late and we currently have modules
+on CPAN and DarkPAN relying on the broken API. So this is the I<current>
+default implementation for some time ...
+
+=item modern
+
+This implementation contains functions adapted by L<List::Util> since it
+has a new maintainer. Unfortunately the API isn't 100% List::MoreUtils
+compatible, but since List::MoreUtils provides always a pure Perl
+implementation, it might be a valueable upgrade path...
+
+=item sno
+
+This implementation is for functions by the current author. Currently it's
+empty, but I just reserve the name.
+
+=item all
+
+This is a precedence list of existing implementations. Currently it's
+C<qw(alias sno tassilo modern)>, but the C<alias> precedence will put at
+the end of the queue within some releases. Be prepared.
+
+=back
+
+=head2 IMPLICIT
+
+B<List::MoreUtils> silently supported just being required in historic
+versions. This support needs to be removed for cleaning up accidents of
+short history.
+
+In a close release the silent support for C<use after require> will be
+discarded. First releases will show warnings before it will be removed
+completely.
 
 =head1 ENVIRONMENT
 
@@ -344,7 +405,8 @@ Tassilo von Parseval E<lt>tassilo.von.parseval@rwth-aachen.deE<gt>
 Some parts copyright 2011 Aaron Crane.
 
 Copyright 2004 - 2010 by Tassilo von Parseval
-Copyright 2013 by Jens Rehsack
+
+Copyright 2013 - 2014 by Jens Rehsack
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
