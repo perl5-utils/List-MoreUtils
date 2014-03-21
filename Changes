@@ -1,7 +1,19 @@
 Revision history for Perl extension List-MoreUtils
 
-0.400_004	2014-03-
+0.400_004	2014-03-21
     - Switch from Sub::Exporter to Exporter::Tiny (Toby Inkster)
+    - fix issues on older perls back to 5.8.1 (Config::AutoConf
+      will not do out of the box, but this can be fixed)
+    - fix backward compatibility issues (RT#94013 in conjunction
+      with RT#93995)
+      Details needs to be discussed with Moose community (unless
+      they stop caring) to get out of distinguishing hell as soon
+      as possible
+    - fix some spelling issues reported by David Steinbrunner
+      (RT#86347)
+    - clarify depedencies, especially recommended ones
+    - add some additional tests to prove reported bugs (informed
+      reporters when not reproducable)
 
 0.400_003	2014-03-18
     - fix compile error on threaded perls (RT#93934 - thanks Andreas
