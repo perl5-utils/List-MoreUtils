@@ -3,7 +3,7 @@ package List::MoreUtils::Impl::Alias::PP;
 use strict;
 use warnings;
 
-our $VERSION   = '0.400_004';
+our $VERSION   = '0.400_005';
 
 =pod
 

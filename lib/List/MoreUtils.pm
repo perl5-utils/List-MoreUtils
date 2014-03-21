@@ -6,7 +6,7 @@ use warnings;
 use Carp qw/carp/;
 
 BEGIN {
-    our $VERSION  = '0.400_004';
+    our $VERSION  = '0.400_005';
 }
 
 use Exporter::Tiny qw();
