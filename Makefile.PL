@@ -18,12 +18,14 @@ Tumble->tumble("gt");
 
 # Should we build the XS version?
 my %RUN_DEPS = (
+                 'parent'         => 0,
                  'perl'           => '5.008001',
                  'XSLoader'       => 0,
                  'Exporter::Tiny' => '0.026',
                );
 my %CONFIGURE_DEPS = (
-                       'ExtUtils::MakeMaker'       => '6.86',
+                       'parent'                    => 0,
+		       'ExtUtils::MakeMaker'       => '6.86',
                        'Carp'                      => 0,
                        'Test::WriteVariants'       => '0.003',
                        'Data::Tumbler'             => '0.003',

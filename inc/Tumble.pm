@@ -3,7 +3,6 @@ package Tumble;
 use strict;
 use warnings;
 
-use autodie;
 use Cwd qw();
 use File::Find;
 use File::Path;
@@ -66,9 +65,11 @@ sub write_test_file
         my $full_dir_path = dirname($full_path);
         mkpath( $full_dir_path, 0 ) unless -d $full_dir_path;
 
-        open my $fh, ">", $full_path;
+        open my $fh, ">", $full_path
+	  or croak "Can't write $full_path: $!";
         print $fh $test_script;
-        close $fh;
+        close $fh
+	  or croak "Error writing to $full_path: $!";
     }
 
     return;
