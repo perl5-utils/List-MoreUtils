@@ -1,4 +1,4 @@
-package LMU::Test::Tassilo::Load;
+package LMU::Test::Relax::Load;
 
 use strict;
 BEGIN {
@@ -8,7 +8,7 @@ BEGIN {
 use Test::More;
 
 sub run_tests {
-    use_ok( "List::MoreUtils", ":tassilo" );
+    use_ok( "List::MoreUtils", ":relax" );
     done_testing();
 }
 

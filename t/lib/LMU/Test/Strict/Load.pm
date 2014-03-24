@@ -1,4 +1,4 @@
-package LMU::Test::Alias::Load;
+package LMU::Test::Strict::Load;
 
 use strict;
 BEGIN {
@@ -8,7 +8,7 @@ BEGIN {
 use Test::More;
 
 sub run_tests {
-    use_ok( "List::MoreUtils", ":alias" );
+    use_ok( "List::MoreUtils", ":strict" );
     done_testing();
 }
 

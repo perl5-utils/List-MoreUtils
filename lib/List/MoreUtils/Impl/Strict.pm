@@ -1,4 +1,4 @@
-package List::MoreUtils::Impl::Tassilo;
+package List::MoreUtils::Impl::Strict;
 
 use 5.008001;
 use strict;
@@ -30,11 +30,11 @@ __END__
 
 =head1 NAME
 
-List::MoreUtils::Impl::Tassilo - Provide List::MoreUtils implementation by Tassilo
+List::MoreUtils::Impl::Strict - Provide strict List::MoreUtils implementation (originally by Tassilo von Parseval)
 
 =head1 SYNOPSIS
 
-  use List::MoreUtils qw(:tassilo);
+  use List::MoreUtils qw(:strict);
 
 =head1 FUNCTIONS
 

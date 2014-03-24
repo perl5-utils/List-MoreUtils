@@ -1,4 +1,4 @@
-package LMU::Test::Tassilo::Import;
+package LMU::Test::Strict::Import;
 
 use strict;
 BEGIN {

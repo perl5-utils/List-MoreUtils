@@ -1,4 +1,4 @@
-package LMU::Test::Alias::Funcs;
+package LMU::Test::Relax::Funcs;
 
 use 5.008001;
 
@@ -7,7 +7,7 @@ use strict;
 
 use Test::More;
 use Test::LMU;
-use List::MoreUtils ':alias';
+use List::MoreUtils ':relax';
 
 # Run all tests
 sub run_tests {

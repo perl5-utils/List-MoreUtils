@@ -250,7 +250,7 @@ sv_tainted(SV *sv)
 	register int i;									\
 	arrayeach_args * args;								\
 	HV *stash = gv_stashpv("List::MoreUtils_ea", TRUE);				\
-	CV *closure = newXS(NULL, XS_List__MoreUtils__Impl__Tassilo__array_iterator, __FILE__);	\
+	CV *closure = newXS(NULL, XS_List__MoreUtils__Impl__Strict__array_iterator, __FILE__);	\
 											\
 	/* prototype */									\
 	sv_setpv((SV*)closure, ";$");							\
@@ -304,7 +304,7 @@ insert_after (int idx, SV *what, AV *av) {
 
 }
 
-MODULE = List::MoreUtils::Impl::Tassilo		PACKAGE = List::MoreUtils::Impl::Tassilo
+MODULE = List::MoreUtils::Impl::Strict		PACKAGE = List::MoreUtils::Impl::Strict
 
 void
 any (code,...)
@@ -1199,7 +1199,7 @@ natatime (n, ...)
 	natatime_args * args;
 	HV *stash = gv_stashpv("List::MoreUtils_na", TRUE);
 
-	CV *closure = newXS(NULL, XS_List__MoreUtils__Impl__Tassilo__natatime_iterator, __FILE__);
+	CV *closure = newXS(NULL, XS_List__MoreUtils__Impl__Strict__natatime_iterator, __FILE__);
 
 	/* must NOT set prototype on iterator:
 	 * otherwise one cannot write: &$it */
@@ -1567,7 +1567,7 @@ DESTROY(sv)
 	}
     }
 
-MODULE = List::MoreUtils::Impl::Alias		PACKAGE = List::MoreUtils::Impl::Alias
+MODULE = List::MoreUtils::Impl::Relax		PACKAGE = List::MoreUtils::Impl::Relax
 
 void
 any (code,...)
@@ -1765,8 +1765,6 @@ PPCODE:
     ST(0) = ret_true ? &PL_sv_yes : &PL_sv_no;
     XSRETURN(1);
 }
-
-MODULE = List::MoreUtils::Impl::Sno	PACKAGE = List::MoreUtils::Impl::Sno
 
 MODULE = List::MoreUtils		PACKAGE = List::MoreUtils
 

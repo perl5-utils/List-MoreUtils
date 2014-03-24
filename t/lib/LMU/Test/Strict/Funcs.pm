@@ -1,4 +1,4 @@
-package LMU::Test::Tassilo::Funcs;
+package LMU::Test::Strict::Funcs;
 
 use 5.008001;
 
@@ -7,7 +7,7 @@ use warnings;
 
 use Test::More;
 use Test::LMU;
-use List::MoreUtils ':tassilo';
+use List::MoreUtils ':strict';
 
 use Config;
 

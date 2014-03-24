@@ -1,4 +1,4 @@
-package LMU::Test::Alias::Import;
+package LMU::Test::Relax::Import;
 
 use strict;
 BEGIN {

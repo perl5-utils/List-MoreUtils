@@ -32,10 +32,14 @@ our @EXPORT_OK = (
     qw(first_index last_index first_value last_value zip distinct)
 );
 
-my @tag_hist = qw(alias sno tassilo modern);
+my %pkg_precedence = (
+    all => [qw(relax strict modern)],
+    default => [qw(relax strict modern)],
+);
+
 my %pkg_tags = (
-    tassilo => {
-        module    => "List::MoreUtils::Impl::Tassilo",
+    strict => {
+        module    => "List::MoreUtils::Impl::Strict",
         functions => {
             map { $_ => 1 }
               qw(any all none notall true false
@@ -51,8 +55,8 @@ my %pkg_tags = (
               bsearch)
         },
     },
-    alias => {
-        module    => "List::MoreUtils::Impl::Alias",
+    relax => {
+        module    => "List::MoreUtils::Impl::Relax",
         functions => {
             map { $_ => 1 }
               qw(any all none notall
@@ -60,10 +64,6 @@ my %pkg_tags = (
               )
         },
     },
-    sno => {
-             module    => "List::MoreUtils::Impl::Sno",
-             functions => { map { $_ => 1 } qw() },
-           },
     modern => {
                 module    => "List::MoreUtils::Impl::Modern",
                 functions => { map { $_ => 1 } qw(any all none notall) },
@@ -93,7 +93,7 @@ sub _exporter_expand_sub
 {
     my ( $class, $name, $arg, $globals ) = @_;
 
-    my @impls = ( "HASH" eq ref $arg and $arg->{impl} ) ? $arg->{impl} : @tag_hist;
+    my @impls = ( "HASH" eq ref $arg and $arg->{impl} ) ? $arg->{impl} : @{$pkg_precedence{all}};
     my $seek  = defined($alias_list{$name}) ? $alias_list{$name} : $name;
 
     foreach my $impl (@impls)
@@ -112,13 +112,25 @@ sub _exporter_expand_tag
 {
     my ( $class, $group, $arg, $globals ) = @_;
 
+    my %funcs;
+
     if ($pkg_tags{$group})
     {
         my %functions = %{ $pkg_tags{$group}->{functions} };
         $functions{$alias_list{$_}} && $functions{$_}++ for keys(%alias_list);
-        return map [ $_ => { impl => $group, %{$arg||{}} } ], keys(%functions);
+        %funcs = map { $_ => { impl => $group, %{$arg||{}} } } keys(%functions);
     }
-    
+    elsif( $pkg_precedence{$group} )
+    {
+	foreach my $gr (@{$pkg_precedence{$group}})
+	{
+	    my %functions = %{ $pkg_tags{$gr}->{functions} };
+	    $functions{$alias_list{$_}} && $functions{$_}++ for keys(%alias_list);
+	    %funcs = ((map { $_ => { impl => $gr, %{$arg||{}} } } keys(%functions)), %funcs);
+	}
+    }
+
+    %funcs and return map [ $_ => $funcs{$_} ], keys(%funcs);
     return $class->SUPER::_exporter_expand_tag($group, $arg, $globals);
 }
 
@@ -132,17 +144,16 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
 =head1 SYNOPSIS
 
-    use List::MoreUtils qw(:tassilo); # use as initially thought
-    use List::MoreUtils qw(:alias); # use alias changes
+    use List::MoreUtils qw(:strict); # use as initially thought
+    use List::MoreUtils qw(:relax); # use alias changes
     use List::MoreUtils qw(:modern); # use compat mode to List::Util
-    use List::MoreUtils qw(:sno); # use nowadays added stuff
 
-    use List::MoreUtils qw(:all); # use all with precedence 'alias', 'sno', 'tassilo', 'modern';
+    use List::MoreUtils qw(:all); # use all with precedence 'relax', 'strict', 'modern';
 
     use List::MoreUtils any => { impl => 'modern' },
-                        all =>  { impl => 'tassilo' },
-                        'none', 'notall', # above precedence
-                        'firstidx' => { impl => 'tassilo' },
+                        all =>  { impl => 'strict' },
+                        'none', 'notall', # currently ':all' precedence
+                        'firstidx' => { impl => 'strict' },
                         all => { impl => 'modern', as => 'modern_all' };
 
 =head1 DESCRIPTION
@@ -162,6 +173,10 @@ Nothing by default. To import all of this module's symbols, do the conventional
 
     use List::MoreUtils ':all';
 
+or
+
+    use List::MoreUtils ':default';
+
 It may make more sense though to only import the stuff your program actually
 needs:
 
@@ -174,12 +189,12 @@ available ones are:
 
 =over 4
 
-=item tassilo
+=item strict
 
 This is the original author of List::MoreUtils. His implementations shall
 be default and will be probably later.
 
-=item alias
+=item relax
 
 This is a self-volunteered author who accidently broke the API of the
 original author but it was recognized to late and we currently have modules
@@ -193,28 +208,25 @@ has a new maintainer. Unfortunately the API isn't 100% List::MoreUtils
 compatible, but since List::MoreUtils provides always a pure Perl
 implementation, it might be a valueable upgrade path...
 
-=item sno
-
-This implementation is for functions by the current author. Currently it's
-empty, but I just reserve the name.
-
 =item all
 
-This is a precedence list of existing implementations. Currently it's
-C<qw(alias sno tassilo modern)>, but the C<alias> precedence will put at
-the end of the queue within some releases. Be prepared.
+This is a precedence list of existing implementations.
+It's C<qw(relax strict modern)>.
+
+=item default
+
+This is a precedence list of existing implementations.
+It's C<qw(strict relax modern)>.
 
 =back
 
 =head2 IMPLICIT
 
 B<List::MoreUtils> silently supported just being required in historic
-versions. This support needs to be removed for cleaning up accidents of
-short history.
-
-In a close release the silent support for C<use after require> will be
-discarded. First releases will show warnings before it will be removed
-completely.
+versions. Because of the different available implementations and the
+breakage in 0.28 the provided implementation on C<require> is
+unpredictable. If one need to rely on a dedicated implementation,
+choose it by C<use List::Moreutils qw(:impl)>.
 
 =head1 ENVIRONMENT
 
