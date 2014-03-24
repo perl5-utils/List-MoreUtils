@@ -18,10 +18,11 @@ Tumble->tumble("gt");
 
 # Should we build the XS version?
 my %RUN_DEPS = (
-                 'parent'         => 0,
-                 'perl'           => '5.008001',
-                 'XSLoader'       => 0,
-                 'Exporter::Tiny' => '0.026',
+                 'parent'          => 0,
+                 'perl'            => '5.008001',
+                 'XSLoader'        => 0,
+                 'Exporter::Tiny'  => '0.026',
+		 'Module::Runtime' => 0,
                );
 my %CONFIGURE_DEPS = (
                        'parent'                    => 0,
@@ -31,7 +32,6 @@ my %CONFIGURE_DEPS = (
                        'Data::Tumbler'             => '0.003',
                        'Config::AutoConf'          => '0.19',
                        'Module::Pluggable::Object' => '5.1',
-                       'Module::Runtime'           => 0,
                      );
 my %BUILD_DEPS = ();
 
