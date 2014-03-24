@@ -10,14 +10,13 @@ use List::MoreUtils::XS qw(); # try load XS stuff ...
 
 unless( __PACKAGE__->can("any"))
 {
-    Test::More::diag("Mööp") if $INC{"Test/Pod/Coverage.pm"};
-    my @pp_imp = map { "*$_ = \\&List::MoreUtils::Impl::Tassilo::PP::$_;" }
+    my @pp_imp = map { "*$_ = \\&List::MoreUtils::Impl::Strict::PP::$_;" }
 	qw(any all none notall true false
            firstidx lastidx insert_after insert_after_string
            apply indexes after after_incl before before_incl
            firstval lastval each_array each_arrayref pairwise
 	   natatime mesh uniq minmax part bsearch);
-    my $pp_stuff = join( "\n", "use List::MoreUtils::Impl::Tassilo::PP;", @pp_imp );
+    my $pp_stuff = join( "\n", "use List::MoreUtils::Impl::Strict::PP;", @pp_imp );
     eval $pp_stuff;
     die $@ if $@;
 }

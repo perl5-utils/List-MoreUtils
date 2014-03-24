@@ -10,9 +10,9 @@ use List::MoreUtils::XS qw(); # try load XS stuff ...
 
 unless(defined &any)
 {
-    my @pp_imp = map { "*$_ = \\&List::MoreUtils::Impl::Alias::PP::$_;" }
+    my @pp_imp = map { "*$_ = \\&List::MoreUtils::Impl::Relax::PP::$_;" }
 	qw(any all none notall);
-    my $pp_stuff = join( "\n", "use List::MoreUtils::Impl::Alias::PP;", @pp_imp );
+    my $pp_stuff = join( "\n", "use List::MoreUtils::Impl::Relax::PP;", @pp_imp );
     eval $pp_stuff;
     die $@ if $@;
 }
