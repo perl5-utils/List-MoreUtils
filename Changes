@@ -1,5 +1,12 @@
 Revision history for Perl extension List-MoreUtils
 
+0.400_005	2014-03-24
+    - rename implementations from alias => relax and tassilo => strict
+    - remove 'sno' implementation
+    - add precedence 'default' in addition to 'all' for those who prefer
+      strict over relax
+    - move dependency Module::Runtime from configure to runtime
+
 0.400_004	2014-03-21
     - Switch from Sub::Exporter to Exporter::Tiny (Toby Inkster)
     - fix issues on older perls back to 5.8.1 (Config::AutoConf
