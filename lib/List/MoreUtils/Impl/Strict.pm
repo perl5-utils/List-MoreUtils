@@ -167,7 +167,7 @@ Think of it as syntactic sugar for
 
 =head2 before BLOCK LIST
 
-Returns a list of values of LIST upto (and not including) the point where BLOCK
+Returns a list of values of LIST up to (and not including) the point where BLOCK
 returns a true value. Sets C<$_> for each element in LIST in turn.
 
 =head2 before_incl BLOCK LIST

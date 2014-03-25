@@ -290,7 +290,7 @@ L<http://cpanratings.perl.org/l/List-MoreUtils>
 
 L<http://search.cpan.org/dist/List-MoreUtils/>
 
-=item * Got Repository
+=item * Git Repository
 
 L<https://github.com/perl5-utils/List-MoreUtils>
 
