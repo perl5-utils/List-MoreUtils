@@ -1,4 +1,4 @@
-package LMU::Test::Strict::Funcs;
+package LMU::Test::Functions;
 
 use 5.008001;
 
@@ -7,7 +7,7 @@ use warnings;
 
 use Test::More;
 use Test::LMU;
-use List::MoreUtils ':strict';
+use List::MoreUtils ':all';
 
 use Config;
 
@@ -20,6 +20,10 @@ sub run_tests {
     test_all();
     test_none();
     test_notall();
+    test_any_u();
+    test_all_u();
+    test_none_u();
+    test_notall_u();
     test_true();
     test_false();
     test_firstidx();
@@ -52,65 +56,65 @@ sub run_tests {
 
 # The any function should behave identically to 
 # !! grep CODE LIST
-sub test_any {
+sub test_any_u {
     # Normal cases
     my @list = ( 1 .. 10000 );
-    is_true( any { $_ == 5000 } @list );
-    is_true( any { $_ == 5000 } 1 .. 10000 );
-    is_true( any { defined } @list );
-    is_false( any { not defined } @list );
-    is_true( any { not defined } undef );
-    is_undef( any { } );
+    is_true( any_u { $_ == 5000 } @list );
+    is_true( any_u { $_ == 5000 } 1 .. 10000 );
+    is_true( any_u { defined } @list );
+    is_false( any_u { not defined } @list );
+    is_true( any_u { not defined } undef );
+    is_undef( any_u { } );
 
-    leak_free_ok(any => sub {
-        my $ok = any { $_ == 5000 } @list;
-        my $ok2 = any { $_ == 5000 } 1 .. 10000;
+    leak_free_ok(any_u => sub {
+        my $ok = any_u { $_ == 5000 } @list;
+        my $ok2 = any_u { $_ == 5000 } 1 .. 10000;
     });
-    leak_free_ok('any with a coderef that dies' => sub {
+    leak_free_ok('any_u with a coderef that dies' => sub {
         # This test is from Kevin Ryde; see RT#48669
-        eval { my $ok = any { die } 1 };
+        eval { my $ok = any_u { die } 1 };
     });
 }
 
-sub test_all {
+sub test_all_u {
     # Normal cases
     my @list = ( 1 .. 10000 );
-    is_true( all { defined } @list );
-    is_true( all { $_ > 0 } @list );
-    is_false( all { $_ < 5000 } @list );
-    is_undef( all { } );
+    is_true( all_u { defined } @list );
+    is_true( all_u { $_ > 0 } @list );
+    is_false( all_u { $_ < 5000 } @list );
+    is_undef( all_u { } );
 
-    leak_free_ok(all => sub {
-        my $ok  = all { $_ == 5000 } @list;
-        my $ok2 = all { $_ == 5000 } 1 .. 10000;
+    leak_free_ok(all_u => sub {
+        my $ok  = all_u { $_ == 5000 } @list;
+        my $ok2 = all_u { $_ == 5000 } 1 .. 10000;
     });
 }
 
-sub test_none {
+sub test_none_u {
     # Normal cases
     my @list = ( 1 .. 10000 );
-    is_true( none { not defined } @list );
-    is_true( none { $_ > 10000 } @list );
-    is_false( none { defined } @list );
-    is_undef( none { } );
+    is_true( none_u { not defined } @list );
+    is_true( none_u { $_ > 10000 } @list );
+    is_false( none_u { defined } @list );
+    is_undef( none_u { } );
 
-    leak_free_ok(none => sub {
-        my $ok  = none { $_ == 5000 } @list;
-        my $ok2 = none { $_ == 5000 } 1 .. 10000;
+    leak_free_ok(none_u => sub {
+        my $ok  = none_u { $_ == 5000 } @list;
+        my $ok2 = none_u { $_ == 5000 } 1 .. 10000;
     });
 }
 
-sub test_notall {
+sub test_notall_u {
     # Normal cases
     my @list = ( 1 .. 10000 );
-    is_true( notall { ! defined } @list );
-    is_true( notall { $_ < 10000 } @list );
-    is_false( notall { $_ <= 10000 } @list );
-    is_undef( notall { } );
+    is_true( notall_u { ! defined } @list );
+    is_true( notall_u { $_ < 10000 } @list );
+    is_false( notall_u { $_ <= 10000 } @list );
+    is_undef( notall_u { } );
 
     leak_free_ok(notall => sub {
-        my $ok  = notall { $_ == 5000 } @list;
-        my $ok2 = notall { $_ == 5000 } 1 .. 10000;
+        my $ok  = notall_u { $_ == 5000 } @list;
+        my $ok2 = notall_u { $_ == 5000 } 1 .. 10000;
     });
 }
 
@@ -883,6 +887,78 @@ sub test_bsearch {
 	    scalar bsearch { grow_stack(); $_ - $elem or die "Goal!"; $_ - $elem } @list;
 	};
     });
+}
+
+sub test_any {
+    # Normal cases
+    my @list = ( 1 .. 10000 );
+    is_true( any { $_ == 5000 } @list );
+    is_true( any { $_ == 5000 } 1 .. 10000 );
+    is_true( any { defined } @list );
+    is_false( any { not defined } @list );
+    is_true( any { not defined } undef );
+    is_false( any { } );
+
+    leak_free_ok(any => sub {
+        my $ok = any { $_ == 5000 } @list;
+        my $ok2 = any { $_ == 5000 } 1 .. 10000;
+    });
+    leak_free_ok('any with a coderef that dies' => sub {
+        # This test is from Kevin Ryde; see RT#48669
+        eval { my $ok = any { die } 1 };
+    });
+}
+
+sub test_all {
+    # Normal cases
+    my @list = ( 1 .. 10000 );
+    is_true( all { defined } @list );
+    is_true( all { $_ > 0 } @list );
+    is_false( all { $_ < 5000 } @list );
+    is_true( all { } );
+
+    leak_free_ok(all => sub {
+        my $ok  = all { $_ == 5000 } @list;
+        my $ok2 = all { $_ == 5000 } 1 .. 10000;
+    });
+}
+
+sub test_none {
+    # Normal cases
+    my @list = ( 1 .. 10000 );
+    is_true( none { not defined } @list );
+    is_true( none { $_ > 10000 } @list );
+    is_false( none { defined } @list );
+    is_true( none { } );
+
+    leak_free_ok(none => sub {
+        my $ok  = none { $_ == 5000 } @list;
+        my $ok2 = none { $_ == 5000 } 1 .. 10000;
+    });
+}
+
+sub test_notall {
+    # Normal cases
+    my @list = ( 1 .. 10000 );
+    is_true( notall { ! defined } @list );
+    is_true( notall { $_ < 10000 } @list );
+    is_false( notall { $_ <= 10000 } @list );
+    is_false( notall { } );
+
+    leak_free_ok(notall => sub {
+        my $ok  = notall { $_ == 5000 } @list;
+        my $ok2 = notall { $_ == 5000 } 1 .. 10000;
+    });
+}
+
+sub test_sort_by {
+    my @list = map { [$_] } 1 .. 100;
+    is_deeply([sort_by { $_->[0] } @list], [map { [$_] } sort { $a cmp $b } 1..100]);
+}
+
+sub test_nsort_by {
+    my @list = map { [$_] } 1 .. 100;
+    is_deeply([nsort_by { $_->[0] } @list], [map { [$_] } sort { $a <=> $b } 1..100]);
 }
 
 1;

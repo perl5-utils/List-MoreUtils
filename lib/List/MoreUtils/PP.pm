@@ -1,4 +1,4 @@
-package List::MoreUtils::Impl::Strict::PP;
+package List::MoreUtils::PP;
 
 use strict;
 use warnings;
@@ -9,16 +9,48 @@ our $VERSION = '0.400_006';
 
 =head1 NAME
 
-List::MoreUtils::Impl::Strict::PP - Provide strict List::MoreUtils implementation (originally by Tassilo von Parseval)
+List::MoreUtils::PP - Provide List::MoreUtils pure Perl implementation
 
 =head1 SYNOPSIS
 
   BEGIN { $ENV{LIST_MOREUTILS_PP} = 1; }
-  use List::MoreUtils qw(:strict);
+  use List::MoreUtils qw(:all);
 
 =cut
 
-sub any (&@)
+sub any (&@) {
+    my $f = shift;
+    foreach ( @_ ) {
+        return 1 if $f->();
+    }
+    return 0;
+}
+
+sub all (&@) {
+    my $f = shift;
+    foreach ( @_ ) {
+        return 0 unless $f->();
+    }
+    return 1;
+}
+
+sub none (&@) {
+    my $f = shift;
+    foreach ( @_ ) {
+        return 0 if $f->();
+    }
+    return 1;
+}
+
+sub notall (&@) {
+    my $f = shift;
+    foreach ( @_ ) {
+        return 1 unless $f->();
+    }
+    return 0;
+}
+
+sub any_u (&@)
 {
     my $f = shift;
     return if !@_;
@@ -26,7 +58,7 @@ sub any (&@)
     return 0;
 }
 
-sub all (&@)
+sub all_u (&@)
 {
     my $f = shift;
     return if !@_;
@@ -34,7 +66,7 @@ sub all (&@)
     return 1;
 }
 
-sub none (&@)
+sub none_u (&@)
 {
     my $f = shift;
     return if !@_;
@@ -42,7 +74,7 @@ sub none (&@)
     return 1;
 }
 
-sub notall (&@)
+sub notall_u (&@)
 {
     my $f = shift;
     return if !@_;
@@ -363,6 +395,24 @@ sub bsearch(&@)
     } until $i > $j;
 
     return;
+}
+
+sub sort_by(&@)
+{
+    my ($code, @list) = @_;
+    return map { $_->[0] }
+          sort { $a->[1] cmp $b->[1] }
+           map { [$_, scalar($code->())] }
+               @list;
+}
+
+sub nsort_by(&@)
+{
+    my ($code, @list) = @_;
+    return map { $_->[0] }
+          sort { $a->[1] <=> $b->[1] }
+           map { [$_, scalar($code->())] }
+               @list;
 }
 
 =head1 SEE ALSO

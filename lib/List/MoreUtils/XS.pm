@@ -26,7 +26,18 @@ BEGIN
 EOLDR
 
     eval $ldr unless $ENV{LIST_MOREUTILS_PP};
-    $@ and die $@;
+
+    # ensure to catch even PP only subs
+    my @pp_imp = map { "__PACKAGE__->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
+	qw(any all none notall any_u all_u none_u notall_u true false
+           firstidx lastidx insert_after insert_after_string
+           apply indexes after after_incl before before_incl
+           firstval lastval each_array each_arrayref pairwise
+	   natatime mesh uniq minmax part bsearch
+	   sort_by nsort_by _XScompiled);
+    my $pp_stuff = join( "\n", "use List::MoreUtils::PP;", "package List::MoreUtils;", @pp_imp );
+    eval $pp_stuff;
+    die $@ if $@;
 }
 
 =pod
@@ -38,11 +49,11 @@ List::MoreUtils::XS - Provide compiled List::MoreUtils functions
 =head1 SYNOPSIS
 
   BEGIN { delete $ENV{LIST_MOREUTILS_PP}; }
-  use List::MoreUtils;
+  use List::MoreUtils ...;
 
 =head1 SEE ALSO
 
-L<List::Util>
+L<List::Util>, L<List::AllUtils>
 
 =head1 AUTHOR
 
