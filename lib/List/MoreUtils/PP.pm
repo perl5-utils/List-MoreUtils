@@ -415,6 +415,8 @@ sub nsort_by(&@)
                @list;
 }
 
+sub _XScompiled { 0 }
+
 =head1 SEE ALSO
 
 L<List::Util>

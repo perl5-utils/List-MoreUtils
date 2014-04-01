@@ -304,7 +304,46 @@ insert_after (int idx, SV *what, AV *av) {
 
 }
 
-MODULE = List::MoreUtils	PACKAGE = List::MoreUtils
+MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
+
+void
+DESTROY(sv)
+    SV *sv;
+    CODE:
+    {
+	register int i;
+	CV *code = (CV*)SvRV(sv);
+	arrayeach_args *args = CvXSUBANY(code).any_ptr;
+	if (args) {
+	    for (i = 0; i < args->navs; ++i)
+		SvREFCNT_dec(args->avs[i]);
+	    Safefree(args->avs);
+	    Safefree(args);
+	    CvXSUBANY(code).any_ptr = NULL;
+	}
+    }
+
+
+MODULE = List::MoreUtils_na             PACKAGE = List::MoreUtils_na
+
+void
+DESTROY(sv)
+    SV *sv;
+    CODE:
+    {
+	register int i;
+	CV *code = (CV*)SvRV(sv);
+	natatime_args *args = CvXSUBANY(code).any_ptr;
+	if (args) {
+	    for (i = 0; i < args->nsvs; ++i)
+		SvREFCNT_dec(args->svs[i]);
+	    Safefree(args->svs);
+	    Safefree(args);
+	    CvXSUBANY(code).any_ptr = NULL;
+	}
+    }
+
+MODULE = List::MoreUtils		PACKAGE = List::MoreUtils
 
 void
 any (code,...)
@@ -1665,42 +1704,3 @@ void
 _XScompiled ()
     CODE:
        XSRETURN_YES;
-
-MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
-
-void
-DESTROY(sv)
-    SV *sv;
-    CODE:
-    {
-	register int i;
-	CV *code = (CV*)SvRV(sv);
-	arrayeach_args *args = CvXSUBANY(code).any_ptr;
-	if (args) {
-	    for (i = 0; i < args->navs; ++i)
-		SvREFCNT_dec(args->avs[i]);
-	    Safefree(args->avs);
-	    Safefree(args);
-	    CvXSUBANY(code).any_ptr = NULL;
-	}
-    }
-
-
-MODULE = List::MoreUtils_na             PACKAGE = List::MoreUtils_na
-
-void
-DESTROY(sv)
-    SV *sv;
-    CODE:
-    {
-	register int i;
-	CV *code = (CV*)SvRV(sv);
-	natatime_args *args = CvXSUBANY(code).any_ptr;
-	if (args) {
-	    for (i = 0; i < args->nsvs; ++i)
-		SvREFCNT_dec(args->svs[i]);
-	    Safefree(args->svs);
-	    Safefree(args);
-	    CvXSUBANY(code).any_ptr = NULL;
-	}
-    }

@@ -26,9 +26,10 @@ BEGIN
 EOLDR
 
     eval $ldr unless $ENV{LIST_MOREUTILS_PP};
+    $@ and die $@;
 
     # ensure to catch even PP only subs
-    my @pp_imp = map { "__PACKAGE__->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
+    my @pp_imp = map { "List::MoreUtils->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
 	qw(any all none notall any_u all_u none_u notall_u true false
            firstidx lastidx insert_after insert_after_string
            apply indexes after after_incl before before_incl
