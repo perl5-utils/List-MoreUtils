@@ -531,15 +531,6 @@ in the correct order.
 
 Similar to sort_by but compares its key values numerically.
 
-
-=head2 IMPLICIT
-
-B<List::MoreUtils> silently supported just being required in historic
-versions. Because of the different available implementations and the
-breakage in 0.28 the provided implementation on C<require> is
-unpredictable. If one need to rely on a dedicated implementation,
-choose it by C<use List::Moreutils qw(:impl)>.
-
 =head1 ENVIRONMENT
 
 When C<LIST_MOREUTILS_PP> is set, the module will always use the pure-Perl
@@ -643,9 +634,11 @@ package.
 
 =head1 THANKS
 
+=head2 Tassilo von Parseval
+
 Credits go to a number of people: Steve Purkis for giving me namespace advice
 and James Keenan and Terrence Branno for their effort of keeping the CPAN
-tidier by making L<List::Utils> obsolete. 
+tidier by making L<List::Utils> obsolete.
 
 Brian McCauley suggested the inclusion of apply() and provided the pure-Perl
 implementation for it.
@@ -671,6 +664,13 @@ Perl-implementation.
 
 Robin Huston kindly fixed a bug in perl's MULTICALL API to make the
 XS-implementation of part() work.
+
+=head2 Jens Rehsack
+
+Credits goes to all people contributing feedback during the v0.400
+development releases, especially David Golden who spent a lot of effort
+to develop a design to support current state of CPAN as well as ancient
+software somewhere in the dark.
 
 =head1 TODO
 
