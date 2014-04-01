@@ -29,10 +29,6 @@ my @functions = (
       ),
 );
 
-my %pkg_tags = (
-                 all => { map { $_ => 1 } @functions },
-               );
-
 my %alias_list = (
                    first_index => "firstidx",
                    last_index  => "lastidx",
@@ -44,52 +40,14 @@ my %alias_list = (
 
 our @ISA = qw(Exporter::Tiny);
 our @EXPORT_OK = ( @functions, keys %alias_list );
+our %EXPORT_TAGS = (
+    all       => \@EXPORT_OK,
+);
 
-sub _export_tags
-{
-    map { $_ => [ keys %{ $pkg_tags{$_} } ] } keys %pkg_tags;
+for my $alias (keys %alias_list) {
+    no strict qw(refs);
+    *$alias = __PACKAGE__->can($alias_list{$alias});
 }
-
-sub _export_alias_names
-{
-    alias_names => [ keys %alias_list ];
-}
-
-sub _exporter_expand_sub
-{
-    my ( $class, $name, $arg, $globals ) = @_;
-
-    my @impls = ( "HASH" eq ref $arg and $arg->{impl} ) ? $arg->{impl} : 'all';
-    my $seek = defined( $alias_list{$name} ) ? $alias_list{$name} : $name;
-
-    foreach my $impl (@impls)
-    {
-        my $exp_sub;
-        defined $pkg_tags{$impl}->{$seek}
-          and $exp_sub = __PACKAGE__->can($seek);
-        $exp_sub and return ( $name => $exp_sub );
-    }
-
-    return $class->SUPER::_exporter_expand_sub( $name, $arg, $globals );
-}
-
-sub _exporter_expand_tag
-{
-    my ( $class, $group, $arg, $globals ) = @_;
-    my %funcs;
-
-    if ( $pkg_tags{$group} )
-    {
-        my %functions = %{ $pkg_tags{$group} };
-        $functions{ $alias_list{$_} } && $functions{$_}++ for keys(%alias_list);
-        %funcs = map { $_ => { impl => $group, %{ $arg || {} } } } keys(%functions);
-    }
-
-    %funcs and return map [ $_ => $funcs{$_} ], keys(%funcs);
-    return $class->SUPER::_exporter_expand_tag( $group, $arg, $globals );
-}
-
-{ List::MoreUtils->import(':all'); }
 
 =pod
 
