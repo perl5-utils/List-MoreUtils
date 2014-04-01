@@ -22,7 +22,6 @@ my %RUN_DEPS = (
                  'perl'            => '5.008001',
                  'XSLoader'        => 0,
                  'Exporter::Tiny'  => '0.026',
-		 'Module::Runtime' => 0,
                );
 my %CONFIGURE_DEPS = (
                        'parent'                    => 0,
