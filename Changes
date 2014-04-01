@@ -1,5 +1,10 @@
 Revision history for Perl extension List-MoreUtils
 
+0.400_006	2014-04-01
+    - fix typos in POD (RT#87490 - thanks to David Steinbrunner)
+    - refactor LMU as discussed with David Golden, Tim Bunce and
+      Toby Inkster
+
 0.400_005	2014-03-24
     - rename implementations from alias => relax and tassilo => strict
     - remove 'sno' implementation
