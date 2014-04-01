@@ -714,7 +714,10 @@ array-reference. Suggested by Mark Summersault.
 
 =head1 SEE ALSO
 
-L<List::Util>
+L<List::Util>, L<List::AllUtils>, L<List::UtilsBy>
+
+L<List::MoreUtils::ButMaintained::Sanely> for everyone who understand
+"sane" equals to "everything but break my code". Please bug there.
 
 =head1 AUTHOR
 
