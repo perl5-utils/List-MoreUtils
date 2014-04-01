@@ -26,7 +26,6 @@ BEGIN
 EOLDR
 
     eval $ldr unless $ENV{LIST_MOREUTILS_PP};
-    $@ and die $@;
 
     # ensure to catch even PP only subs
     my @pp_imp = map { "List::MoreUtils->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
