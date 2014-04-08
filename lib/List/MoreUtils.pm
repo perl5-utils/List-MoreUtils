@@ -97,160 +97,111 @@ needs:
 
 =head1 FUNCTIONS
 
-=head2 any BLOCK LIST
+=head2 Junctions
+
+=head3 I<Treatment of an empty list>
+
+There are two schools of thought for how to evaluate a junction on an
+empty list:
+
+=over
+
+=item *
+
+Reduction to an identity (boolean)
+
+=item *
+
+Result is undefined (three-valued)
+
+=back
+
+In the first case, the result of the junction applied to the empty list is
+determined by a mathematical reduction to an identity depending on whether
+the underlying comparison is "or" or "and".  Conceptually:
+
+                    "any are true"      "all are true"
+                    --------------      --------------
+    2 elements:     A || B || 0         A && B && 1
+    1 element:      A || 0              A && 1
+    0 elements:     0                   1
+
+In the second case, three-value logic is desired, in which a junction
+applied to an empty list returns C<undef> rather than true or false 
+
+Junctions with a C<_u> suffix implement three-valued logic.  Those
+without are boolean.
+
+=head3 all BLOCK LIST
+
+=head3 all_u BLOCK LIST
+
+Returns a true value if all items in LIST meet the criterion given through
+BLOCK. Sets C<$_> for each item in LIST in turn:
+
+  print "All values are non-negative"
+    if all { $_ >= 0 } ($x, $y, $z);
+
+For an empty LIST, C<all> returns true (i.e. no values failed the condition)
+and C<all_u> returns C<undef>.
+
+Thus, C<< all_u(@list) >> is equivalent to C<< @list ? all(@list) : undef >>.
+
+B<Note>: because Perl treats C<undef> as false, you must check the return value
+of C<all_u> with C<defined> or you will get the opposite result of what you
+expect.
+
+=head3 any BLOCK LIST
+
+=head3 any_u BLOCK LIST
 
 Returns a true value if any item in LIST meets the criterion given through
 BLOCK. Sets C<$_> for each item in LIST in turn:
 
-  print "At least one value undefined"
-    if any { ! defined($_) } @list;
+  print "At least one non-negative value"
+    if any { $_ >= 0 } ($x, $y, $z);
 
-Returns false otherwise, or if LIST is empty.
+For an empty LIST, C<any> returns false and C<any_u> returns C<undef>.
 
-B<The behaviour without LIST needs to be discussed!>
+Thus, C<< any_u(@list) >> is equivalent to C<< @list ? any(@list) : undef >>.
 
-=head2 any_u BLOCK LIST
+=head3 none BLOCK LIST
 
-Returns a true value if any item in LIST meets the criterion given through
-BLOCK. Sets C<$_> for each item in LIST in turn:
-
-  print "At least one value undefined"
-    if any { ! defined($_) } @list;
-
-Returns false otherwise, or undef if LIST is empty.
-
-=head2 all BLOCK LIST
-
-Returns a true value if all items in LIST meet the criterion given through
-BLOCK, or if LIST is empty. Sets C<$_> for each item in LIST in turn:
-
-  print "All items defined"
-    if all { defined($_) } @list;
-
-Returns false otherwise.
-
-=head2 all_u BLOCK LIST
-
-Returns a true value if all items in LIST meet the criterion given through
-BLOCK, or if LIST is empty. Sets C<$_> for each item in LIST in turn:
-
-  print "All items defined"
-    if all { defined($_) } @list;
-
-Returns false otherwise, or undef if LIST is empty.
-
-=head2 none BLOCK LIST
+=head3 none_u BLOCK LIST
 
 Logically the negation of C<any>. Returns a true value if no item in LIST meets
-the criterion given through BLOCK, or if LIST is empty. Sets C<$_> for each item
-in LIST in turn:
+the criterion given through BLOCK. Sets C<$_> for each item in LIST in turn:
 
-  print "No value defined"
-    if none { defined($_) } @list;
+  print "No non-negative values"
+    if none { $_ >= 0 } ($x, $y, $z);
 
-Returns false otherwise.
+For an empty LIST, C<none> returns true (i.e. no values failed the condition)
+and C<none_u> returns C<undef>.
 
-=head2 none_u BLOCK LIST
+Thus, C<< none_u(@list) >> is equivalent to C<< @list ? none(@list) : undef >>.
 
-Logically the negation of C<any>. Returns a true value if no item in LIST meets
-the criterion given through BLOCK, or if LIST is empty. Sets C<$_> for each item
-in LIST in turn:
+B<Note>: because Perl treats C<undef> as false, you must check the return value
+of C<none_u> with C<defined> or you will get the opposite result of what you
+expect.
 
-  print "No value defined"
-    if none { defined($_) } @list;
+=head3 notall BLOCK LIST
 
-Returns false otherwise, or undef if LIST is empty.
-
-=head2 notall BLOCK LIST
+=head3 notall_u BLOCK LIST
 
 Logically the negation of C<all>. Returns a true value if not all items in LIST
 meet the criterion given through BLOCK. Sets C<$_> for each item in LIST in
 turn:
 
-  print "Not all values defined"
-    if notall { defined($_) } @list;
+  print "Not all values are non-negative"
+    if notall { $_ >= 0 } ($x, $y, $z);
 
-Returns false otherwise, or if LIST is empty.
+For an empty LIST, C<not_all> returns false and C<not_all_u> returns C<undef>.
 
-=head2 notall_u BLOCK LIST
+Thus, C<< not_all_u(@list) >> is equivalent to C<< @list ? not_all(@list) : undef >>.
 
-Logically the negation of C<all>. Returns a true value if not all items in LIST
-meet the criterion given through BLOCK. Sets C<$_> for each item in LIST in
-turn:
+=head2 Transformation
 
-  print "Not all values defined"
-    if notall { defined($_) } @list;
-
-Returns false otherwise, or undef if LIST is empty.
-
-=head2 true BLOCK LIST
-
-Counts the number of elements in LIST for which the criterion in BLOCK is true.
-Sets C<$_> for  each item in LIST in turn:
-
-  printf "%i item(s) are defined", true { defined($_) } @list;
-
-=head2 false BLOCK LIST
-
-Counts the number of elements in LIST for which the criterion in BLOCK is false.
-Sets C<$_> for each item in LIST in turn:
-
-  printf "%i item(s) are not defined", false { defined($_) } @list;
-
-=head2 firstidx BLOCK LIST
-
-=head2 first_index BLOCK LIST
-
-Returns the index of the first element in LIST for which the criterion in BLOCK
-is true. Sets C<$_> for each item in LIST in turn:
-
-  my @list = (1, 4, 3, 2, 4, 6);
-  printf "item with index %i in list is 4", firstidx { $_ == 4 } @list;
-  __END__
-  item with index 1 in list is 4
-    
-Returns C<-1> if no such item could be found.
-
-C<first_index> is an alias for C<firstidx>.
-
-=head2 lastidx BLOCK LIST
-
-=head2 last_index BLOCK LIST
-
-Returns the index of the last element in LIST for which the criterion in BLOCK
-is true. Sets C<$_> for each item in LIST in turn:
-
-  my @list = (1, 4, 3, 2, 4, 6);
-  printf "item with index %i in list is 4", lastidx { $_ == 4 } @list;
-  __END__
-  item with index 4 in list is 4
-
-Returns C<-1> if no such item could be found.
-
-C<last_index> is an alias for C<lastidx>.
-
-=head2 insert_after BLOCK VALUE LIST
-
-Inserts VALUE after the first item in LIST for which the criterion in BLOCK is
-true. Sets C<$_> for each item in LIST in turn.
-
-  my @list = qw/This is a list/;
-  insert_after { $_ eq "a" } "longer" => @list;
-  print "@list";
-  __END__
-  This is a longer list
-
-=head2 insert_after_string STRING VALUE LIST
-
-Inserts VALUE after the first item in LIST which is equal to STRING. 
-
-  my @list = qw/This is a list/;
-  insert_after_string "a", "longer" => @list;
-  print "@list";
-  __END__
-  This is a longer list
-
-=head2 apply BLOCK LIST
+=head3 apply BLOCK LIST
 
 Applies BLOCK to each item in LIST and returns a list of the values after BLOCK
 has been applied. In scalar context, the last element is returned.  This
@@ -269,55 +220,28 @@ Think of it as syntactic sugar for
 
   for (my @mult = @list) { $_ *= 2 }
 
-=head2 before BLOCK LIST
+=head3 insert_after BLOCK VALUE LIST
 
-Returns a list of values of LIST up to (and not including) the point where BLOCK
-returns a true value. Sets C<$_> for each element in LIST in turn.
+Inserts VALUE after the first item in LIST for which the criterion in BLOCK is
+true. Sets C<$_> for each item in LIST in turn.
 
-=head2 before_incl BLOCK LIST
+  my @list = qw/This is a list/;
+  insert_after { $_ eq "a" } "longer" => @list;
+  print "@list";
+  __END__
+  This is a longer list
 
-Same as C<before> but also includes the element for which BLOCK is true.
+=head3 insert_after_string STRING VALUE LIST
 
-=head2 after BLOCK LIST
+Inserts VALUE after the first item in LIST which is equal to STRING. 
 
-Returns a list of the values of LIST after (and not including) the point
-where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
+  my @list = qw/This is a list/;
+  insert_after_string "a", "longer" => @list;
+  print "@list";
+  __END__
+  This is a longer list
 
-  @x = after { $_ % 5 == 0 } (1..9);    # returns 6, 7, 8, 9
-
-=head2 after_incl BLOCK LIST
-
-Same as C<after> but also includes the element for which BLOCK is true.
-
-=head2 indexes BLOCK LIST
-
-Evaluates BLOCK for each element in LIST (assigned to C<$_>) and returns a list
-of the indices of those elements for which BLOCK returned a true value. This is
-just like C<grep> only that it returns indices instead of values:
-
-  @x = indexes { $_ % 2 == 0 } (1..10);   # returns 1, 3, 5, 7, 9
-
-=head2 firstval BLOCK LIST
-
-=head2 first_value BLOCK LIST
-
-Returns the first element in LIST for which BLOCK evaluates to true. Each
-element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
-has been found.
-
-C<first_val> is an alias for C<firstval>.
-
-=head2 lastval BLOCK LIST
-
-=head2 last_value BLOCK LIST
-
-Returns the last value in LIST for which BLOCK evaluates to true. Each element
-of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
-found.
-
-C<last_val> is an alias for C<lastval>.
-
-=head2 pairwise BLOCK ARRAY1 ARRAY2
+=head3 pairwise BLOCK ARRAY1 ARRAY2
 
 Evaluates BLOCK for each pair of elements in ARRAY1 and ARRAY2 and returns a
 new list consisting of BLOCK's return values. The two elements are set to C<$a>
@@ -333,52 +257,9 @@ them will modify the input arrays.
   @b = qw/1 2 3/;
   @x = pairwise { ($a, $b) } @a, @b;	# returns a, 1, b, 2, c, 3
 
-=head2 each_array ARRAY1 ARRAY2 ...
+=head3 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
-Creates an array iterator to return the elements of the list of arrays ARRAY1,
-ARRAY2 throughout ARRAYn in turn.  That is, the first time it is called, it
-returns the first element of each array.  The next time, it returns the second
-elements.  And so on, until all elements are exhausted.
-
-This is useful for looping over more than one array at once:
-
-  my $ea = each_array(@a, @b, @c);
-  while ( my ($a, $b, $c) = $ea->() )   { .... }
-
-The iterator returns the empty list when it reached the end of all arrays.
-
-If the iterator is passed an argument of 'C<index>', then it returns
-the index of the last fetched set of values, as a scalar.
-
-=head2 each_arrayref LIST
-
-Like each_array, but the arguments are references to arrays, not the
-plain arrays.
-
-=head2 natatime EXPR, LIST
-
-Creates an array iterator, for looping over an array in chunks of
-C<$n> items at a time.  (n at a time, get it?).  An example is
-probably a better explanation than I could give in words.
-
-Example:
-
-  my @x = ('a' .. 'g');
-  my $it = natatime 3, @x;
-  while (my @vals = $it->())
-  {
-    print "@vals\n";
-  }
-
-This prints
-
-  a b c
-  d e f
-  g
-
-=head2 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
-
-=head2 zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
+=head3 zip ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
 Returns a list consisting of the first elements of each array, then
 the second, then the third, etc, until all arrays are exhausted.
@@ -396,9 +277,9 @@ Examples:
 
 C<zip> is an alias for C<mesh>.
 
-=head2 uniq LIST
+=head3 uniq LIST
 
-=head2 distinct LIST
+=head3 distinct LIST
 
 Returns a new list by stripping duplicate values in LIST. The order of
 elements in the returned list is the same as in LIST. In scalar context,
@@ -407,23 +288,31 @@ returns the number of unique elements in LIST.
     my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
     my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
 
-=head2 minmax LIST
+C<distinct> is an alias for C<uniq>.
 
-Calculates the minimum and maximum of LIST and returns a two element list with
-the first element being the minimum and the second the maximum. Returns the
-empty list if LIST was empty.
+=head2 Partitioning
 
-The C<minmax> algorithm differs from a naive iteration over the list where each
-element is compared to two values being the so far calculated min and max value
-in that it only requires 3n/2 - 2 comparisons. Thus it is the most efficient
-possible algorithm.
+=head3 after BLOCK LIST
 
-However, the Perl implementation of it has some overhead simply due to the fact
-that there are more lines of Perl code involved. Therefore, LIST needs to be
-fairly big in order for C<minmax> to win over a naive implementation. This
-limitation does not apply to the XS version.
+Returns a list of the values of LIST after (and not including) the point
+where BLOCK returns a true value. Sets C<$_> for each element in LIST in turn.
 
-=head2 part BLOCK LIST
+  @x = after { $_ % 5 == 0 } (1..9);    # returns 6, 7, 8, 9
+
+=head3 after_incl BLOCK LIST
+
+Same as C<after> but also includes the element for which BLOCK is true.
+
+=head3 before BLOCK LIST
+
+Returns a list of values of LIST up to (and not including) the point where BLOCK
+returns a true value. Sets C<$_> for each element in LIST in turn.
+
+=head3 before_incl BLOCK LIST
+
+Same as C<before> but also includes the element for which BLOCK is true.
+
+=head3 part BLOCK LIST
 
 Partitions LIST based on the return value of BLOCK which denotes into which
 partition the current value is put.
@@ -451,7 +340,54 @@ Negative values are only ok when they refer to a partition previously created:
   my $i    = 0;
   my @part = part { $idx[$++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
 
-=head2 bsearch BLOCK LIST
+=head2 Iteration
+
+=head3 each_array ARRAY1 ARRAY2 ...
+
+Creates an array iterator to return the elements of the list of arrays ARRAY1,
+ARRAY2 throughout ARRAYn in turn.  That is, the first time it is called, it
+returns the first element of each array.  The next time, it returns the second
+elements.  And so on, until all elements are exhausted.
+
+This is useful for looping over more than one array at once:
+
+  my $ea = each_array(@a, @b, @c);
+  while ( my ($a, $b, $c) = $ea->() )   { .... }
+
+The iterator returns the empty list when it reached the end of all arrays.
+
+If the iterator is passed an argument of 'C<index>', then it returns
+the index of the last fetched set of values, as a scalar.
+
+=head3 each_arrayref LIST
+
+Like each_array, but the arguments are references to arrays, not the
+plain arrays.
+
+=head3 natatime EXPR, LIST
+
+Creates an array iterator, for looping over an array in chunks of
+C<$n> items at a time.  (n at a time, get it?).  An example is
+probably a better explanation than I could give in words.
+
+Example:
+
+  my @x = ('a' .. 'g');
+  my $it = natatime 3, @x;
+  while (my @vals = $it->())
+  {
+    print "@vals\n";
+  }
+
+This prints
+
+  a b c
+  d e f
+  g
+
+=head2 Searching
+
+=head3 bsearch BLOCK LIST
 
 Performs a binary search on LIST which must be a sorted list of values. BLOCK
 must return a negative value if the current element (stored in C<$_>) is smaller,
@@ -460,7 +396,69 @@ a positive value if it is bigger and zero if it matches.
 Returns a boolean value in scalar context. In list context, it returns the element
 if it was found, otherwise the empty list.
 
-=head2 sort_by BLOCK LIST
+=head3 firstval BLOCK LIST
+
+=head3 first_value BLOCK LIST
+
+Returns the first element in LIST for which BLOCK evaluates to true. Each
+element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
+has been found.
+
+C<first_val> is an alias for C<firstval>.
+
+=head3 lastval BLOCK LIST
+
+=head3 last_value BLOCK LIST
+
+Returns the last value in LIST for which BLOCK evaluates to true. Each element
+of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
+found.
+
+C<last_val> is an alias for C<lastval>.
+
+=head3 indexes BLOCK LIST
+
+Evaluates BLOCK for each element in LIST (assigned to C<$_>) and returns a list
+of the indices of those elements for which BLOCK returned a true value. This is
+just like C<grep> only that it returns indices instead of values:
+
+  @x = indexes { $_ % 2 == 0 } (1..10);   # returns 1, 3, 5, 7, 9
+
+=head3 firstidx BLOCK LIST
+
+=head3 first_index BLOCK LIST
+
+Returns the index of the first element in LIST for which the criterion in BLOCK
+is true. Sets C<$_> for each item in LIST in turn:
+
+  my @list = (1, 4, 3, 2, 4, 6);
+  printf "item with index %i in list is 4", firstidx { $_ == 4 } @list;
+  __END__
+  item with index 1 in list is 4
+    
+Returns C<-1> if no such item could be found.
+
+C<first_index> is an alias for C<firstidx>.
+
+=head3 lastidx BLOCK LIST
+
+=head3 last_index BLOCK LIST
+
+Returns the index of the last element in LIST for which the criterion in BLOCK
+is true. Sets C<$_> for each item in LIST in turn:
+
+  my @list = (1, 4, 3, 2, 4, 6);
+  printf "item with index %i in list is 4", lastidx { $_ == 4 } @list;
+  __END__
+  item with index 4 in list is 4
+
+Returns C<-1> if no such item could be found.
+
+C<last_index> is an alias for C<lastidx>.
+
+=head2 Sorting
+
+=head3 sort_by BLOCK LIST
 
 Returns the list of values sorted according to the string values returned by the
 KEYFUNC block or function. A typical use of this may be to sort objects according
@@ -485,9 +483,41 @@ This sorts strings by generating sort keys which zero-pad the embedded numbers t
 some level (9 digits in this case), helping to ensure the lexical sort puts them
 in the correct order.
 
-=head2 nsort_by BLOCK LIST
+=head3 nsort_by BLOCK LIST
 
 Similar to sort_by but compares its key values numerically.
+
+=head2 Counting and calculation
+
+=head3 true BLOCK LIST
+
+Counts the number of elements in LIST for which the criterion in BLOCK is true.
+Sets C<$_> for  each item in LIST in turn:
+
+  printf "%i item(s) are defined", true { defined($_) } @list;
+
+=head3 false BLOCK LIST
+
+Counts the number of elements in LIST for which the criterion in BLOCK is false.
+Sets C<$_> for each item in LIST in turn:
+
+  printf "%i item(s) are not defined", false { defined($_) } @list;
+
+=head3 minmax LIST
+
+Calculates the minimum and maximum of LIST and returns a two element list with
+the first element being the minimum and the second the maximum. Returns the
+empty list if LIST was empty.
+
+The C<minmax> algorithm differs from a naive iteration over the list where each
+element is compared to two values being the so far calculated min and max value
+in that it only requires 3n/2 - 2 comparisons. Thus it is the most efficient
+possible algorithm.
+
+However, the Perl implementation of it has some overhead simply due to the fact
+that there are more lines of Perl code involved. Therefore, LIST needs to be
+fairly big in order for C<minmax> to win over a naive implementation. This
+limitation does not apply to the XS version.
 
 =head1 ENVIRONMENT
 
