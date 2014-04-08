@@ -57,17 +57,17 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
 =head1 SYNOPSIS
 
-    use List::MoreUtils qw(:strict); # use as initially thought
-    use List::MoreUtils qw(:relax); # use alias changes
-    use List::MoreUtils qw(:modern); # use compat mode to List::Util
+    # import specific functions
 
-    use List::MoreUtils qw(:all); # use all with precedence 'relax', 'strict', 'modern';
+    use List::MoreUtils qw(any uniq);
 
-    use List::MoreUtils any => { impl => 'modern' },
-                        all =>  { impl => 'strict' },
-                        'none', 'notall', # currently ':all' precedence
-                        'firstidx' => { impl => 'strict' },
-                        all => { impl => 'modern', as => 'modern_all' };
+    if ( any { /foo/ } uniq @has_duplicates ) {
+        # do stuff
+    }
+
+    # import everything
+
+    use List::MoreUtils ':all';
 
 =head1 DESCRIPTION
 
@@ -85,13 +85,6 @@ couldn't be compiled on this machine.
 Nothing by default. To import all of this module's symbols, do the conventional
 
     use List::MoreUtils ':all';
-
-or
-
-    use List::MoreUtils ':default';
-
-It may make more sense though to only import the stuff your program actually
-needs:
 
     use List::MoreUtils qw{ any firstidx };
 
