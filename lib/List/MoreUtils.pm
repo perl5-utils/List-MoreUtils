@@ -12,9 +12,8 @@ BEGIN
 use Exporter::Tiny qw();
 use List::MoreUtils::XS qw();    # try loading XS
 
-my @functions = (
-    qw(any all none notall
-      any_u all_u none_u notall_u
+my @junctions = qw( any all none notall );
+my @v0_22 = qw(
       true false
       firstidx lastidx
       insert_after insert_after_string
@@ -26,54 +25,62 @@ my @functions = (
       mesh uniq
       minmax part
       sort_by nsort_by bsearch
-      ),
 );
+my @v0_24  = qw(bsearch);
+my @v0_33  = qw(sort_by nsort_by);
+my @v0_400 = qw(any_u all_u none_u notall_u);
+
+my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
 my %alias_list = (
-                   first_index => "firstidx",
-                   last_index  => "lastidx",
-                   first_value => "firstval",
-                   last_value  => "lastval",
-                   zip         => "mesh",
-                   distinct    => "uniq",
-                 );
+    v0_22 => {
+        first_index => "firstidx",
+        last_index  => "lastidx",
+        first_value => "firstval",
+        last_value  => "lastval",
+        zip         => "mesh",
+    },
+    v0_33 => {
+        distinct    => "uniq",
+    },
+);
 
 our @ISA = qw(Exporter::Tiny);
-our @EXPORT_OK = ( @functions, keys %alias_list );
+our @EXPORT_OK = ( @all_functions, map { keys %$_} values %alias_list );
 our %EXPORT_TAGS = (
     all       => \@EXPORT_OK,
     'like_0.22' => [
-	any_u    => { -as => 'any' },
-	all_u    => { -as => 'all' },
-	none_u   => { -as => 'none' },
-	notall_u => { -as => 'notall' },
-	qw(true false firstidx first_index lastidx
-	last_index insert_after insert_after_string apply after after_incl before
-	before_incl indexes firstval first_value lastval last_value each_array
-	each_arrayref pairwise natatime mesh zip uniq minmax part)
+        any_u    => { -as => 'any' },
+        all_u    => { -as => 'all' },
+        none_u   => { -as => 'none' },
+        notall_u => { -as => 'notall' },
+        @v0_22,
+        keys %{$alias_list{v0_22}},
     ],
     'like_0.24' => [
-	any_u    => { -as => 'any' },
-	all_u    => { -as => 'all' },
-	notall_u => { -as => 'notall' },
-	qw(none true false firstidx first_index lastidx
-	last_index insert_after insert_after_string apply after after_incl before
-	before_incl indexes firstval first_value lastval last_value each_array
-	each_arrayref pairwise natatime mesh zip uniq minmax part bsearch)
+        any_u    => { -as => 'any' },
+        all_u    => { -as => 'all' },
+        notall_u => { -as => 'notall' },
+        'none',
+        @v0_22,
+        @v0_24,
+        keys %{$alias_list{v0_22}},
     ],
     'like_0.33' => [
-	qw(any all none notall
-	true false firstidx first_index lastidx
-	last_index insert_after insert_after_string apply after after_incl before
-	before_incl indexes firstval first_value lastval last_value each_array
-	each_arrayref pairwise natatime mesh zip uniq minmax part
-	sort_by nsort_by)
+        @junctions,
+        @v0_22,
+        # v0_24 functions were omitted
+        @v0_33,
+        keys %{$alias_list{v0_22}},
+        keys %{$alias_list{v0_33}},
     ],
 );
 
-for my $alias (keys %alias_list) {
-    no strict qw(refs);
-    *$alias = __PACKAGE__->can($alias_list{$alias});
+for my $set ( values %alias_list ) {
+    for my $alias (keys %$set) {
+        no strict qw(refs);
+        *$alias = __PACKAGE__->can($set->{$alias});
+    }
 }
 
 =pod
