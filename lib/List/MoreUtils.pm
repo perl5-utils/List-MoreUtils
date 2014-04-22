@@ -42,6 +42,34 @@ our @ISA = qw(Exporter::Tiny);
 our @EXPORT_OK = ( @functions, keys %alias_list );
 our %EXPORT_TAGS = (
     all       => \@EXPORT_OK,
+    'like_0.22' => [
+	any_u    => { -as => 'any' },
+	all_u    => { -as => 'all' },
+	none_u   => { -as => 'none' },
+	notall_u => { -as => 'notall' },
+	qw(true false firstidx first_index lastidx
+	last_index insert_after insert_after_string apply after after_incl before
+	before_incl indexes firstval first_value lastval last_value each_array
+	each_arrayref pairwise natatime mesh zip uniq minmax part)
+    ],
+    'like_0.24' => [
+	any_u    => { -as => 'any' },
+	all_u    => { -as => 'all' },
+	none_u   => { -as => 'none' },
+	notall_u => { -as => 'notall' },
+	qw(true false firstidx first_index lastidx
+	last_index insert_after insert_after_string apply after after_incl before
+	before_incl indexes firstval first_value lastval last_value each_array
+	each_arrayref pairwise natatime mesh zip uniq minmax part bsearch)
+    ],
+    'like_0.33' => [
+	qw(any all none notall
+	true false firstidx first_index lastidx
+	last_index insert_after insert_after_string apply after after_incl before
+	before_incl indexes firstval first_value lastval last_value each_array
+	each_arrayref pairwise natatime mesh zip uniq minmax part
+	sort_by nsort_by)
+    ],
 );
 
 for my $alias (keys %alias_list) {
@@ -69,6 +97,15 @@ List::MoreUtils - Provide the stuff missing in List::Util
 
     use List::MoreUtils ':all';
 
+    # import by API
+
+    # has "original" any/all/none/notall behavior
+    use List::MoreUtils ':like_0.22';
+    # 0.22 + bsearch
+    use List::MoreUtils ':like_0.24';
+    # has "simplified" any/all/none/notall behavior + (n)sort_by
+    use List::MoreUtils ':like_0.33';
+
 =head1 DESCRIPTION
 
 B<List::MoreUtils> provides some trivial but commonly needed functionality on
@@ -87,6 +124,31 @@ Nothing by default. To import all of this module's symbols, do the conventional
     use List::MoreUtils ':all';
 
     use List::MoreUtils qw{ any firstidx };
+
+Migrating projects to recent List::MoreUtils is supported by proving imports
+as known stable API versions. If no special requirements are known, skip the
+rest of this chapter.
+
+=head2 Last Alias one
+
+This API is widely used in several CPAN modules and thus it's closest to
+today's overall one:
+
+    use List::MoreUtils ':like_0.33';
+
+=head2 Last widely used
+
+This API has been available for ages, returning undef for empty lists on
+C<all>/C<any>/C<none>/C<notall>:
+
+    use List::MoreUtils ':like_0.22';
+
+=head2 Last official one
+
+This was the last official API by an authorized maintainer. Unluckly there
+might be projects out there relying on it:
+
+    use List::MoreUtils ':like_0.24';
 
 =head1 FUNCTIONS
 
