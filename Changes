@@ -7,6 +7,8 @@ Revision history for Perl extension List-MoreUtils
     - revise SYNOPSIS and DESCRIPTION for revised export model (David
       Golden)
     - introduce ":like_*" import tags (Toby Inkster, Jens Rehsack)
+    - remove Data::Tumbler and Module::Pluggable from configure
+      dependencies, they're coming with Test::WriteVariants
 
 0.400_006	2014-04-01
     - fix typos in POD (RT#87490 - thanks to David Steinbrunner)
