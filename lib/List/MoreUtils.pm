@@ -55,9 +55,8 @@ our %EXPORT_TAGS = (
     'like_0.24' => [
 	any_u    => { -as => 'any' },
 	all_u    => { -as => 'all' },
-	none_u   => { -as => 'none' },
 	notall_u => { -as => 'notall' },
-	qw(true false firstidx first_index lastidx
+	qw(none true false firstidx first_index lastidx
 	last_index insert_after insert_after_string apply after after_incl before
 	before_incl indexes firstval first_value lastval last_value each_array
 	each_arrayref pairwise natatime mesh zip uniq minmax part bsearch)
@@ -119,36 +118,51 @@ couldn't be compiled on this machine.
 
 =head1 EXPORTS
 
-Nothing by default. To import all of this module's symbols, do the conventional
+Nothing by default. To import all of this module's symbols use the C<:all> tag.
+Otherwise functions can be imported by name as usual:
 
     use List::MoreUtils ':all';
 
     use List::MoreUtils qw{ any firstidx };
 
-Migrating projects to recent List::MoreUtils is supported by proving imports
-as known stable API versions. If no special requirements are known, skip the
-rest of this chapter.
+Because historical changes to the API might make upgrading List::MoreUtils
+difficult for some projects, the legacy API is available via special import
+tags.
 
-=head2 Last Alias one
+=head2 Version 0.22 (last release with original API)
 
-This API is widely used in several CPAN modules and thus it's closest to
-today's overall one:
-
-    use List::MoreUtils ':like_0.33';
-
-=head2 Last widely used
-
-This API has been available for ages, returning undef for empty lists on
+This API was available from 2006 to 2009, returning undef for empty lists on
 C<all>/C<any>/C<none>/C<notall>:
 
     use List::MoreUtils ':like_0.22';
 
-=head2 Last official one
+This import tag will import all functions available as of version 0.22.
+However, it will import C<any_u> as C<any>, C<all_u> as C<all>, C<none_u> as
+C<none>, and C<not_all_u> as C<not_all>.
 
-This was the last official API by an authorized maintainer. Unluckly there
-might be projects out there relying on it:
+=head2 Version 0.24 (first incompatible change)
+
+This API was available from 2010 to 2011.  It changed the return value of C<none>
+and added the C<bsearch> function.
 
     use List::MoreUtils ':like_0.24';
+
+This import tag will import all functions available as of version 0.24.
+However it will import C<any_u> as C<any>, C<all_u> as C<all>, and
+C<not_all_u> as C<not_all>.  It will import C<none> as described in
+the documentation below (true for empty list).
+
+=head2 Version 0.33 (second incompatible change)
+
+This API was available from 2010 to 2014. It is widely used in several CPAN
+modules and thus it's closest to the current API.  It changed the return values
+of C<any>, C<all>, and C<not_all>.  It added the C<sort_by> and C<nsort_by> functions
+and the C<distinct> alias for C<uniq>.  It omitted C<bsearch>.
+
+    use List::MoreUtils ':like_0.33';
+
+This import tag will import all functions available as of version 0.33.  Note:
+it will not import C<bsearch> for consistency with the 0.33 API.
 
 =head1 FUNCTIONS
 
