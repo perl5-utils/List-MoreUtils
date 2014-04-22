@@ -24,7 +24,6 @@ my @v0_22 = qw(
       pairwise natatime
       mesh uniq
       minmax part
-      sort_by nsort_by bsearch
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
