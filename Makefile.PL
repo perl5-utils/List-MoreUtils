@@ -21,16 +21,14 @@ my %RUN_DEPS = (
                  'parent'          => 0,
                  'perl'            => '5.008001',
                  'XSLoader'        => 0,
-                 'Exporter::Tiny'  => '0.026',
+                 'Exporter::Tiny'  => '0.038',
                );
 my %CONFIGURE_DEPS = (
                        'parent'                    => 0,
 		       'ExtUtils::MakeMaker'       => '6.86',
                        'Carp'                      => 0,
-                       'Test::WriteVariants'       => '0.003',
-                       'Data::Tumbler'             => '0.003',
+                       'Test::WriteVariants'       => '0.005',
                        'Config::AutoConf'          => '0.19',
-                       'Module::Pluggable::Object' => '5.1',
                      );
 my %BUILD_DEPS = ();
 

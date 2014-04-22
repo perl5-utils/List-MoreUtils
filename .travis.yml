@@ -1,6 +1,6 @@
 ---
 install:
-  - cpanm --notest --skip-satisfied Test::WriteVariants Data::Tumbler Config::AutoConf Module::Pluggable::Object Carp App::mymeta_requires
+  - cpanm --notest --skip-satisfied Test::WriteVariants Config::AutoConf Carp App::mymeta_requires
   - perl Makefile.PL
   - make manifest
   - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm
