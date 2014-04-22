@@ -145,7 +145,7 @@ C<all>/C<any>/C<none>/C<notall>:
 
 This import tag will import all functions available as of version 0.22.
 However, it will import C<any_u> as C<any>, C<all_u> as C<all>, C<none_u> as
-C<none>, and C<not_all_u> as C<not_all>.
+C<none>, and C<notall_u> as C<notall>.
 
 =head2 Version 0.24 (first incompatible change)
 
@@ -156,14 +156,14 @@ and added the C<bsearch> function.
 
 This import tag will import all functions available as of version 0.24.
 However it will import C<any_u> as C<any>, C<all_u> as C<all>, and
-C<not_all_u> as C<not_all>.  It will import C<none> as described in
+C<notall_u> as C<notall>.  It will import C<none> as described in
 the documentation below (true for empty list).
 
 =head2 Version 0.33 (second incompatible change)
 
 This API was available from 2010 to 2014. It is widely used in several CPAN
 modules and thus it's closest to the current API.  It changed the return values
-of C<any>, C<all>, and C<not_all>.  It added the C<sort_by> and C<nsort_by> functions
+of C<any>, C<all>, and C<notall>.  It added the C<sort_by> and C<nsort_by> functions
 and the C<distinct> alias for C<uniq>.  It omitted C<bsearch>.
 
     use List::MoreUtils ':like_0.33';
@@ -271,9 +271,9 @@ turn:
   print "Not all values are non-negative"
     if notall { $_ >= 0 } ($x, $y, $z);
 
-For an empty LIST, C<not_all> returns false and C<not_all_u> returns C<undef>.
+For an empty LIST, C<notall> returns false and C<notall_u> returns C<undef>.
 
-Thus, C<< not_all_u(@list) >> is equivalent to C<< @list ? not_all(@list) : undef >>.
+Thus, C<< notall_u(@list) >> is equivalent to C<< @list ? notall(@list) : undef >>.
 
 =head2 Transformation
 
@@ -326,12 +326,12 @@ them will modify the input arrays.
 
   @a = (1 .. 5);
   @b = (11 .. 15);
-  @x = pairwise { $a + $b } @a, @b;	# returns 12, 14, 16, 18, 20
+  @x = pairwise { $a + $b } @a, @b;     # returns 12, 14, 16, 18, 20
 
   # mesh with pairwise
   @a = qw/a b c/;
   @b = qw/1 2 3/;
-  @x = pairwise { ($a, $b) } @a, @b;	# returns a, 1, b, 2, c, 3
+  @x = pairwise { ($a, $b) } @a, @b;    # returns a, 1, b, 2, c, 3
 
 =head3 mesh ARRAY1 ARRAY2 [ ARRAY3 ... ]
 
@@ -344,7 +344,7 @@ Examples:
 
   @x = qw/a b c d/;
   @y = qw/1 2 3 4/;
-  @z = mesh @x, @y;	    # returns a, 1, b, 2, c, 3, d, 4
+  @z = mesh @x, @y;         # returns a, 1, b, 2, c, 3, d, 4
 
   @a = ('x');
   @b = ('1', '2');
@@ -402,7 +402,7 @@ reference to an array.
 You can have a sparse list of partitions as well where non-set partitions will
 be undef:
 
-  my @part = part { 2 } 1 .. 10;	    # returns undef, undef, [ 1 .. 10 ]
+  my @part = part { 2 } 1 .. 10;            # returns undef, undef, [ 1 .. 10 ]
 
 Be careful with negative values, though:
 
