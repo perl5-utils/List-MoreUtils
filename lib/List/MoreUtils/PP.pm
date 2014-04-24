@@ -3,7 +3,7 @@ package List::MoreUtils::PP;
 use strict;
 use warnings;
 
-our $VERSION = '0.400_008';
+our $VERSION = '0.400_009';
 
 =pod
 
