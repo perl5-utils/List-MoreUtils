@@ -1,5 +1,11 @@
 Revision history for Perl extension List-MoreUtils
 
+0.400_009	2014-nn-nn
+
+0.400_008	2014-04-24
+    - fix none for 0.24 and clarify API tag documentation (David Golden)
+    - refactor import tags for clarity (David Golden)
+
 0.400_007	2014-04-22
     - cut out exporter-related cruft; it was only necessary when needing
       to choose between multiple implementations (Toby Inkster)
