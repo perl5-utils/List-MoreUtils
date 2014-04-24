@@ -12,7 +12,7 @@ BEGIN
 use Exporter::Tiny qw();
 use List::MoreUtils::XS qw();    # try loading XS
 
-my @junctions = qw( any all none notall );
+my @junctions = qw(any all none notall);
 my @v0_22 = qw(
       true false
       firstidx lastidx
@@ -45,7 +45,7 @@ my %alias_list = (
 );
 
 our @ISA = qw(Exporter::Tiny);
-our @EXPORT_OK = ( @all_functions, map { keys %$_} values %alias_list );
+our @EXPORT_OK = ( @all_functions, map { keys %$_ } values %alias_list );
 our %EXPORT_TAGS = (
     all       => \@EXPORT_OK,
     'like_0.22' => [
