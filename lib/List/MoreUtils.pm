@@ -666,7 +666,7 @@ L<https://github.com/perl5-utils/List-MoreUtils>
 
 If you have a bug report, a patch or a suggestion, please open a new
 report ticket at CPAN (but please check previous reports first in case
-your issue has already been addressed).
+your issue has already been addressed) or open an issue on GitHub.
 
 Report tickets should contain a detailed description of the bug or
 enhancement request and at least an easily verifiable way of
@@ -731,9 +731,19 @@ XS-implementation of part() work.
 =head2 Jens Rehsack
 
 Credits goes to all people contributing feedback during the v0.400
-development releases, especially David Golden who spent a lot of effort
-to develop a design to support current state of CPAN as well as ancient
-software somewhere in the dark.
+development releases.
+
+Special thanks goes to David Golden who spent a lot of effort to develop
+a design to support current state of CPAN as well as ancient software
+somewhere in the dark. He also contributed a lot of patches to refactor
+the API frontend to welcome any user of List::MoreUtils - from ancient
+past to recently last used.
+
+Toby Inkster provided a lot of useful feedback for sane importer code
+and was a nice sounding board for API discussions.
+
+Peter Rabbitson provided a sane git repository setup containing entire
+package history.
 
 =head1 TODO
 
