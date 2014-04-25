@@ -789,9 +789,6 @@ array-reference. Suggested by Mark Summersault.
 
 L<List::Util>, L<List::AllUtils>, L<List::UtilsBy>
 
-L<List::MoreUtils::ButMaintained::Sanely> for everyone who understand
-"sane" equals to "everything but break my code". Please bug there.
-
 =head1 AUTHOR
 
 Jens Rehsack E<lt>rehsack AT cpan.orgE<gt>
