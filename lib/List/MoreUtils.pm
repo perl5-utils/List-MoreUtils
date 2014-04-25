@@ -689,11 +689,16 @@ chosen).
 
 =head2 Business support and maintenance
 
-For business support you can contact Jens via his CPAN email
-address rehsackATcpan.org. Please keep in mind that business
-support is neither available for free nor are you eligible to
-receive any support based on the license distributed with this
-package.
+Generally, in volunteered projects, there is no right for support.
+While every maintainer is happy to improve the provided software,
+spare time is limited.
+
+For those who have a use case which requires guaranteed support, one of
+the maintainers should be hired or contracted.  For business support you
+can contact Jens via his CPAN email address rehsackATcpan.org. Please
+keep in mind that business support is neither available for free nor
+are you eligible to receive any support based on the license distributed
+with this package.
 
 =head1 THANKS
 
