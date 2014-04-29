@@ -124,6 +124,8 @@ couldn't be compiled on this machine.
 
 =head1 EXPORTS
 
+=head2 Default behavior
+
 Nothing by default. To import all of this module's symbols use the C<:all> tag.
 Otherwise functions can be imported by name as usual:
 
@@ -135,7 +137,7 @@ Because historical changes to the API might make upgrading List::MoreUtils
 difficult for some projects, the legacy API is available via special import
 tags.
 
-=head2 Version 0.22 (last release with original API)
+=head2 Like version 0.22 (last release with original API)
 
 This API was available from 2006 to 2009, returning undef for empty lists on
 C<all>/C<any>/C<none>/C<notall>:
@@ -146,7 +148,7 @@ This import tag will import all functions available as of version 0.22.
 However, it will import C<any_u> as C<any>, C<all_u> as C<all>, C<none_u> as
 C<none>, and C<notall_u> as C<notall>.
 
-=head2 Version 0.24 (first incompatible change)
+=head2 Like version 0.24 (first incompatible change)
 
 This API was available from 2010 to 2011.  It changed the return value of C<none>
 and added the C<bsearch> function.
@@ -158,9 +160,9 @@ However it will import C<any_u> as C<any>, C<all_u> as C<all>, and
 C<notall_u> as C<notall>.  It will import C<none> as described in
 the documentation below (true for empty list).
 
-=head2 Version 0.33 (second incompatible change)
+=head2 Like version 0.33 (second incompatible change)
 
-This API was available from 2010 to 2014. It is widely used in several CPAN
+This API was available from 2011 to 2014. It is widely used in several CPAN
 modules and thus it's closest to the current API.  It changed the return values
 of C<any>, C<all>, and C<notall>.  It added the C<sort_by> and C<nsort_by> functions
 and the C<distinct> alias for C<uniq>.  It omitted C<bsearch>.
