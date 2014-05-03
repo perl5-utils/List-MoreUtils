@@ -5,11 +5,20 @@ use warnings;
 
 require 5.008001;
 
-use ExtUtils::MakeMaker;
 use lib 'inc';
-use Config::AutoConf::LMU ();
+use ExtUtils::MakeMaker;
 use File::Path;
-use Tumble;
+
+my $create_bundle;
+BEGIN {
+    $create_bundle = 0;
+    eval 'use ExtUtils::BundleMaker; $create_bundle = 1;';
+    $create_bundle or do 'inc/config_bundle.pl';
+}
+
+eval "use Config::AutoConf::LMU ();
+use Tumble;";
+$@ and die $@;
 
 Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
@@ -18,92 +27,105 @@ Tumble->tumble("gt");
 
 # Should we build the XS version?
 my %RUN_DEPS = (
-                 'parent'          => 0,
-                 'perl'            => '5.008001',
-                 'XSLoader'        => 0,
-                 'Exporter::Tiny'  => '0.038',
-               );
+    'XSLoader'       => 0,
+    'Exporter::Tiny' => '0.038',
+);
+my %BUNDLE_CONFIGURE_DEPS = (
+    'Test::WriteVariants' => '0.005',
+    'Config::AutoConf'    => '0.26',
+);
 my %CONFIGURE_DEPS = (
-                       'parent'                    => 0,
-		       'ExtUtils::MakeMaker'       => '6.86',
-                       'Carp'                      => 0,
-                       'Test::WriteVariants'       => '0.005',
-                       'Config::AutoConf'          => '0.19',
-                     );
+    'Carp'                => 0,
+    'ExtUtils::MakeMaker' => '6.86',
+    'IPC::Cmd'            => 0,
+    'parent'              => 0,
+);
 my %BUILD_DEPS = ();
 
 my %TEST_DEPS = (
-                  'Test::More' => 0.90,
-                );
+    'Test::More' => 0.90,
+);
 my @XS_FILES = qw(MoreUtils.xs);
 
+if ($create_bundle)
+{
+    my $eu_bm = ExtUtils::BundleMaker->new(
+        modules => {%BUNDLE_CONFIGURE_DEPS},
+        target  => 'inc/config_bundle.pl',
+        recurse => 'v5.10'
+    );
+    $eu_bm->make_bundle();
+    %CONFIGURE_DEPS = ( %CONFIGURE_DEPS, %{ $eu_bm->_remaining_deps }, );
+}
+
 WriteMakefile1(
-    MIN_PERL_VERSION => '5.008001',
-    META_MERGE       => {
-                    'meta-spec' => { version => 2 },
-                    resources   => {
-                                   homepage   => 'https://metacpan.org/release/List-MoreUtils',
-                                   repository => {
-                                                   url  => 'git@github.com:perl5-utils/List-MoreUtils.git',
-                                                   web  => 'https://github.com/perl5-utils/List-MoreUtils',
-                                                   type => 'git',
-                                                 },
-                                   bugtracker => {
-                                                   web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=List-MoreUtils',
-                                                   mailto => 'list-moreutils@example.com',
-                                                 },
-                                 },
-                    prereqs => {
-                                 develop => {
-                                              requires => {
-                                                            'Test::CPAN::Changes'                 => 0,
-                                                            'Test::CheckManifest'                 => 0,
-                                                            'Test::Pod'                           => 0,
-                                                            'Test::Pod::Coverage'                 => 0,
-                                                            'Test::Pod::Spelling::CommonMistakes' => 0,
-                                                          },
-                                            },
-                                 configure => {
-                                                requires => {%CONFIGURE_DEPS},
-                                              },
-                                 build => { requires => {%BUILD_DEPS} },
-                                 test  => {
-                                           requires   => {%TEST_DEPS},
-                                           recommends => { 'Test::LeakTrace' => 0 }
-                                         },
-                                 runtime => {
-                                              recommends => {
-                                                              'perl' => $^V,
-                                                            },
-                                              requires => { %RUN_DEPS, },
-                                            },
-                               },
-                  },
+    META_MERGE => {
+        'meta-spec' => { version => 2 },
+        resources   => {
+            homepage   => 'https://metacpan.org/release/List-MoreUtils',
+            repository => {
+                url  => 'git@github.com:perl5-utils/List-MoreUtils.git',
+                web  => 'https://github.com/perl5-utils/List-MoreUtils',
+                type => 'git',
+            },
+            bugtracker => {
+                web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=List-MoreUtils',
+                mailto => 'list-moreutils@example.com',
+            },
+        },
+        prereqs => {
+            develop => {
+                requires => {
+                    'ExtUtils::BundleMaker'               => '0.003',
+                    'Test::CPAN::Changes'                 => 0,
+                    'Test::CheckManifest'                 => 0,
+                    'Test::Pod'                           => 0,
+                    'Test::Pod::Coverage'                 => 0,
+                    'Test::Pod::Spelling::CommonMistakes' => 0,
+                },
+            },
+            configure => {
+                requires   => {%CONFIGURE_DEPS},
+                recommends => {%BUNDLE_CONFIGURE_DEPS},
+            },
+            build => { requires => {%BUILD_DEPS} },
+            test  => {
+                requires   => {%TEST_DEPS},
+                recommends => { 'Test::LeakTrace' => 0 }
+            },
+            runtime => {
+                recommends => {
+                    'perl' => $^V,
+                },
+                requires => { %RUN_DEPS, },
+            },
+        },
+    },
     NAME         => 'List::MoreUtils',
     ABSTRACT     => 'Provide the stuff missing in List::Util',
     VERSION_FROM => 'lib/List/MoreUtils.pm',
     AUTHOR       => [
-                'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
-                'Adam Kennedy <adamk@cpan.org>',
-                'Jens Rehsack <rehsack@cpan.org>'
-              ],
+        'Tassilo von Parseval <tassilo.von.parseval@rwth-aachen.de>',
+        'Adam Kennedy <adamk@cpan.org>',
+        'Jens Rehsack <rehsack@cpan.org>'
+    ],
     LICENSE => 'perl',
     (
-       Config::AutoConf::LMU->with_xs
-       ? (
-           XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
-           MAGICXS => 1,
-           #OBJECT => [ map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ],
-           #OBJECT => join(" ", map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ),
-           INC => "-I."
-         )
-       : ()
+        Config::AutoConf::LMU->with_xs
+        ? (
+            XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
+            MAGICXS => 1,
+            #OBJECT => [ map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ],
+            #OBJECT => join(" ", map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ),
+            INC => "-I."
+          )
+        : ()
     ),
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
     test   => { TESTS               => 'xt/*.t gt/*/*.t gt/*/*/*.t' },
     # Otherwise 'cxinc' isn't defined
     DEFINE => '-DPERL_EXT',
-              );
+);
 
 sub WriteMakefile1
 {    # originally written by Alexandr Ciornii, version 0.21. Added by eumm-upgrade.
