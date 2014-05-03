@@ -604,6 +604,19 @@ there for the test-suite to force testing the Perl implementation, and possibly
 for reporting of bugs. I don't see any reason to use it in a production
 environment.
 
+=head1 MAINTENANCE
+
+The maintenance goal is to preserve the documented semantics of the API;
+bug fixes that bring actual behavior in line with semantics are allowed.
+New API functions may be added over time.  If a backwards incompatible
+change is unavoidable, we will attempt to provide support for the legacy
+API using the same export tag mechanism currently in place.
+
+This module attempts to use few non-core dependencies. Non-core
+configuration and testing modules will be bundled when reasonable;
+run-time dependencies will be added only if they deliver substantial
+benefit.
+
 =head1 BUGS
 
 There is a problem with a bug in 5.6.x perls. It is a syntax error to write
