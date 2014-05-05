@@ -10,10 +10,12 @@ use ExtUtils::MakeMaker;
 use File::Path;
 
 my $create_bundle;
-BEGIN {
+
+BEGIN
+{
     $create_bundle = 0;
     eval 'use ExtUtils::BundleMaker; $create_bundle = 1;';
-    $create_bundle or do 'inc/config_bundle.pl';
+    $create_bundle or do 'inc/lmu_config_bundle.pm';
 }
 
 eval "use Config::AutoConf::LMU ();
@@ -37,6 +39,7 @@ my %BUNDLE_CONFIGURE_DEPS = (
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
     'ExtUtils::MakeMaker' => '6.86',
+    'File::Path'          => 0,
     'IPC::Cmd'            => 0,
     'parent'              => 0,
 );
@@ -51,11 +54,16 @@ if ($create_bundle)
 {
     my $eu_bm = ExtUtils::BundleMaker->new(
         modules => {%BUNDLE_CONFIGURE_DEPS},
-        target  => 'inc/config_bundle.pl',
-        recurse => 'v5.10'
+        target  => 'inc/lmu_config_bundle.pm',
+        recurse => 'v5.14',
+        name    => 'lmu_config_bundle',
     );
     $eu_bm->make_bundle();
     %CONFIGURE_DEPS = ( %CONFIGURE_DEPS, %{ $eu_bm->_remaining_deps }, );
+}
+else
+{
+    %CONFIGURE_DEPS = ( %CONFIGURE_DEPS, %{ lmu_config_bundle->remaining_deps }, );
 }
 
 WriteMakefile1(
@@ -76,7 +84,7 @@ WriteMakefile1(
         prereqs => {
             develop => {
                 requires => {
-                    'ExtUtils::BundleMaker'               => '0.003',
+                    'ExtUtils::BundleMaker'               => '0.005',
                     'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Test::Pod'                           => 0,
