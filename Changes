@@ -1,6 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
-0.400_009	2014-nn-nn
+0.400_009	2014-05-05
+    - improve documentation (David Golden, Jens Rehsack)
+    - bundle non-core modules (compared to 5.14)
 
 0.400_008	2014-04-24
     - fix none for 0.24 and clarify API tag documentation (David Golden)
