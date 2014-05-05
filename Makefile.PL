@@ -78,13 +78,13 @@ WriteMakefile1(
             },
             bugtracker => {
                 web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=List-MoreUtils',
-                mailto => 'list-moreutils@example.com',
+                mailto => 'list-moreutils@rt.cpan.org',
             },
         },
         prereqs => {
             develop => {
                 requires => {
-                    'ExtUtils::BundleMaker'               => '0.005',
+                    'ExtUtils::BundleMaker'               => '0.006',
                     'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Test::Pod'                           => 0,
@@ -176,7 +176,7 @@ sub WriteMakefile1
         my $ok = CheckConflicts(%params);
         exit(0) if ( $params{PREREQ_FATAL} and not $ok );
         my $cpan_smoker = grep { $_ =~ m/(?:CR_SMOKER|CPAN_REPORTER|AUTOMATED_TESTING)/ } keys %ENV;
-        unless ( $cpan_smoker || $ENV{PERL_MM_USE_DEFAULT} || $ENV{SQL_STATEMENT_WARN_UPDATE} )
+        unless ( $cpan_smoker || $ENV{PERL_MM_USE_DEFAULT} )
         {
             sleep 4 unless ($ok);
         }
