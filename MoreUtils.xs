@@ -18,7 +18,7 @@
 #  define pTHX
 #endif
 
-/* multicall.h is all nice and 
+/* multicall.h is all nice and
  * fine but wont work on perl < 5.6.0 */
 
 #if PERL_VERSION > 5
@@ -293,7 +293,7 @@ void
 insert_after (int idx, SV *what, AV *av) {
     int i, len;
     av_extend(av, (len = av_len(av) + 1));
-    
+
     for (i = len; i > idx+1; i--) {
 	SV **sv = av_fetch(av, i-1, FALSE);
 	SvREFCNT_inc(*sv);
@@ -301,6 +301,49 @@ insert_after (int idx, SV *what, AV *av) {
     }
     if (!av_store(av, idx+1, what))
 	SvREFCNT_dec(what);
+}
+
+static int
+is_like(SV *sv, const char *like)
+{
+    int likely = 0;
+    if( sv_isobject( sv ) )
+    {
+        dSP;
+        int count;
+
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs( sv_2mortal( newSVsv( sv ) ) );
+        XPUSHs( sv_2mortal( newSVpv( like, strlen(like) ) ) );
+        PUTBACK;
+
+        if( ( count = call_pv("overload::Method", G_SCALAR) ) )
+        {
+            I32 ax;
+            SPAGAIN;
+
+            SP -= count;
+            ax = (SP - PL_stack_base) + 1;
+            if( SvTRUE(ST(0)) )
+                ++likely;
+        }
+
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+    }
+
+    return likely;
+}
+
+static int
+codelike(SV *code)
+{
+    if( SvMAGICAL(code) )
+        mg_get(code);
+    return SvROK(code) && ( ( SVt_PVCV == SvTYPE(SvRV(code)) ) || ( is_like(code, "&{}" ) ) );
 }
 
 MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
@@ -356,15 +399,18 @@ CODE:
     HV *stash;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_NO;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
-	    
+
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -389,15 +435,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_YES;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
- 
+
     for(i = 1 ; i < items ; i++) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -423,13 +472,16 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_YES;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
@@ -456,15 +508,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_NO;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
-	    
+
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -489,15 +544,18 @@ CODE:
     HV *stash;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_UNDEF;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
-	    
+
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -522,15 +580,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_UNDEF;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
- 
+
     for(i = 1 ; i < items ; i++) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -556,13 +617,16 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_UNDEF;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
@@ -589,15 +653,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_UNDEF;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
-	    
+
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -623,19 +690,22 @@ CODE:
     I32 gimme = G_SCALAR;
     I32 count = 0;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	goto done;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
-	if (SvTRUE(*PL_stack_sp)) 
+	if (SvTRUE(*PL_stack_sp))
 	    count++;
     }
     POP_MULTICALL;
@@ -659,19 +729,22 @@ CODE:
     I32 gimme = G_SCALAR;
     I32 count = 0;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	goto done;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
-	if (!SvTRUE(*PL_stack_sp)) 
+	if (!SvTRUE(*PL_stack_sp))
 	    count++;
     }
     POP_MULTICALL;
@@ -694,15 +767,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     RETVAL = -1;
-    
+
     if (items > 1) {
-	cv = sv_2cv(code, &stash, &gv, 0);
-	PUSH_MULTICALL(cv);
+	_cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(_cv);
 	SAVESPTR(GvSV(PL_defgv));
- 
+
 	for (i = 1 ; i < items ; ++i) {
 	    GvSV(PL_defgv) = args[i];
 	    MULTICALL;
@@ -729,15 +805,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     RETVAL = -1;
-    
+
     if (items > 1) {
-	cv = sv_2cv(code, &stash, &gv, 0);
-	PUSH_MULTICALL(cv);
+	_cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(_cv);
 	SAVESPTR(GvSV(PL_defgv));
- 
+
 	for (i = items-1 ; i > 0 ; --i) {
 	    GvSV(PL_defgv) = args[i];
 	    MULTICALL;
@@ -765,14 +844,17 @@ CODE:
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
-    CV *cv;
+    CV *_cv;
 
     AV *av = (AV*)SvRV(avref);
     int len = av_len(av);
     RETVAL = 0;
-    
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 0; i <= len ; ++i) {
@@ -783,7 +865,7 @@ CODE:
 	    break;
 	}
     }
-    
+
     POP_MULTICALL;
 
     if (RETVAL) {
@@ -810,16 +892,16 @@ insert_after_string (string, val, avref)
 	char *str;
 	char *astr;
 	RETVAL = 0;
-	
+
 	if (SvTRUE(string))
 	    str = SvPV(string, slen);
-	else 
+	else
 	    str = NULL;
-	    
+
 	for (i = 0; i <= len ; i++) {
 	    sv = av_fetch(av, i, FALSE);
 	    if (SvTRUE(*sv))
-		astr = SvPV(*sv, alen); 
+		astr = SvPV(*sv, alen);
 	    else {
 		astr = NULL;
 		alen = 0;
@@ -849,16 +931,19 @@ CODE:
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
-    CV *cv;
-    SV **args = &PL_stack_base[ax];	
+    CV *_cv;
+    SV **args = &PL_stack_base[ax];
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
-	    
+
     for(i = 1 ; i < items ; ++i) {
 	GvSV(PL_defgv) = newSVsv(args[i]);
 	MULTICALL;
@@ -881,16 +966,19 @@ CODE:
     dMULTICALL;
     int i, j;
     HV *stash;
-    CV *cv;
+    CV *_cv;
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
 
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
     if (items <= 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; i++) {
@@ -918,16 +1006,19 @@ CODE:
     dMULTICALL;
     int i, j;
     HV *stash;
-    CV *cv;
+    CV *_cv;
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
 
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
     if (items <= 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; i++) {
@@ -958,13 +1049,16 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
-    
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
     if (items <= 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; i++) {
@@ -993,13 +1087,16 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for (i = 1; i < items; ++i) {
@@ -1029,15 +1126,18 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items <= 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
-    
+
     for (i = 1, j = 0; i < items; i++) {
 	GvSV(PL_defgv) = args[i];
 	MULTICALL;
@@ -1047,7 +1147,7 @@ CODE:
              * done */
 	    args[j++] = newSViv(i-1);
     }
-    
+
     POP_MULTICALL;
 
     for (i = 0; i < j; i++)
@@ -1067,14 +1167,17 @@ CODE:
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
-    SV **args = &PL_stack_base[ax];	
-    CV *cv;
+    SV **args = &PL_stack_base[ax];
+    CV *_cv;
 
     RETVAL = &PL_sv_undef;
-    
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
     if (items > 1) {
-	cv = sv_2cv(code, &stash, &gv, 0);
-	PUSH_MULTICALL(cv);
+	_cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(_cv);
 	SAVESPTR(GvSV(PL_defgv));
 
 	for (i = items-1 ; i > 0 ; --i) {
@@ -1104,13 +1207,16 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
 
     RETVAL = &PL_sv_undef;
-    
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
     if (items > 1) {
-	cv = sv_2cv(code, &stash, &gv, 0);
-	PUSH_MULTICALL(cv);
+	_cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(_cv);
 	SAVESPTR(GvSV(PL_defgv));
 
 	for (i = 1; i < items; ++i) {
@@ -1136,19 +1242,18 @@ _array_iterator (method = "")
     {
 	int i;
 	int exhausted = 1;
-	
+
 	/* 'cv' is the hidden argument with which XS_List__MoreUtils__array_iterator (this XSUB)
 	 * is called. The closure_arg struct is stored in this CV. */
-#define ME_MYSELF_AND_I cv
-	
-	arrayeach_args *args = (arrayeach_args*)CvXSUBANY(ME_MYSELF_AND_I).any_ptr;
-	
+
+	arrayeach_args *args = (arrayeach_args*)CvXSUBANY(cv).any_ptr;
+
 	if (strEQ(method, "index")) {
 	    EXTEND(SP, 1);
 	    ST(0) = args->curidx > 0 ? sv_2mortal(newSViv(args->curidx-1)) : &PL_sv_undef;
 	    XSRETURN(1);
 	}
-    
+
 	EXTEND(SP, args->navs);
 
 	for (i = 0; i < args->navs; i++) {
@@ -1160,8 +1265,8 @@ _array_iterator (method = "")
 	    }
 	    ST(i) = &PL_sv_undef;
 	}
-	
-	if (exhausted) 
+
+	if (exhausted)
 	    XSRETURN_EMPTY;
 
 	args->curidx++;
@@ -1195,28 +1300,31 @@ _pairwise (code, ...)
     PPCODE:
     {
 #define av_items(a) (av_len(a)+1)
-	
+
 	int i;
 	AV *avs[2];
 	SV **oldsp;
-	
+
 	int nitems = 0, maxitems = 0;
 
-	/* deref AV's for convenience and 
+	if(!codelike(code))
+	   croak_xs_usage(cv,  "code, ...");
+
+	/* deref AV's for convenience and
 	 * get maximum items */
 	avs[0] = (AV*)SvRV(ST(1));
 	avs[1] = (AV*)SvRV(ST(2));
 	maxitems = av_items(avs[0]);
 	if (av_items(avs[1]) > maxitems)
 	    maxitems = av_items(avs[1]);
-	
+
 	if (!PL_firstgv || !PL_secondgv) {
 	    SAVESPTR(PL_firstgv);
 	    SAVESPTR(PL_secondgv);
 	    PL_firstgv = gv_fetchpv("a", TRUE, SVt_PV);
 	    PL_secondgv = gv_fetchpv("b", TRUE, SVt_PV);
 	}
-	
+
 	oldsp = PL_stack_base;
 	EXTEND(SP, maxitems);
 	ENTER;
@@ -1251,7 +1359,7 @@ pairwise (code, ...)
     PPCODE:
     {
 #define av_items(a) (av_len(a)+1)
-	
+
 	/* This function is not quite as efficient as it ought to be: We call
 	 * 'code' multiple times and want to gather its return values all in
 	 * one list. However, each call resets the stack pointer so there is no
@@ -1264,23 +1372,26 @@ pairwise (code, ...)
 	 * for a list of SV-pointers, as many as there are return values. It
 	 * temporarily stores 'code's return values in this list and, when
 	 * done, copies them down to SP. */
-	
+
 	int i, j;
 	AV *avs[2];
 	SV **buf, **p;	/* gather return values here and later copy down to SP */
 	int alloc;
-	
+
 	int nitems = 0, maxitems = 0;
 	int d;
-	
-	/* deref AV's for convenience and 
+
+	if(!codelike(code))
+	   croak_xs_usage(cv,  "code, ...");
+
+	/* deref AV's for convenience and
 	 * get maximum items */
 	avs[0] = (AV*)SvRV(ST(1));
 	avs[1] = (AV*)SvRV(ST(2));
 	maxitems = av_items(avs[0]);
 	if (av_items(avs[1]) > maxitems)
 	    maxitems = av_items(avs[1]);
-	
+
 	if (!PL_firstgv || !PL_secondgv) {
 	    SAVESPTR(PL_firstgv);
 	    SAVESPTR(PL_secondgv);
@@ -1322,7 +1433,7 @@ pairwise (code, ...)
 	p = buf;
 	for (i = 0; i < nitems; i++)
 	    ST(i) = *p++;
-	
+
 	Safefree(buf);
 	XSRETURN(nitems);
     }
@@ -1337,12 +1448,11 @@ _natatime_iterator ()
 
 	/* 'cv' is the hidden argument with which XS_List__MoreUtils__array_iterator (this XSUB)
 	 * is called. The closure_arg struct is stored in this CV. */
-#define ME_MYSELF_AND_I cv
-	
-	natatime_args *args = (natatime_args*)CvXSUBANY(ME_MYSELF_AND_I).any_ptr;
-	
+
+	natatime_args *args = (natatime_args*)CvXSUBANY(cv).any_ptr;
+
 	nret = args->natatime;
-	
+
 	EXTEND(SP, nret);
 
 	for (i = 0; i < args->natatime; i++) {
@@ -1379,14 +1489,14 @@ natatime (n, ...)
 	args->curidx = 0;
 	args->natatime = n;
 
-	for (i = 1; i < items; i++) 
+	for (i = 1; i < items; i++)
 	    SvREFCNT_inc(args->svs[i-1] = ST(i));
-	
+
 	CvXSUBANY(closure).any_ptr = args;
 	RETVAL = newRV_noinc((SV*)closure);
 
 	/* in order to allow proper cleanup in DESTROY-handler */
-	sv_bless(RETVAL, stash);    
+	sv_bless(RETVAL, stash);
     }
     OUTPUT:
 	RETVAL
@@ -1399,7 +1509,7 @@ mesh (...)
 	int i, j, maxidx = -1;
 	AV **avs;
 	New(0, avs, items, AV*);
-	
+
 	for (i = 0; i < items; i++) {
 	    avs[i] = (AV*)SvRV(ST(i));
 	    if (av_len(avs[i]) > maxidx)
@@ -1407,7 +1517,7 @@ mesh (...)
 	}
 
 	EXTEND(SP, items * (maxidx + 1));
-	for (i = 0; i <= maxidx; i++) 
+	for (i = 0; i <= maxidx; i++)
 	    for (j = 0; j < items; j++) {
 		SV **svp = av_fetch(avs[j], i, FALSE);
 		ST(i*items + j) = svp ? sv_2mortal(newSVsv(*svp)) : &PL_sv_undef;
@@ -1520,16 +1630,19 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
-    
+    CV *_cv;
+
     AV **tmp = NULL;
     int last = 0;
-    
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
     if (items == 1)
 	XSRETURN_EMPTY;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
@@ -1561,7 +1674,7 @@ CODE:
         else
             ST(i) = &PL_sv_undef;
     }
-    
+
     Safefree(tmp);
     XSRETURN(last);
 }
@@ -1575,7 +1688,7 @@ CODE:
 {
     /* We might want to keep this dhash-implementation.
      * It is currently slower than the above but it uses less
-     * memory for sparse parts such as 
+     * memory for sparse parts such as
      *   @part = part { 10_000_000 } 1 .. 100_000;
      * Maybe there's a way to optimize dhash.h to get more speed
      * from it.
@@ -1591,6 +1704,9 @@ CODE:
     CV *cv;
 
     dhash_t *h = dhash_init();
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
     if (items == 1)
 	XSRETURN_EMPTY;
@@ -1613,7 +1729,7 @@ CODE:
     POP_MULTICALL;
 
     dhash_sort_final(h);
-    
+
     EXTEND(SP, max = h->max+1);
     i = 0;
     lastidx = -1;
@@ -1627,7 +1743,7 @@ CODE:
 	i++;
 	lastidx = retidx;
     }
-    
+
     dhash_destroy(h);
     XSRETURN(max);
 }
@@ -1643,20 +1759,21 @@ CODE:
     dMULTICALL;
     HV *stash;
     GV *gv;
-    CV *cv;
-    I32 gimme = GIMME; /* perl-5.5.4 bus-errors out later when using GIMME 
+    I32 gimme = GIMME; /* perl-5.5.4 bus-errors out later when using GIMME
                           therefore we save its value in a fresh variable */
     SV **args = &PL_stack_base[ax];
 
     long i, j;
     int val = -1;
 
-    if (items > 1) {
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
 
-	cv = sv_2cv(code, &stash, &gv, 0);
-	PUSH_MULTICALL(cv);
+    if (items > 1) {
+	CV *_cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(_cv);
 	SAVESPTR(GvSV(PL_defgv));
-    
+
         i = 0;
         j = items - 1;
         do {
