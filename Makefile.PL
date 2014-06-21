@@ -24,7 +24,7 @@ my %RUN_DEPS = (
 );
 my %BUNDLE_CONFIGURE_DEPS = (
     'Test::WriteVariants' => '0.005',
-    'Config::AutoConf'    => '0.26',
+    'Config::AutoConf'    => '0.305',
 );
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
