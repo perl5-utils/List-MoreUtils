@@ -1,5 +1,6 @@
 package List::MoreUtils::PP;
 
+use 5.006;
 use strict;
 use warnings;
 

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-require 5.008001;
+require 5.006;
 
 use lib 'inc';
 use ExtUtils::MakeMaker;
