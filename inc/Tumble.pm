@@ -143,7 +143,7 @@ sub provider {
     my ($self, $path, $context, $tests, $variants) = @_;
     my $mod_ctx = $context->new_module_use( lib => [ File::Spec->catdir(qw(t lib)) ] );
 
-    if(Config::AutoConf::LMU->with_xs)
+    if(Config::AutoConf::LMU->check_sane_xs)
     {
 	$variants->{pureperl} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 1,), $mod_ctx );
 	$variants->{xs} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 0,), $mod_ctx );

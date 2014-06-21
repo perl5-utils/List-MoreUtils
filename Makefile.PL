@@ -9,18 +9,8 @@ use lib 'inc';
 use ExtUtils::MakeMaker;
 use File::Path;
 
-my $create_bundle;
-
-BEGIN
-{
-    $create_bundle = 0;
-    eval 'use ExtUtils::BundleMaker; $create_bundle = 1;';
-    $create_bundle or do 'inc/lmu_config_bundle.pm';
-}
-
-eval "use Config::AutoConf::LMU ();
-use Tumble;";
-$@ and die $@;
+use Config::AutoConf::LMU ();
+use Tumble;
 
 Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
@@ -50,22 +40,6 @@ my %TEST_DEPS = (
 );
 my @XS_FILES = qw(MoreUtils.xs);
 
-if ($create_bundle)
-{
-    my $eu_bm = ExtUtils::BundleMaker->new(
-        modules => {%BUNDLE_CONFIGURE_DEPS},
-        target  => 'inc/lmu_config_bundle.pm',
-        recurse => 'v5.14',
-        name    => 'lmu_config_bundle',
-    );
-    $eu_bm->make_bundle();
-    %CONFIGURE_DEPS = ( %CONFIGURE_DEPS, %{ $eu_bm->_remaining_deps }, );
-}
-else
-{
-    %CONFIGURE_DEPS = ( %CONFIGURE_DEPS, %{ lmu_config_bundle->remaining_deps }, );
-}
-
 WriteMakefile1(
     META_MERGE => {
         'meta-spec' => { version => 2 },
@@ -84,7 +58,6 @@ WriteMakefile1(
         prereqs => {
             develop => {
                 requires => {
-                    'ExtUtils::BundleMaker'               => '0.006',
                     'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Test::Pod'                           => 0,
@@ -119,7 +92,7 @@ WriteMakefile1(
     ],
     LICENSE => 'perl',
     (
-        Config::AutoConf::LMU->with_xs
+        Config::AutoConf::LMU->check_sane_xs
         ? (
             XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
             MAGICXS => 1,

@@ -3,63 +3,27 @@ package Config::AutoConf::LMU;
 use strict;
 use warnings;
 
+use Config::AutoConf '0.28';
+
 use parent qw(Config::AutoConf);
 
-sub new
+sub _check_pureperl_build_wanted
 {
-    my ( $class, %args ) = @_;
-    my $self = $class->SUPER::new(%args);
-    # XXX might add c++ if required for some operating systems
-    return $self;
-}
-
-sub _default_headers_with_perl
-{
-    my ($self) = @_;
-
-    my $include_perl = "#include <EXTERN.h>\n#include <perl.h>";
-    my $includes = join( "\n", $self->_default_includes, $include_perl );
-
-    return $includes;
-}
-
-sub _set_argv
-{
-    my ( $self, @argv ) = @_;
-    $self = $self->_get_instance;
-    $self->{_argv} = \@argv;
-    return;
+    my $self = shift->_get_instance;
+    foreach ( @{ $self->{_argv} } )
+    {
+	/^-pm/ and warn "-pm is depreciated, please use PUREPERL_ONLY=1" and return 0;
+	/^-xs/ and warn "-xs is depreciated, building XS is default anyway" and return $self->{_force_xs} = 1;
+    }
+    return $self->SUPER::_check_pureperl_build_wanted(@_);
 }
 
 sub check_sane_xs
 {
-    my ($self) = @_;
-
-    my $includes = $self->_default_headers_with_perl();
-    my $conftest = $self->lang_build_program( $includes, "" );
-
-    my $sanexs = $self->compile_if_else($conftest);
-
-    return $sanexs;
-}
-
-sub with_xs
-{
-    my $self       = shift->_get_instance;
-    my $cache_name = $self->_cache_name(qw(config with xs));
-    return $self->check_cached(
-        $cache_name,
-        "whether enable xs or not",
-        sub {
-            foreach ( @{ $self->{_argv} } )
-            {
-                /^-pm/ and return 0;
-                /^-xs/ and return 1;
-            }
-
-            return $self->check_sane_xs();
-        }
-    );
+    my $self = shift->_get_instance;
+    my $xs = $self->SUPER::check_sane_xs(@_);
+    $self->{_force_xs} and !$xs and $self->msg_error("XS forced but can't compile - giving up");
+    return $xs;
 }
 
 1;
