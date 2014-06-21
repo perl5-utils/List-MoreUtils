@@ -247,7 +247,7 @@ sv_tainted(SV *sv)
     PL_curcop->cop_warnings = oldwarn;
 
 #define EACH_ARRAY_BODY \
-	register int i;									\
+	int i;										\
 	arrayeach_args * args;								\
 	HV *stash = gv_stashpv("List::MoreUtils_ea", TRUE);				\
 	CV *closure = newXS(NULL, XS_List__MoreUtils__array_iterator, __FILE__);	\
@@ -301,7 +301,6 @@ insert_after (int idx, SV *what, AV *av) {
     }
     if (!av_store(av, idx+1, what))
 	SvREFCNT_dec(what);
-
 }
 
 MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
@@ -311,7 +310,7 @@ DESTROY(sv)
     SV *sv;
     CODE:
     {
-	register int i;
+	int i;
 	CV *code = (CV*)SvRV(sv);
 	arrayeach_args *args = CvXSUBANY(code).any_ptr;
 	if (args) {
@@ -331,7 +330,7 @@ DESTROY(sv)
     SV *sv;
     CODE:
     {
-	register int i;
+	int i;
 	CV *code = (CV*)SvRV(sv);
 	natatime_args *args = CvXSUBANY(code).any_ptr;
 	if (args) {
@@ -352,7 +351,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     GV *gv;
     HV *stash;
     I32 gimme = G_SCALAR;
@@ -385,7 +384,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -419,7 +418,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -452,7 +451,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -485,7 +484,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     GV *gv;
     HV *stash;
     I32 gimme = G_SCALAR;
@@ -518,7 +517,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -552,7 +551,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -585,7 +584,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -618,7 +617,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -654,7 +653,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -690,7 +689,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -725,7 +724,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -762,7 +761,7 @@ PROTOTYPE: &$\@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -803,13 +802,13 @@ insert_after_string (string, val, avref)
     PROTOTYPE: $$\@
     CODE:
     {
-	register int i;
+	int i;
 	AV *av = (AV*)SvRV(avref);
 	int len = av_len(av);
-	register SV **sv;
+	SV **sv;
 	STRLEN slen = 0, alen;
-	register char *str;
-	register char *astr;
+	char *str;
+	char *astr;
 	RETVAL = 0;
 	
 	if (SvTRUE(string))
@@ -846,14 +845,13 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
     CV *cv;
     SV **args = &PL_stack_base[ax];	
-    I32 count = 0;
-    
+
     if (items <= 1)
 	XSRETURN_EMPTY;
 
@@ -871,7 +869,6 @@ CODE:
     for(i = 1 ; i < items ; ++i)
         sv_2mortal(args[i-1]);
 
-    done:
     XSRETURN(items-1);
 }
 
@@ -882,7 +879,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i, j;
+    int i, j;
     HV *stash;
     CV *cv;
     GV *gv;
@@ -919,7 +916,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i, j;
+    int i, j;
     HV *stash;
     CV *cv;
     GV *gv;
@@ -956,7 +953,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -991,7 +988,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -1027,7 +1024,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i, j;
+    int i, j;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -1066,7 +1063,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -1102,7 +1099,7 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
@@ -1137,7 +1134,7 @@ _array_iterator (method = "")
     PROTOTYPE: ;$
     CODE:
     {
-	register int i;
+	int i;
 	int exhausted = 1;
 	
 	/* 'cv' is the hidden argument with which XS_List__MoreUtils__array_iterator (this XSUB)
@@ -1199,7 +1196,7 @@ _pairwise (code, ...)
     {
 #define av_items(a) (av_len(a)+1)
 	
-	register int i;
+	int i;
 	AV *avs[2];
 	SV **oldsp;
 	
@@ -1268,14 +1265,13 @@ pairwise (code, ...)
 	 * temporarily stores 'code's return values in this list and, when
 	 * done, copies them down to SP. */
 	
-	register int i, j;
+	int i, j;
 	AV *avs[2];
-	SV **oldsp;
-	register SV **buf, **p;	/* gather return values here and later copy down to SP */
+	SV **buf, **p;	/* gather return values here and later copy down to SP */
 	int alloc;
 	
 	int nitems = 0, maxitems = 0;
-	register int d;
+	int d;
 	
 	/* deref AV's for convenience and 
 	 * get maximum items */
@@ -1336,7 +1332,7 @@ _natatime_iterator ()
     PROTOTYPE:
     CODE:
     {
-	register int i;
+	int i;
 	int nret;
 
 	/* 'cv' is the hidden argument with which XS_List__MoreUtils__array_iterator (this XSUB)
@@ -1367,7 +1363,7 @@ natatime (n, ...)
     PROTOTYPE: $@
     CODE:
     {
-	register int i;
+	int i;
 	natatime_args * args;
 	HV *stash = gv_stashpv("List::MoreUtils_na", TRUE);
 
@@ -1400,7 +1396,7 @@ mesh (...)
     PROTOTYPE: \@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
     CODE:
     {
-	register int i, j, maxidx = -1;
+	int i, j, maxidx = -1;
 	AV **avs;
 	New(0, avs, items, AV*);
 	
@@ -1426,7 +1422,7 @@ uniq (...)
     PROTOTYPE: @
     CODE:
     {
-	register int i, count = 0;
+	int i, count = 0;
 	HV *hv = newHV();
 	sv_2mortal(newRV_noinc((SV*)hv));
 
@@ -1519,11 +1515,10 @@ PROTOTYPE: &@
 CODE:
 {
     dMULTICALL;
-    register int i, j;
+    int i;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
-    I32 count = 0;
     SV **args = &PL_stack_base[ax];
     CV *cv;
     
@@ -1586,7 +1581,7 @@ CODE:
      * from it.
      */
     dMULTICALL;
-    register int i, j, lastidx = -1;
+    int i, j, lastidx = -1;
     int max;
     HV *stash;
     GV *gv;
