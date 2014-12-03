@@ -1,7 +1,5 @@
 package LMU::Test::Functions;
 
-use 5.008001;
-
 use strict;
 use warnings;
 
@@ -74,6 +72,7 @@ sub test_any_u {
         # This test is from Kevin Ryde; see RT#48669
         eval { my $ok = any_u { die } 1 };
     });
+    is_dying( sub { &any_u( 42, 4711 ); } );
 }
 
 sub test_all_u {
@@ -88,6 +87,7 @@ sub test_all_u {
         my $ok  = all_u { $_ == 5000 } @list;
         my $ok2 = all_u { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &all_u( 42, 4711 ); } );
 }
 
 sub test_none_u {
@@ -102,6 +102,7 @@ sub test_none_u {
         my $ok  = none_u { $_ == 5000 } @list;
         my $ok2 = none_u { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &none_u( 42, 4711 ); } );
 }
 
 sub test_notall_u {
@@ -112,10 +113,11 @@ sub test_notall_u {
     is_false( notall_u { $_ <= 10000 } @list );
     is_undef( notall_u { } );
 
-    leak_free_ok(notall => sub {
+    leak_free_ok(notall_u => sub {
         my $ok  = notall_u { $_ == 5000 } @list;
         my $ok2 = notall_u { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &notall_u( 42, 4711 ); } );
 }
 
 sub test_true {
@@ -135,6 +137,7 @@ sub test_true {
         my $n  = true { $_ == 5000 } @list;
         my $n2 = true { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &true( 42, 4711 ); } );
 }
 
 sub test_false {
@@ -154,14 +157,15 @@ sub test_false {
         my $n  = false { $_ == 5000 } @list;
         my $n2 = false { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &false( 42, 4711 ); } );
 }
 
 sub test_firstidx {
     my @list = ( 1 .. 10000 );
-    is( 4999, firstidx { $_ >= 5000 } @list );
-    is( -1, firstidx { not defined } @list );
-    is( 0, firstidx { defined } @list );
-    is( -1, firstidx { } );
+    is( 4999, (firstidx { $_ >= 5000 } @list), "firstidx" );
+    is( -1, (firstidx { not defined } @list), "invalid firstidx" );
+    is( 0, (firstidx { defined } @list), "real firstidx" );
+    is( -1, (firstidx { }), "empty firstidx" );
 
     # Test the alias
     is( 4999, first_index { $_ >= 5000 } @list );
@@ -173,6 +177,7 @@ sub test_firstidx {
         my $i = firstidx { $_ >= 5000 } @list;
         my $i2 = firstidx { $_ >= 5000 } 1 .. 10000;
     });
+    is_dying( sub { &firstidx( 42, 4711 ); } );
 }
 
 sub test_lastidx {
@@ -192,6 +197,7 @@ sub test_lastidx {
         my $i = lastidx { $_ >= 5000 } @list;
         my $i2 = lastidx { $_ >= 5000 } 1 .. 10000;
     });
+    is_dying( sub { &lastidx( 42, 4711 ); } );
 }
 
 sub test_insert_after {
@@ -211,6 +217,9 @@ sub test_insert_after {
         @list = qw{This is a list};
         insert_after { $_ eq 'a' } "longer" => @list;
     });
+    is_dying( sub { &insert_after( 42, 4711, [qw(die bart die)] ); } );
+    is_dying( sub { &insert_after( 42, 4711, "13" ); } );
+    is_dying( sub { &insert_after( sub {}, 4711, "13" ); } );
 }
 
 sub test_insert_after_string {
@@ -229,6 +238,7 @@ sub test_insert_after_string {
         @list = qw{This is a list};
         insert_after_string "a", "longer", @list;
     });
+    is_dying( sub { &insert_after_string( 42, 4711, "13" ); } );
 }
 
 sub test_apply {
@@ -270,6 +280,7 @@ sub test_apply {
             $_ = 5;
         } @list;
     });
+    is_dying( sub { &apply( 42, 4711 ); } );
 }
 
 sub test_indexes {
@@ -308,6 +319,7 @@ sub test_indexes {
 	Scalar::Util::weaken($ref);
 	is($ref, undef, "weakened away");
     }
+    is_dying( sub { &indexes( 42, 4711 ); } );
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -323,6 +335,7 @@ sub test_before {
     leak_free_ok(before => sub {
         @x = before { /f/ } @dummy = qw{ bar baz foo };
     });
+    is_dying( sub { &before( 42, 4711 ); } );
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -338,6 +351,7 @@ sub test_before_incl {
     leak_free_ok(before_incl => sub {
         @x = before_incl { /z/ } @dummy = qw{ bar baz foo };
     });
+    is_dying( sub { &before_incl( 42, 4711 ); } );
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -353,6 +367,7 @@ sub test_after {
     leak_free_ok(after => sub {
         @x = after { /z/ } @dummy = qw{ bar baz foo };
     });
+    is_dying( sub { &after( 42, 4711 ); } );
 }
 
 # In the following, the @dummy variable is needed to circumvent
@@ -368,6 +383,7 @@ sub test_after_incl {
     leak_free_ok(after_incl => sub {
         @x = after_incl { /z/ } @dummy = qw{ bar baz foo };
     });
+    is_dying( sub { &after_incl( 42, 4711 ); } );
 }
 
 sub test_firstval {
@@ -385,6 +401,7 @@ sub test_firstval {
     leak_free_ok(firstval => sub {
         $x = firstval { $_ > 5 } 4 .. 9;
     });
+    is_dying( sub { &firstval( 42, 4711 ); } );
 }
 
 sub test_lastval {
@@ -402,6 +419,7 @@ sub test_lastval {
     leak_free_ok(lastval => sub {
         $x = lastval { $_ > 5 } 4 .. 9;
     });
+    is_dying( sub { &lastval( 42, 4711 ); } );
 }
 
 sub test_each_array {
@@ -508,6 +526,8 @@ sub test_each_array {
         while ( my ($a) = $it->() ) {
         }
     });
+    is_dying( sub { &each_array( 42, 4711 ); } );
+    is_dying( sub { &each_arrayref( 42, 4711 ); } );
 }
 
 sub test_pairwise {
@@ -579,6 +599,15 @@ sub test_pairwise {
         @b = (2);
         @c = pairwise { $a + $b } @a, @b;
     });
+    @a = qw/a b c/;
+    @b = qw/1 2 3/;
+
+    is_dying( sub { &pairwise( 42, \@a, \@b ); } );
+    SKIP: {
+	List::MoreUtils::_XScompiled or skip "PurePerl will not core here ...", 2;
+	is_dying( sub { @c = &pairwise( sub {}, 1, \@b ); } );
+	is_dying( sub { @c = &pairwise( sub {}, \@a, 2 ); } );
+    };
 }
 
 sub test_natatime {
@@ -643,6 +672,7 @@ sub test_zip {
         my @y = qw/1 2 3 4/;
         my @z = zip @x, @y;
     });
+    is_dying( sub { &zip( 1, 2 ); } );
 }
 
 sub test_mesh {
@@ -680,6 +710,7 @@ sub test_mesh {
         my @y = qw/1 2 3 4/;
         my @z = mesh @x, @y;
     });
+    is_dying( sub { &mesh( 1, 2 ); } );
 }
 
 sub test_uniq {
@@ -887,6 +918,7 @@ sub test_bsearch {
 	    scalar bsearch { grow_stack(); $_ - $elem or die "Goal!"; $_ - $elem } @list;
 	};
     });
+    is_dying( sub { &bsearch( 42, (1..100) ); } );
 }
 
 sub test_any {
@@ -907,6 +939,7 @@ sub test_any {
         # This test is from Kevin Ryde; see RT#48669
         eval { my $ok = any { die } 1 };
     });
+    is_dying( sub { &any( 42, 4711 ); } );
 }
 
 sub test_all {
@@ -921,6 +954,7 @@ sub test_all {
         my $ok  = all { $_ == 5000 } @list;
         my $ok2 = all { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &all( 42, 4711 ); } );
 }
 
 sub test_none {
@@ -935,6 +969,7 @@ sub test_none {
         my $ok  = none { $_ == 5000 } @list;
         my $ok2 = none { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &none( 42, 4711 ); } );
 }
 
 sub test_notall {
@@ -949,6 +984,7 @@ sub test_notall {
         my $ok  = notall { $_ == 5000 } @list;
         my $ok2 = notall { $_ == 5000 } 1 .. 10000;
     });
+    is_dying( sub { &notall( 42, 4711 ); } );
 }
 
 sub test_sort_by {

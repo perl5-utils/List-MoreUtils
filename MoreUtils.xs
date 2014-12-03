@@ -261,6 +261,8 @@ sv_tainted(SV *sv)
 	args->curidx = 0;								\
 											\
 	for (i = 0; i < items; i++) {							\
+	    if(!arraylike(ST(i)))							\
+	       croak_xs_usage(cv,  "\\@;\\@\\@...");					\
 	    args->avs[i] = (AV*)SvRV(ST(i));						\
 	    SvREFCNT_inc(args->avs[i]);							\
 	}										\
@@ -339,11 +341,25 @@ is_like(SV *sv, const char *like)
 }
 
 static int
+is_array( SV *sv )
+{
+    return SvROK(sv) && ( SVt_PVAV == SvTYPE(SvRV(sv) ) );
+}
+
+static int
 codelike(SV *code)
 {
     if( SvMAGICAL(code) )
         mg_get(code);
     return SvROK(code) && ( ( SVt_PVCV == SvTYPE(SvRV(code)) ) || ( is_like(code, "&{}" ) ) );
+}
+
+static int
+arraylike(SV *array)
+{
+    if( SvMAGICAL(array) )
+        mg_get(array);
+    return is_array(array) || is_like( array, "@{}" );
 }
 
 MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
@@ -846,12 +862,14 @@ CODE:
     I32 gimme = G_SCALAR;
     CV *_cv;
 
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, val, \\@area_of_operation");
+    if(!arraylike(avref))
+       croak_xs_usage(cv,  "code, val, \\@area_of_operation");
+
     AV *av = (AV*)SvRV(avref);
     int len = av_len(av);
     RETVAL = 0;
-
-    if(!codelike(code))
-       croak_xs_usage(cv,  "code, ...");
 
     _cv = sv_2cv(code, &stash, &gv, 0);
     PUSH_MULTICALL(_cv);
@@ -885,13 +903,19 @@ insert_after_string (string, val, avref)
     CODE:
     {
 	int i;
-	AV *av = (AV*)SvRV(avref);
-	int len = av_len(av);
+	AV *av;
+	int len;
 	SV **sv;
 	STRLEN slen = 0, alen;
 	char *str;
 	char *astr;
 	RETVAL = 0;
+
+	if(!arraylike(avref))
+	   croak_xs_usage(cv,  "string, val, \\@area_of_operation");
+
+	av = (AV*)SvRV(avref);
+	len = av_len(av);
 
 	if (SvTRUE(string))
 	    str = SvPV(string, slen);
@@ -1382,7 +1406,11 @@ pairwise (code, ...)
 	int d;
 
 	if(!codelike(code))
-	   croak_xs_usage(cv,  "code, ...");
+	   croak_xs_usage(cv,  "code, list, list");
+	if(!arraylike(ST(1)))
+	   croak_xs_usage(cv,  "code, list, list");
+	if(!arraylike(ST(2)))
+	   croak_xs_usage(cv,  "code, list, list");
 
 	/* deref AV's for convenience and
 	 * get maximum items */
@@ -1511,6 +1539,8 @@ mesh (...)
 	New(0, avs, items, AV*);
 
 	for (i = 0; i < items; i++) {
+	    if(!arraylike(ST(i)))
+	       croak_xs_usage(cv,  "\\@;\\@\\@...");
 	    avs[i] = (AV*)SvRV(ST(i));
 	    if (av_len(avs[i]) > maxidx)
 		maxidx = av_len(avs[i]);

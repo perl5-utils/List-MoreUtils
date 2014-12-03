@@ -1,16 +1,15 @@
 package Test::LMU;
 
-use 5.008001;
-
 use strict;
 
 require Exporter;
 use Test::More import => [ '!pass' ];
+use Carp qw/croak/;
 
 use parent qw(Test::Builder::Module Exporter);
 
-our @EXPORT = qw(is_true is_false is_defined is_undef grow_stack leak_free_ok);
-our @EXPORT_OK = qw(is_true is_false is_defined is_undef grow_stack leak_free_ok);
+our @EXPORT = qw(is_true is_false is_defined is_undef is_dying grow_stack leak_free_ok);
+our @EXPORT_OK = qw(is_true is_false is_defined is_undef is_dying grow_stack leak_free_ok);
 
 my $CLASS = __PACKAGE__;
 
@@ -18,25 +17,34 @@ my $CLASS = __PACKAGE__;
 # Support Functions
 
 sub is_true {
+    @_ == 1 or croak "Expected 1 param";
     my $tb = $CLASS->builder();
-    die "Expected 1 param" unless @_ == 1;
     $tb->ok( $_[0], "is_true ()" );
 }
 
 sub is_false {
+    @_ == 1 or croak "Expected 1 param";
     my $tb = $CLASS->builder();
-    die "Expected 1 param" unless @_ == 1;
     $tb->ok( !$_[0], "is_false()" );
 }
 
 sub is_defined {
+    @_ < 1 or croak "Expected 0..1 param";
     my $tb = $CLASS->builder();
     $tb->ok( defined($_[0]), "is_defined ()" );
 }
 
 sub is_undef {
+    @_ <= 1 or croak "Expected 0..1 param";
     my $tb = $CLASS->builder();
     $tb->ok( !defined($_[0]), "is_undef()" );
+}
+
+sub is_dying {
+    @_ == 1 or croak "Expected 1 param";
+    my $tb = $CLASS->builder();
+    eval { $_[0]->(); };
+    $tb->ok( $@, "is_dying()" );
 }
 
 my @bigary = ( 1 ) x 500;
