@@ -5,6 +5,19 @@ use warnings;
 
 require 5.006;
 
+use inc::latest 'Data::Tumbler';
+use inc::latest 'Module::Pluggable';
+use inc::latest 'Test::WriteVariants';
+use inc::latest 'Capture::Tiny';
+use inc::latest 'Config::AutoConf';
+
+if ( inc::latest->can("write") ) {
+  inc::latest->write("inc");
+  for my $mod ( inc::latest->loaded_modules ) {
+      inc::latest->bundle_module($mod, "inc");
+    }
+}
+
 use lib 'inc';
 use ExtUtils::MakeMaker;
 use File::Path;
@@ -24,7 +37,7 @@ my %RUN_DEPS = (
 );
 my %BUNDLE_CONFIGURE_DEPS = (
     'Test::WriteVariants' => '0.005',
-    'Config::AutoConf'    => '0.305',
+    'Config::AutoConf'    => '0.306',
 );
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
@@ -58,7 +71,8 @@ WriteMakefile1(
         prereqs => {
             develop => {
                 requires => {
-                    'Test::CPAN::Changes'                 => 0,
+                    'inc::latest'                         => '0.500',
+		    'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Test::Pod'                           => 0,
                     'Test::Pod::Coverage'                 => 0,
@@ -92,7 +106,7 @@ WriteMakefile1(
     ],
     LICENSE => 'perl',
     (
-        Config::AutoConf::LMU->check_sane_xs
+        Config::AutoConf::LMU->check_produce_loadable_xs_build
         ? (
             XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
             MAGICXS => 1,
@@ -102,6 +116,7 @@ WriteMakefile1(
           )
         : ()
     ),
+    clean => { FILES => "inc/latest* inc/inc_*" },
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
     test   => { TESTS               => 'xt/*.t gt/*/*.t gt/*/*/*.t' },
     # Otherwise 'cxinc' isn't defined

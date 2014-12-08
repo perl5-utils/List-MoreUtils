@@ -8,8 +8,8 @@ use File::Find;
 use File::Path;
 use File::Spec qw();
 use File::Basename;
-use Data::Dumper;
-use Test::WriteVariants;
+use Data::Dumper 0.002;
+use Test::WriteVariants 0.005;
 
 use Config::AutoConf::LMU ();
 use FindBin qw();
@@ -143,7 +143,7 @@ sub provider {
     my ($self, $path, $context, $tests, $variants) = @_;
     my $mod_ctx = $context->new_module_use( lib => [ File::Spec->catdir(qw(t lib)) ] );
 
-    if(Config::AutoConf::LMU->check_sane_xs)
+    if(Config::AutoConf::LMU->check_produce_xs_build)
     {
 	$variants->{pureperl} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 1,), $mod_ctx );
 	$variants->{xs} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 0,), $mod_ctx );
