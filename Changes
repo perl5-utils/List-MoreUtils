@@ -1,5 +1,9 @@
 Revision history for Perl extension List-MoreUtils
 
+0.401	2014-12-08
+    - update bundled Config::AutoConf to 0.307
+    - release after long testing period
+
 0.400_010	2014-12-08
     - bundle configure_requires using inc::latest
     - fix RT#96596 by checking types before starting logic ...
