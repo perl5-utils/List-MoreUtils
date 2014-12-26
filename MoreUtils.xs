@@ -4,23 +4,9 @@
 #include "multicall.h"
 #include "ppport.h"
 
-#ifndef PERL_VERSION
-#    include <patchlevel.h>
-#    if !(defined(PERL_VERSION) || (SUBVERSION > 0 && defined(PATCHLEVEL)))
-#        include <could_not_find_Perl_patchlevel.h>
-#    endif
-#    define PERL_REVISION	5
-#    define PERL_VERSION	PATCHLEVEL
-#    define PERL_SUBVERSION	SUBVERSION
-#endif
-
 #ifndef aTHX
 #  define aTHX
 #  define pTHX
-#endif
-
-#ifndef CvISXSUB
-#  define CvISXSUB(cv) CvXSUB(cv)
 #endif
 
 /* Some platforms have strict exports. And before 5.7.3 cxinc (or Perl_cxinc)
@@ -41,16 +27,6 @@ my_cxinc(pTHX)
     Renew(cxstack, cxstack_max + 1, struct context);      /* XXX should fix CXINC macro */
     return cxstack_ix + 1;
 }
-#endif
-
-#if PERL_VERSION < 6
-#    define NV double
-#    define LEAVESUB(cv)	    \
-	{			    \
-	    if (cv)		{   \
-		SvREFCNT_dec(cv);   \
-	    }			    \
-	}
 #endif
 
 #ifdef SVf_IVisUV
