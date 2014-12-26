@@ -1,6 +1,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "multicall.h"
 #include "ppport.h"
 
 #ifndef PERL_VERSION
@@ -16,38 +17,6 @@
 #ifndef aTHX
 #  define aTHX
 #  define pTHX
-#endif
-
-/* multicall.h is all nice and
- * fine but wont work on perl < 5.6.0 */
-
-#if PERL_VERSION > 5
-#   include "multicall.h"
-#else
-#   define dMULTICALL						\
-	OP *_op;						\
-	PERL_CONTEXT *cx;					\
-	SV **newsp;						\
-	U8 hasargs = 0;						\
-	bool oldcatch = CATCH_GET
-#   define PUSH_MULTICALL(cv)					\
-	_op = CvSTART(cv);					\
-	SAVESPTR(CvROOT(cv)->op_ppaddr);			\
-	CvROOT(cv)->op_ppaddr = PL_ppaddr[OP_NULL];		\
-	SAVESPTR(PL_curpad);					\
-	PL_curpad = AvARRAY((AV*)AvARRAY(CvPADLIST(cv))[1]);	\
-	SAVETMPS;						\
-	SAVESPTR(PL_op);					\
-	CATCH_SET(TRUE);					\
-	PUSHBLOCK(cx, CXt_SUB, SP);				\
-	PUSHSUB(cx)
-#   define MULTICALL						\
-	PL_op = _op;						\
-	CALLRUNOPS()
-#   define POP_MULTICALL					\
-	POPBLOCK(cx,PL_curpm);					\
-	CATCH_SET(oldcatch);					\
-	SPAGAIN
 #endif
 
 #ifndef CvISXSUB
