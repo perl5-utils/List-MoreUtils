@@ -9,26 +9,6 @@
 #  define pTHX
 #endif
 
-/* Some platforms have strict exports. And before 5.7.3 cxinc (or Perl_cxinc)
-   was not exported. Therefore platforms like win32, VMS etc have problems
-   so we redefine it here -- GMB
-*/
-#if PERL_VERSION < 7
-/* Not in 5.6.1. */
-#  define SvUOK(sv)           SvIOK_UV(sv)
-#  ifdef cxinc
-#    undef cxinc
-#  endif
-#  define cxinc() my_cxinc(aTHX)
-static I32
-my_cxinc(pTHX)
-{
-    cxstack_max = cxstack_max * 3 / 2;
-    Renew(cxstack, cxstack_max + 1, struct context);      /* XXX should fix CXINC macro */
-    return cxstack_ix + 1;
-}
-#endif
-
 #ifdef SVf_IVisUV
 #  define slu_sv_value(sv) (SvIOK(sv)) ? (SvIOK_UV(sv)) ? (NV)(SvUVX(sv)) : (NV)(SvIVX(sv)) : (SvNV(sv))
 #else
@@ -1512,7 +1492,7 @@ uniq (...)
 	sv_2mortal(newRV_noinc((SV*)hv));
 
 	/* don't build return list in scalar context */
-	if (GIMME == G_SCALAR) {
+	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < items; i++) {
 		if (!hv_exists_ent(hv, ST(i), 0)) {
 		    count++;
@@ -1734,8 +1714,8 @@ CODE:
     dMULTICALL;
     HV *stash;
     GV *gv;
-    I32 gimme = GIMME; /* perl-5.5.4 bus-errors out later when using GIMME
-                          therefore we save its value in a fresh variable */
+    I32 gimme = GIMME_V; /* perl-5.5.4 bus-errors out later when using GIMME
+                            therefore we save its value in a fresh variable */
     SV **args = &PL_stack_base[ax];
 
     long i, j;
@@ -1763,8 +1743,9 @@ CODE:
 
             if (val == 0) {
                 POP_MULTICALL;
-                if (gimme == G_SCALAR)
+                if (gimme != G_ARRAY) {
                     XSRETURN_YES;
+		}
                 SvREFCNT_inc(RETVAL = args[1+k]);
                 goto yes;
             }
