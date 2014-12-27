@@ -38,7 +38,7 @@ sub tumble
 
 package Tumble::WriteTestVariants;
 
-use parent "Test::WriteVariants";
+use base "Test::WriteVariants";
 
 use Carp qw/croak/;
 use File::Path qw/mkpath/;

@@ -5,17 +5,85 @@ use warnings;
 
 require 5.006;
 
+use File::Basename qw(dirname);
+use File::Copy qw(copy move);
+use File::Spec ();
+
+BEGIN
+{
+    use inc::latest 'JSON::PP';
+
+    eval "use Storable qw();";
+    $@ and eval <<'EODC';
+$INC{'Storable.pm'} = 'faked';
+package Storable;
+use base "Exporter";
+use JSON::PP qw();
+our @EXPORT = qw(dclone);
+sub dclone {
+    my $json = JSON::PP->new();
+    $json->decode($json->encode($_[0]));
+}
+1;
+EODC
+
+    eval "use Scalar::Util qw();";
+    $@ and eval <<'EOSU';
+$INC{'Scalar/Util.pm'} = 'faked';
+package Scalar::Util;
+use base "Exporter";
+# from PP part of Params::Util
+our @EXPORT = qw(reftype blessed looks_like_number);
+sub reftype { ref $_[0] }
+my %types = (
+    CODE   => 1,
+    GLOB   => 1,
+    REF    => 1,
+    SCALAR => 1,
+    HASH   => 1,
+    ARRAY  => 1
+);
+sub blessed {
+    my $t = ref $_[0];
+    defined $t or return;
+    defined $types{$t} or return;
+    $t;
+}
+# from PP part of Params::Util
+sub looks_like_number {
+    local $_ = shift;
+
+    # checks from perlfaq4
+    return 0 if !defined($_);
+    if (ref($_)) {
+        return overload::Overloaded($_) ? defined(0 + $_) : 0;
+    }
+    return 1 if (/^[+-]?[0-9]+$/); # is a +/- integer
+    return 1 if (/^([+-]?)(?=[0-9]|\.[0-9])[0-9]*(\.[0-9]*)?([Ee]([+-]?[0-9]+))?$/); # a C float
+    return 1 if ($] >= 5.008 and /^(Inf(inity)?|NaN)$/i) or ($] >= 5.006001 and /^Inf$/i);
+
+    0;
+}
+EOSU
+}
+
 use inc::latest 'Data::Tumbler';
 use inc::latest 'Module::Pluggable';
 use inc::latest 'Test::WriteVariants';
 use inc::latest 'Capture::Tiny';
 use inc::latest 'Config::AutoConf';
 
-if ( inc::latest->can("write") ) {
-  inc::latest->write("inc");
-  for my $mod ( inc::latest->loaded_modules ) {
-      inc::latest->bundle_module($mod, "inc");
+if ( inc::latest->can("write") )
+{
+    inc::latest->write("inc");
+    for my $mod ( inc::latest->loaded_modules )
+    {
+        inc::latest->bundle_module( $mod, "inc" );
     }
+    my $src = $INC{"JSON/PP.pm"};
+    $src = dirname($src);
+    $src = File::Spec->catfile( $src, qw(backportPP Compat5006.pm) );
+    -f $src and copy( $src, "inc/inc_JSON-PP/JSON/PP/" );
 }
 
 use lib 'inc';
@@ -23,7 +91,7 @@ use ExtUtils::MakeMaker;
 use File::Path;
 
 use Config::AutoConf::LMU ();
-use Tumble;
+use Tumble                ();
 
 Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
@@ -36,8 +104,8 @@ my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
 );
 my %BUNDLE_CONFIGURE_DEPS = (
-    'Test::WriteVariants' => '0.005',
-    'Config::AutoConf'    => '0.306',
+    'Test::WriteVariants' => '0.010',
+    'Config::AutoConf'    => '0.308',
 );
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
@@ -73,7 +141,7 @@ WriteMakefile1(
             develop => {
                 requires => {
                     'inc::latest'                         => '0.500',
-		    'Test::CPAN::Changes'                 => 0,
+                    'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Module::CPANTS::Analyse'             => '0.96',
                     'Test::Kwalitee'                      => 0,
@@ -120,9 +188,11 @@ WriteMakefile1(
           )
         : ()
     ),
-    clean => { FILES => "inc/latest* inc/inc_* gt" },
+    clean  => { FILES               => "inc/latest* inc/inc_* gt" },
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
     test   => { TESTS               => 'xt/*.t gt/*/*.t gt/*/*/*.t' },
+    # Otherwise 'cxinc' isn't defined
+    ( $] < 5.012 ? ( DEFINE => '-DPERL_EXT' ) : (), ),
 );
 
 sub WriteMakefile1

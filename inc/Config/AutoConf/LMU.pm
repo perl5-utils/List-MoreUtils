@@ -5,7 +5,7 @@ use warnings;
 
 use Config::AutoConf '0.306';
 
-use parent qw(Config::AutoConf);
+use base qw(Config::AutoConf);
 
 sub _check_pureperl_required
 {
