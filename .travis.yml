@@ -1,6 +1,6 @@
 ---
 install:
-  - cpanm --notest Test::WriteVariants Config::AutoConf Carp App::mymeta_requires ExtUtils::BundleMaker
+  - cpanm --notest Test::WriteVariants Config::AutoConf Carp App::mymeta_requires inc::latest JSON::PP
   - perl Makefile.PL
   - make manifest
   - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm
