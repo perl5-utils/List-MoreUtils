@@ -1,5 +1,13 @@
 Revision history for Perl extension List-MoreUtils
 
+0.402	2014-12-17
+    - bump Config::AutoConf and Test::WriteVariants requirement for
+      improved 5.6 compatibility (fixes rt#101121)
+    - use base instead of parent in configure stage (improves building
+      on 5.6)
+    - fix rt#101067 by applying patch from Father Chrysostomos (thanks
+      to Lukas Mai (MAUKE) for reporting and explaining)
+
 0.401	2014-12-08
     - update bundled Config::AutoConf to 0.307
     - release after long testing period
