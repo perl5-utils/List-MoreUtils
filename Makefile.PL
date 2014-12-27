@@ -104,15 +104,20 @@ my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
 );
 my %BUNDLE_CONFIGURE_DEPS = (
+    'inc::latest'         => '0.500',
+    'JSON::PP'            => 0,
     'Test::WriteVariants' => '0.010',
     'Config::AutoConf'    => '0.308',
 );
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
     'ExtUtils::MakeMaker' => '6.86',
+    'File::Basename'      => 0,
+    'File::Copy'          => 0,
     'File::Path'          => 0,
+    'File::Spec'          => 0,
     'IPC::Cmd'            => 0,
-    'parent'              => 0,
+    'base'                => 0,
 );
 my %BUILD_DEPS = ();
 
@@ -140,7 +145,6 @@ WriteMakefile1(
         prereqs => {
             develop => {
                 requires => {
-                    'inc::latest'                         => '0.500',
                     'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Module::CPANTS::Analyse'             => '0.96',
@@ -149,6 +153,7 @@ WriteMakefile1(
                     'Test::Pod::Coverage'                 => 0,
                     'Test::Pod::Spelling::CommonMistakes' => 0,
                     'Test::Spelling'                      => 0,
+                    %BUNDLE_CONFIGURE_DEPS,
                 },
             },
             configure => {
