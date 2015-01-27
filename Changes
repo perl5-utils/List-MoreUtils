@@ -4,6 +4,7 @@ Revision history for Perl extension List-MoreUtils
     - remove most recent stable perl recommendation from meta to
       workaround misbehaving CPAN clients blocking update
     - update copyright date
+    - ensure AUTHOR is a string on older toolchains
 
 0.402	2014-12-17
     - bump Config::AutoConf and Test::WriteVariants requirement for
