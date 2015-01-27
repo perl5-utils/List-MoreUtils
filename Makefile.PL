@@ -166,9 +166,6 @@ WriteMakefile1(
                 recommends => { 'Test::LeakTrace' => 0 }
             },
             runtime => {
-                recommends => {
-                    'perl' => $^V,
-                },
                 requires => { %RUN_DEPS, },
             },
         },
