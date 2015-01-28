@@ -132,7 +132,7 @@ WriteMakefile1(
         resources   => {
             homepage   => 'https://metacpan.org/release/List-MoreUtils',
             repository => {
-                url  => 'git@github.com:perl5-utils/List-MoreUtils.git',
+                url  => 'https://github.com/perl5-utils/List-MoreUtils.git',
                 web  => 'https://github.com/perl5-utils/List-MoreUtils',
                 type => 'git',
             },
