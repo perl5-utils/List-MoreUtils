@@ -122,7 +122,7 @@ my %CONFIGURE_DEPS = (
 my %BUILD_DEPS = ();
 
 my %TEST_DEPS = (
-    'Test::More' => 0.90,
+    'Test::More' => 0.96,
 );
 my @XS_FILES = qw(MoreUtils.xs);
 
@@ -179,6 +179,9 @@ WriteMakefile1(
         'Jens Rehsack <rehsack@cpan.org>'
     ],
     LICENSE => 'perl',
+    PREREQ_PM      => \%RUN_DEPS,
+    BUILD_REQUIRES => \%BUILD_DEPS,
+    TEST_REQUIRES  => \%TEST_DEPS,
     (
         Config::AutoConf::LMU->check_produce_loadable_xs_build
         ? (
