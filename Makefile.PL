@@ -210,7 +210,7 @@ sub WriteMakefile1
     $params{TEST_REQUIRES}
       and $eumm_version < 6.6303
       and $params{BUILD_REQUIRES} =
-      $params{BUILD_REQUIRES} ? { %{ $params{BUILD_REQUIRES} }, %{ $params{TEST_REQUIRES} } } : delete $params{TEST_REQUIRES};
+      $params{BUILD_REQUIRES} ? { %{ $params{BUILD_REQUIRES} }, %{ delete $params{TEST_REQUIRES} } } : delete $params{TEST_REQUIRES};
     #EUMM 6.5502 has problems with BUILD_REQUIRES
     $params{BUILD_REQUIRES}
       and $eumm_version < 6.5503
