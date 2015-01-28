@@ -1,5 +1,11 @@
 Revision history for Perl extension List-MoreUtils
 
+0.404	2015-01-28
+    - fix ancient toolchains (PREREQ_PM &Co. set appropriately),
+      reported by ilmari
+    - bump version required of Test::More to 0.96 (#toolchain
+      calls it a "sane subset")
+
 0.403	2015-01-27
     - remove most recent stable perl recommendation from meta to
       workaround misbehaving CPAN clients blocking update
