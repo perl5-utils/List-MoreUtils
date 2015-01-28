@@ -30,4 +30,3 @@ tmp/
 config\..*
 \.[co]
 \.bs
-.travis.yml
