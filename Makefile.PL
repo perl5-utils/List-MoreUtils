@@ -138,7 +138,7 @@ WriteMakefile1(
             },
             bugtracker => {
                 web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=List-MoreUtils',
-                mailto => 'list-moreutils@rt.cpan.org',
+                mailto => 'bug-List-MoreUtils@rt.cpan.org',
             },
             license => 'http://dev.perl.org/licenses/',
         },
