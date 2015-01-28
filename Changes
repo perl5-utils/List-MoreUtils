@@ -5,6 +5,7 @@ Revision history for Perl extension List-MoreUtils
       reported by ilmari
     - bump version required of Test::More to 0.96 (#toolchain
       calls it a "sane subset")
+    - fix some meta-data #toolchain pointed out
 
 0.403	2015-01-27
     - remove most recent stable perl recommendation from meta to
