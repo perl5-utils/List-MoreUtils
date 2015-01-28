@@ -178,7 +178,7 @@ WriteMakefile1(
         'Adam Kennedy <adamk@cpan.org>',
         'Jens Rehsack <rehsack@cpan.org>'
     ],
-    LICENSE => 'perl',
+    LICENSE        => 'perl',
     PREREQ_PM      => \%RUN_DEPS,
     BUILD_REQUIRES => \%BUILD_DEPS,
     TEST_REQUIRES  => \%TEST_DEPS,
@@ -210,7 +210,9 @@ sub WriteMakefile1
     $params{TEST_REQUIRES}
       and $eumm_version < 6.6303
       and $params{BUILD_REQUIRES} =
-      $params{BUILD_REQUIRES} ? { %{ $params{BUILD_REQUIRES} }, %{ delete $params{TEST_REQUIRES} } } : delete $params{TEST_REQUIRES};
+      $params{BUILD_REQUIRES}
+      ? { %{ $params{BUILD_REQUIRES} }, %{ delete $params{TEST_REQUIRES} } }
+      : delete $params{TEST_REQUIRES};
     #EUMM 6.5502 has problems with BUILD_REQUIRES
     $params{BUILD_REQUIRES}
       and $eumm_version < 6.5503
