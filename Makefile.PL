@@ -111,7 +111,7 @@ my %BUNDLE_CONFIGURE_DEPS = (
 );
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
-    'ExtUtils::MakeMaker' => '6.86',
+    'ExtUtils::MakeMaker' => 0,
     'File::Basename'      => 0,
     'File::Copy'          => 0,
     'File::Path'          => 0,
@@ -179,6 +179,7 @@ WriteMakefile1(
         'Jens Rehsack <rehsack@cpan.org>'
     ],
     LICENSE        => 'perl',
+    CONFIGURE_REQUIRES => \%CONFIGURE_DEPS,
     PREREQ_PM      => \%RUN_DEPS,
     BUILD_REQUIRES => \%BUILD_DEPS,
     TEST_REQUIRES  => \%TEST_DEPS,
