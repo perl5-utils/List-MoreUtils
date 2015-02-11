@@ -178,11 +178,11 @@ WriteMakefile1(
         'Adam Kennedy <adamk@cpan.org>',
         'Jens Rehsack <rehsack@cpan.org>'
     ],
-    LICENSE        => 'perl',
+    LICENSE            => 'perl',
     CONFIGURE_REQUIRES => \%CONFIGURE_DEPS,
-    PREREQ_PM      => \%RUN_DEPS,
-    BUILD_REQUIRES => \%BUILD_DEPS,
-    TEST_REQUIRES  => \%TEST_DEPS,
+    PREREQ_PM          => \%RUN_DEPS,
+    BUILD_REQUIRES     => \%BUILD_DEPS,
+    TEST_REQUIRES      => \%TEST_DEPS,
     (
         Config::AutoConf::LMU->check_produce_loadable_xs_build
         ? (
