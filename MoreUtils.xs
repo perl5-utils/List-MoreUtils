@@ -782,18 +782,20 @@ CODE:
 {
     dMULTICALL;
     int i;
+    int len;
     HV *stash;
     GV *gv;
     I32 gimme = G_SCALAR;
     CV *_cv;
+    AV *av;
 
     if(!codelike(code))
        croak_xs_usage(cv,  "code, val, \\@area_of_operation");
     if(!arraylike(avref))
        croak_xs_usage(cv,  "code, val, \\@area_of_operation");
 
-    AV *av = (AV*)SvRV(avref);
-    int len = av_len(av);
+    av = (AV*)SvRV(avref);
+    len = av_len(av);
     RETVAL = 0;
 
     _cv = sv_2cv(code, &stash, &gv, 0);
