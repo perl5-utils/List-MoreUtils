@@ -481,7 +481,7 @@ Returns the first element in LIST for which BLOCK evaluates to true. Each
 element of LIST is set to C<$_> in turn. Returns C<undef> if no such element
 has been found.
 
-C<first_val> is an alias for C<firstval>.
+C<first_value> is an alias for C<firstval>.
 
 =head3 lastval BLOCK LIST
 
@@ -491,7 +491,7 @@ Returns the last value in LIST for which BLOCK evaluates to true. Each element
 of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
 found.
 
-C<last_val> is an alias for C<lastval>.
+C<last_value> is an alias for C<lastval>.
 
 =head3 indexes BLOCK LIST
 
