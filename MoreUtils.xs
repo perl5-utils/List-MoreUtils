@@ -103,62 +103,6 @@ ncmp(SV* left, SV * right)
     }
 }
 
-#if PERL_VERSION < 5
-#  ifndef gv_stashpvn
-#    define gv_stashpvn(n,l,c) gv_stashpv(n,c)
-#  endif
-#  ifndef SvTAINTED
-
-static bool
-sv_tainted(SV *sv)
-{
-    if (SvTYPE(sv) >= SVt_PVMG && SvMAGIC(sv)) {
-	MAGIC *mg = mg_find(sv, 't');
-	if (mg && ((mg->mg_len & 1) || (mg->mg_len & 2) && mg->mg_obj == sv))
-	    return TRUE;
-    }
-    return FALSE;
-}
-
-#    define SvTAINTED_on(sv) sv_magic((sv), Nullsv, 't', Nullch, 0)
-#    define SvTAINTED(sv) (SvMAGICAL(sv) && sv_tainted(sv))
-#  endif
-#  define PL_defgv defgv
-#  define PL_op op
-#  define PL_curpad curpad
-#  define CALLRUNOPS runops
-#  define PL_curpm curpm
-#  define PL_sv_undef sv_undef
-#  define PERL_CONTEXT struct context
-#endif
-#if (PERL_VERSION < 5) || (PERL_VERSION == 5 && PERL_SUBVERSION <50)
-#  ifndef PL_tainting
-#    define PL_tainting tainting
-#  endif
-#  ifndef PL_stack_base
-#    define PL_stack_base stack_base
-#  endif
-#  ifndef PL_stack_sp
-#    define PL_stack_sp stack_sp
-#  endif
-#  ifndef PL_ppaddr
-#    define PL_ppaddr ppaddr
-#  endif
-#endif
-
-#ifndef PTR2UV
-#  define PTR2UV(ptr) (UV)(ptr)
-#endif
-
-#ifndef SvPV_nolen
-    STRLEN N_A;
-#   define SvPV_nolen(sv) SvPV(sv, N_A)
-#endif
-
-#ifndef call_sv
-#  define call_sv perl_call_sv
-#endif
-
 #define WARN_OFF \
     SV *oldwarn = PL_curcop->cop_warnings; \
     PL_curcop->cop_warnings = pWARN_NONE;
