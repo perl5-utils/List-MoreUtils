@@ -103,11 +103,6 @@ ncmp(SV* left, SV * right)
     }
 }
 
-
-#ifndef Drand01
-#    define Drand01()           ((rand() & 0x7FFF) / (double) ((unsigned long)1 << 15))
-#endif
-
 #if PERL_VERSION < 5
 #  ifndef gv_stashpvn
 #    define gv_stashpvn(n,l,c) gv_stashpv(n,c)
