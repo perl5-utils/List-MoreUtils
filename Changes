@@ -1,7 +1,14 @@
 Revision history for Perl extension List-MoreUtils
 
+0.405	2015-02-14
+    - fix RT#78527 - first_val/last_val in documentation
+    - fix RT#102055 - ExtUtils::MakeMaker required version absurdly high
+    - update README (deploy it as README.md now)
+    - fix compiler issue for older/ansi-c89 compilers
+    - remove local compat workarounds in favour for ppport.h
+
 0.404	2015-01-28
-    - fix ancient toolchains (PREREQ_PM &Co. set appropriately),
+    - fix ancient toolchains (PREREQ_PM & Co. set appropriately),
       reported by ilmari
     - bump version required of Test::More to 0.96 (#toolchain
       calls it a "sane subset")
@@ -28,6 +35,7 @@ Revision history for Perl extension List-MoreUtils
 0.400_010	2014-12-08
     - bundle configure_requires using inc::latest
     - fix RT#96596 by checking types before starting logic ...
+      * RT#86260 reported the same issue
     - lower minimum perl required to 5.6
     - switch to check_produce_loadable_xs_build of Config::AutoConf 0.306
 
