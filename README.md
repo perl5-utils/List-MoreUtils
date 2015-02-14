@@ -386,7 +386,7 @@ Returns the first element in LIST for which BLOCK evaluates to true. Each
 element of LIST is set to `$_` in turn. Returns `undef` if no such element
 has been found.
 
-`first_val` is an alias for `firstval`.
+`first_value` is an alias for `firstval`.
 
 ### lastval BLOCK LIST
 
@@ -396,7 +396,7 @@ Returns the last value in LIST for which BLOCK evaluates to true. Each element
 of LIST is set to `$_` in turn. Returns `undef` if no such element has been
 found.
 
-`last_val` is an alias for `lastval`.
+`last_value` is an alias for `lastval`.
 
 ### indexes BLOCK LIST
 
