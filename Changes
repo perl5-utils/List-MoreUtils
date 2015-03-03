@@ -1,5 +1,10 @@
 Revision history for Perl extension List-MoreUtils
 
+0.406	2015-03-03
+    - add new functions firstres and lastres in addition to firstidx, lastidx,
+      firstval and lastval
+    - regenerate MANIFEST to bundle README.md
+
 0.405	2015-02-14
     - fix RT#78527 - first_val/last_val in documentation
     - fix RT#102055 - ExtUtils::MakeMaker required version absurdly high
