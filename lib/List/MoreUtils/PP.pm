@@ -193,6 +193,22 @@ sub indexes (&@)
     } 0 .. $#_;
 }
 
+sub lastres (&@)
+{
+    my $test = shift;
+    my $ix;
+    for ( $ix = $#_; $ix >= 0; $ix-- )
+    {
+        local *_ = \$_[$ix];
+        my $testval = $test->();
+
+        # Simulate $_ as alias
+        $_[$ix] = $_;
+        return $testval if $testval;
+    }
+    return undef;
+}
+
 sub lastval (&@)
 {
     my $test = shift;
@@ -205,6 +221,17 @@ sub lastval (&@)
         # Simulate $_ as alias
         $_[$ix] = $_;
         return $_ if $testval;
+    }
+    return undef;
+}
+
+sub firstres (&@)
+{
+    my $test = shift;
+    foreach (@_)
+    {
+        my $testval = $test->();
+	$testval and return $testval;
     }
     return undef;
 }

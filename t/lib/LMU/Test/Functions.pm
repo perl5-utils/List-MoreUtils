@@ -36,6 +36,8 @@ sub run_tests {
     test_after_incl();
     test_firstval();
     test_lastval();
+    test_firstres();
+    test_lastres();
     test_each_array();
     test_pairwise();
     test_natatime();
@@ -420,6 +422,42 @@ sub test_lastval {
         $x = lastval { $_ > 5 } 4 .. 9;
     });
     is_dying( sub { &lastval( 42, 4711 ); } );
+}
+
+sub test_firstres {
+    my $x = firstres { 2 * ($_ > 5) }  4 .. 9; 
+    is( $x, 2 );
+    $x = firstres { $_ > 5 }  1 .. 4;
+    is( $x, undef );
+
+    # Test aliases
+    $x = first_result { $_ > 5 }  4..9; 
+    is( $x, 1 );
+    $x = first_result { $_ > 5 }  1..4;
+    is( $x, undef );
+
+    leak_free_ok(firstres => sub {
+        $x = firstres { $_ > 5 } 4 .. 9;
+    });
+    is_dying( sub { &firstres( 42, 4711 ); } );
+}
+
+sub test_lastres {
+    my $x = lastres { 2 * ($_ > 5) }  4..9;
+    is( $x, 2 );
+    $x = lastres { $_ > 5 }  1..4;
+    is( $x, undef );
+
+    # Test aliases
+    $x = last_result { $_ > 5 }  4..9;  
+    is( $x, 1 );
+    $x = last_result { $_ > 5 }  1..4;
+    is( $x, undef );
+
+    leak_free_ok(lastres => sub {
+        $x = lastres { $_ > 5 } 4 .. 9;
+    });
+    is_dying( sub { &lastres( 42, 4711 ); } );
 }
 
 sub test_each_array {

@@ -34,6 +34,7 @@ EOLDR
            apply indexes after after_incl before before_incl
            firstval lastval each_array each_arrayref pairwise
 	   natatime mesh uniq minmax part bsearch
+	   firstres lastres
 	   sort_by nsort_by _XScompiled);
     my $pp_stuff = join( "\n", "use List::MoreUtils::PP;", "package List::MoreUtils;", @pp_imp );
     eval $pp_stuff;

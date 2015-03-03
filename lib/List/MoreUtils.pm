@@ -27,7 +27,7 @@ my @v0_22 = qw(
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
-my @v0_400 = qw(any_u all_u none_u notall_u);
+my @v0_400 = qw(any_u all_u none_u notall_u firstres lastres);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
@@ -41,6 +41,10 @@ my %alias_list = (
     },
     v0_33 => {
         distinct    => "uniq",
+    },
+    v0_400 => {
+        first_result => "firstres",
+        last_result  => "lastres",
     },
 );
 
@@ -492,6 +496,26 @@ of LIST is set to C<$_> in turn. Returns C<undef> if no such element has been
 found.
 
 C<last_value> is an alias for C<lastval>.
+
+=head3 firstres BLOCK LIST
+
+=head3 first_result BLOCK LIST
+
+Returns the result of BLOCK for the first element in LIST for which BLOCK
+evaluates to true. Each element of LIST is set to C<$_> in turn. Returns
+C<undef> if no such element has been found.
+
+C<first_result> is an alias for C<firstres>.
+
+=head3 lastres BLOCK LIST
+
+=head3 last_result BLOCK LIST
+
+Returns the result of BLOCK for the last element in LIST for which BLOCK
+evaluates to true. Each element of LIST is set to C<$_> in turn. Returns
+C<undef> if no such element has been found.
+
+C<last_result> is an alias for C<lastres>.
 
 =head3 indexes BLOCK LIST
 
