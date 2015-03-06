@@ -769,16 +769,35 @@ sub test_uniq {
         is( 1000, $u );
     }
 
+    # Test strings
+    SCOPE: {
+        my @a = map { ( "aa" .. "zz" ) } 0 .. 1;
+        my @u = uniq @a;
+        ok( is_deeply( \@u, [ "aa" .. "zz" ] ) );
+        my $u = uniq @a;
+        is( 26*26, $u );
+    }
+
+    # Test mixing strings and numbers
+    SCOPE: {
+        my @a = ((map { ( 1 .. 1000 ) } 0 .. 1),(map { ( "aa" .. "zz" ) } 0 .. 1));
+        my @u = uniq @a;
+        ok( is_deeply( \@u, [ 1 .. 1000, "aa" .. "zz" ] ) );
+        my $u = uniq @a;
+        is( 1000 + 26 * 26, $u );
+    }
+
     # Test support for undef values without warnings
-    # SCOPE: {
-        # my @warnings  = ();
-        # local $SIG{__WARN__} = sub {
-            # push @warnings, @_;
-        # };
-        # my @foo = ('a','b', undef, 'b', '');
-        # is_deeply( [ uniq @foo ], \@foo, 'undef is supported correctly' );
-        # is_deeply( \@warnings, [ ], 'No warnings during uniq check' );
-    # }
+    #SCOPE: {
+    #    my @warnings  = ();
+    #    local $SIG{__WARN__} = sub {
+    #        push @warnings, @_;
+    #    };
+    #    my @foo = ('a','b', '', undef, 'b', 'c', '');
+    #    diag(explain([ uniq @foo ]));
+    #    is_deeply( [ uniq @foo ], \@foo, 'undef is supported correctly' );
+    #    is_deeply( \@warnings, [ ], 'No warnings during uniq check' );
+    #}
 
     leak_free_ok(uniq => sub {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;

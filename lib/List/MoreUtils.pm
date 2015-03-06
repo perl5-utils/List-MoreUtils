@@ -364,12 +364,21 @@ C<zip> is an alias for C<mesh>.
 
 Returns a new list by stripping duplicate values in LIST. The order of
 elements in the returned list is the same as in LIST. In scalar context,
-returns the number of unique elements in LIST.
+returns the number of unique elements in LIST. C<undef> is handled as
+C<""> but it'll whine ...
 
     my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
     my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
+    # returns "Mike", "Michael", "Richard", "Rick"
+    my @n = distinct "Mike", "Michael", "Richard", "Rick", "Michael", "Rick"
+    # returns '', 'S1', A5' and complains about "Use of uninitialized value"
+    my @s = distinct '', undef, 'S1', 'A5'
+    # returns undef, 'S1', A5' and complains about "Use of uninitialized value"
+    my @w = uniq undef, '', 'S1', 'A5'
 
 C<distinct> is an alias for C<uniq>.
+
+B<RT#49800> can be used to give feedback about this behavior.
 
 =head2 Partitioning
 
