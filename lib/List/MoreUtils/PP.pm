@@ -482,6 +482,37 @@ sub bsearch(&@)
     return;
 }
 
+sub bsearchidx(&@)
+{
+    my $code = shift;
+
+    my $rc;
+    my $i = 0;
+    my $j = @_;
+    do
+    {
+        my $k = int( ( $i + $j ) / 2 );
+
+        $k >= @_ and return -1;
+
+        local *_ = \$_[$k];
+        $rc = $code->();
+
+        $rc == 0 and return $k;
+
+        if ( $rc < 0 )
+        {
+            $i = $k + 1;
+        }
+        else
+        {
+            $j = $k - 1;
+        }
+    } until $i > $j;
+
+    return -1;
+}
+
 sub sort_by(&@)
 {
     my ($code, @list) = @_;

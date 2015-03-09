@@ -34,7 +34,7 @@ EOLDR
 	   insert_after insert_after_string
            apply after after_incl before before_incl
            each_array each_arrayref pairwise
-	   natatime mesh uniq minmax part indexes bsearch
+	   natatime mesh uniq minmax part indexes bsearch bsearchidx
 	   sort_by nsort_by _XScompiled);
     my $pp_stuff = join( "\n", "use List::MoreUtils::PP;", "package List::MoreUtils;", @pp_imp );
     eval $pp_stuff;

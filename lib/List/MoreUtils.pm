@@ -27,7 +27,7 @@ my @v0_22 = qw(
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
-my @v0_400 = qw(one any_u all_u none_u notall_u one_u firstres onlyidx onlyval onlyres lastres);
+my @v0_400 = qw(one any_u all_u none_u notall_u one_u firstres onlyidx onlyval onlyres lastres bsearchidx);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
@@ -48,6 +48,7 @@ my %alias_list = (
         only_value => "onlyval",
         only_result => "onlyres",
         last_result  => "lastres",
+	bsearch_index => "bsearchidx",
     },
 );
 
@@ -507,6 +508,18 @@ a positive value if it is bigger and zero if it matches.
 Returns a boolean value in scalar context. In list context, it returns the element
 if it was found, otherwise the empty list.
 
+=head3 bsearchidx BLOCK LIST
+
+=head3 bsearch_index BLOCK LIST
+
+Performs a binary search on LIST which must be a sorted list of values. BLOCK
+must return a negative value if the current element (stored in C<$_>) is smaller,
+a positive value if it is bigger and zero if it matches.
+
+Returns the index of found element, otherwise C<-1>.
+
+C<bsearch_index> is an alias for C<bsearchidx>.
+
 =head3 firstval BLOCK LIST
 
 =head3 first_value BLOCK LIST
@@ -586,7 +599,7 @@ is true. Sets C<$_> for each item in LIST in turn:
   printf "item with index %i in list is 4", firstidx { $_ == 4 } @list;
   __END__
   item with index 1 in list is 4
-    
+
 Returns C<-1> if no such item could be found.
 
 C<first_index> is an alias for C<firstidx>.

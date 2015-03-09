@@ -1544,6 +1544,60 @@ yes:
 OUTPUT:
     RETVAL
 
+int
+bsearchidx (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    dMULTICALL;
+    HV *stash;
+    GV *gv;
+    I32 gimme = GIMME_V; /* perl-5.5.4 bus-errors out later when using GIMME
+                            therefore we save its value in a fresh variable */
+    SV **args = &PL_stack_base[ax];
+
+    long i, j;
+    int val = -1;
+
+    if(!codelike(code))
+       croak_xs_usage(cv,  "code, ...");
+
+    RETVAL = -1;
+
+    if (items > 1) {
+	CV *_cv = sv_2cv(code, &stash, &gv, 0);
+	PUSH_MULTICALL(_cv);
+	SAVESPTR(GvSV(PL_defgv));
+
+        i = 0;
+        j = items - 1;
+        do {
+            long k = (i + j) / 2;
+
+            if (k >= items-1)
+                break;
+
+            GvSV(PL_defgv) = args[1+k];
+            MULTICALL;
+            val = SvIV(*PL_stack_sp);
+
+            if (val == 0) {
+                RETVAL = k;
+                break;
+            }
+            if (val < 0) {
+                i = k+1;
+            } else {
+                j = k-1;
+            }
+        } while (i <= j);
+        POP_MULTICALL;
+    }
+}
+OUTPUT:
+    RETVAL
+
 void
 _XScompiled ()
     CODE:
