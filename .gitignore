@@ -11,7 +11,8 @@ Makefile.old
 MANIFEST
 META.*
 MYMETA.*
-MoreUtils.[co]
+MoreUtils.[ico]
+MoreUtils.bs
 nytprof.out
 pm_to_blib
 *.log
