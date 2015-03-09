@@ -18,10 +18,12 @@ sub run_tests {
     test_all();
     test_none();
     test_notall();
+    test_one();
     test_any_u();
     test_all_u();
     test_none_u();
     test_notall_u();
+    test_one_u();
     test_true();
     test_false();
     test_firstidx();
@@ -120,6 +122,24 @@ sub test_notall_u {
         my $ok2 = notall_u { $_ == 5000 } 1 .. 10000;
     });
     is_dying( sub { &notall_u( 42, 4711 ); } );
+}
+
+sub test_one_u {
+    # Normal cases
+    my @list = ( 1 .. 300 );
+    is_true(  one_u {    1 == $_  } @list );
+    is_true(  one_u {  150 == $_  } @list );
+    is_true(  one_u {  300 == $_  } @list );
+    is_false( one_u {    0 == $_  } @list );
+    is_false( one_u {    1 <= $_  } @list );
+    is_false( one_u { !(127 & $_) } @list );
+    is_undef( one_u { } );
+
+    leak_free_ok(one => sub {
+        my $ok  = one_u { 150 <= $_ } @list;
+        my $ok2 = one_u { 150 <= $_ } 1 .. 300;
+    });
+    is_dying( sub { &one_u( 42, 4711 ); } );
 }
 
 sub test_true {
@@ -1042,6 +1062,23 @@ sub test_notall {
         my $ok2 = notall { $_ == 5000 } 1 .. 10000;
     });
     is_dying( sub { &notall( 42, 4711 ); } );
+}
+
+sub test_one {
+    # Normal cases
+    my @list = ( 1 .. 300 );
+    is_true(  one {    1 == $_  } @list );
+    is_true(  one {  150 == $_  } @list );
+    is_true(  one {  300 == $_  } @list );
+    is_false( one {    0 == $_  } @list );
+    is_false( one {    1 <= $_  } @list );
+    is_false( one { !(127 & $_) } @list );
+
+    leak_free_ok(one => sub {
+        my $ok  = one { 150 <= $_ } @list;
+        my $ok2 = one { 150 <= $_ } 1 .. 300;
+    });
+    is_dying( sub { &one( 42, 4711 ); } );
 }
 
 sub test_sort_by {

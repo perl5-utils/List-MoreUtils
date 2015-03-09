@@ -27,7 +27,7 @@ my @v0_22 = qw(
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
-my @v0_400 = qw(any_u all_u none_u notall_u firstres lastres);
+my @v0_400 = qw(one any_u all_u none_u notall_u one_u firstres lastres);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
@@ -279,6 +279,24 @@ turn:
 For an empty LIST, C<notall> returns false and C<notall_u> returns C<undef>.
 
 Thus, C<< notall_u(@list) >> is equivalent to C<< @list ? notall(@list) : undef >>.
+
+=head3 one BLOCK LIST
+
+=head3 one_u BLOCK LIST
+
+Returns a true value if precisely one item in LIST meets the criterion
+given through BLOCK. Sets C<$_> for each item in LIST in turn:
+
+    print "Precisely one value defined"
+        if one { defined($_) } @list;
+
+Returns false otherwise.
+
+For an empty LIST, C<one> returns false and C<one_u> returns C<undef>.
+
+The expression C<one BLOCK LIST> is almost equivalent to
+C<1 == true BLOCK LIST>, except for short-cutting.
+Evaluation of BLOCK will immediately stop at the second true value.
 
 =head2 Transformation
 

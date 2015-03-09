@@ -51,6 +51,15 @@ sub notall (&@) {
     return 0;
 }
 
+sub one (&@) {
+    my $f = shift;
+    my $found = 0;
+    foreach ( @_ ) {
+	$f->() and $found++ and return 0;
+    }
+    $found;
+}
+
 sub any_u (&@)
 {
     my $f = shift;
@@ -81,6 +90,16 @@ sub notall_u (&@)
     return if !@_;
     $f->() or return 1 foreach(@_);
     return 0;
+}
+
+sub one_u (&@) {
+    my $f = shift;
+    return if !@_;
+    my $found = 0;
+    foreach ( @_ ) {
+	$f->() and $found++ and return 0;
+    }
+    $found;
 }
 
 sub true (&@)

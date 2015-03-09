@@ -29,7 +29,7 @@ EOLDR
 
     # ensure to catch even PP only subs
     my @pp_imp = map { "List::MoreUtils->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
-	qw(any all none notall any_u all_u none_u notall_u true false
+	qw(any all none notall one any_u all_u none_u notall_u one_u true false
            firstidx lastidx insert_after insert_after_string
            apply indexes after after_incl before before_incl
            firstval lastval each_array each_arrayref pairwise
