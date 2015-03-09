@@ -8,7 +8,7 @@ use vars qw{$VERSION @ISA};
 
 BEGIN
 {
-    $VERSION  = '0.407';
+    $VERSION = '0.407';
 
     # Load the XS at compile-time so that redefinition warnings will be
     # thrown correctly if the XS versions of part or indexes loaded
@@ -29,13 +29,13 @@ EOLDR
 
     # ensure to catch even PP only subs
     my @pp_imp = map { "List::MoreUtils->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
-	qw(any all none notall one any_u all_u none_u notall_u one_u true false
-           firstidx firstval firstres lastidx lastval lastres onlyidx onlyval onlyres
-	   insert_after insert_after_string
-           apply after after_incl before before_incl
-           each_array each_arrayref pairwise
-	   natatime mesh uniq singleton minmax part indexes bsearch bsearchidx
-	   sort_by nsort_by _XScompiled);
+      qw(any all none notall one any_u all_u none_u notall_u one_u true false
+      firstidx firstval firstres lastidx lastval lastres onlyidx onlyval onlyres
+      insert_after insert_after_string
+      apply after after_incl before before_incl
+      each_array each_arrayref pairwise
+      natatime mesh uniq singleton minmax part indexes bsearch bsearchidx
+      sort_by nsort_by _XScompiled);
     my $pp_stuff = join( "\n", "use List::MoreUtils::PP;", "package List::MoreUtils;", @pp_imp );
     eval $pp_stuff;
     die $@ if $@;

@@ -19,43 +19,53 @@ List::MoreUtils::PP - Provide List::MoreUtils pure Perl implementation
 
 =cut
 
-sub any (&@) {
+sub any (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         return 1 if $f->();
     }
     return 0;
 }
 
-sub all (&@) {
+sub all (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         return 0 unless $f->();
     }
     return 1;
 }
 
-sub none (&@) {
+sub none (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         return 0 if $f->();
     }
     return 1;
 }
 
-sub notall (&@) {
+sub notall (&@)
+{
     my $f = shift;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         return 1 unless $f->();
     }
     return 0;
 }
 
-sub one (&@) {
-    my $f = shift;
+sub one (&@)
+{
+    my $f     = shift;
     my $found = 0;
-    foreach ( @_ ) {
-	$f->() and $found++ and return 0;
+    foreach (@_)
+    {
+        $f->() and $found++ and return 0;
     }
     $found;
 }
@@ -64,7 +74,7 @@ sub any_u (&@)
 {
     my $f = shift;
     return if !@_;
-    $f->() and return 1 foreach(@_);
+    $f->() and return 1 foreach (@_);
     return 0;
 }
 
@@ -72,7 +82,7 @@ sub all_u (&@)
 {
     my $f = shift;
     return if !@_;
-    $f->() or return 0 foreach(@_);
+    $f->() or return 0 foreach (@_);
     return 1;
 }
 
@@ -80,7 +90,7 @@ sub none_u (&@)
 {
     my $f = shift;
     return if !@_;
-    $f->() and return 0 foreach(@_);
+    $f->() and return 0 foreach (@_);
     return 1;
 }
 
@@ -88,16 +98,18 @@ sub notall_u (&@)
 {
     my $f = shift;
     return if !@_;
-    $f->() or return 1 foreach(@_);
+    $f->() or return 1 foreach (@_);
     return 0;
 }
 
-sub one_u (&@) {
+sub one_u (&@)
+{
     my $f = shift;
     return if !@_;
     my $found = 0;
-    foreach ( @_ ) {
-	$f->() and $found++ and return 0;
+    foreach (@_)
+    {
+        $f->() and $found++ and return 0;
     }
     $found;
 }
@@ -106,7 +118,7 @@ sub true (&@)
 {
     my $f     = shift;
     my $count = 0;
-     $f->() and ++$count foreach (@_);
+    $f->() and ++$count foreach (@_);
     return $count;
 }
 
@@ -145,7 +157,7 @@ sub firstres (&@)
     foreach (@_)
     {
         my $testval = $test->();
-	$testval and return $testval;
+        $testval and return $testval;
     }
     return undef;
 }
@@ -157,33 +169,37 @@ sub onlyidx (&@)
     foreach my $i ( 0 .. $#_ )
     {
         local *_ = \$_[$i];
-	$f->() or next;
-	defined $found and return -1;
-	$found = $i;
+        $f->() or next;
+        defined $found and return -1;
+        $found = $i;
     }
     return defined $found ? $found : -1;
 }
 
-sub onlyval (&@) {
-    my $test = shift;
+sub onlyval (&@)
+{
+    my $test   = shift;
     my $result = undef;
     my $found  = 0;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         $test->() or next;
-	$result = $_;
-	$found++ and return undef;
+        $result = $_;
+        $found++ and return undef;
     }
     return $result;
 }
 
-sub onlyres (&@) {
-    my $test = shift;
+sub onlyres (&@)
+{
+    my $test   = shift;
     my $result = undef;
     my $found  = 0;
-    foreach ( @_ ) {
+    foreach (@_)
+    {
         my $rv = $test->() or next;
-	$result = $rv;
-	$found++ and return undef;
+        $result = $rv;
+        $found++ and return undef;
     }
     return $found ? $result : undef;
 }
@@ -521,20 +537,18 @@ sub bsearchidx(&@)
 
 sub sort_by(&@)
 {
-    my ($code, @list) = @_;
+    my ( $code, @list ) = @_;
     return map { $_->[0] }
-          sort { $a->[1] cmp $b->[1] }
-           map { [$_, scalar($code->())] }
-               @list;
+      sort     { $a->[1] cmp $b->[1] }
+      map { [ $_, scalar( $code->() ) ] } @list;
 }
 
 sub nsort_by(&@)
 {
-    my ($code, @list) = @_;
+    my ( $code, @list ) = @_;
     return map { $_->[0] }
-          sort { $a->[1] <=> $b->[1] }
-           map { [$_, scalar($code->())] }
-               @list;
+      sort     { $a->[1] <=> $b->[1] }
+      map { [ $_, scalar( $code->() ) ] } @list;
 }
 
 sub _XScompiled { 0 }
