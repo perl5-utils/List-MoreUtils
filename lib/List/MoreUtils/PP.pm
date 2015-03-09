@@ -150,6 +150,44 @@ sub firstres (&@)
     return undef;
 }
 
+sub onlyidx (&@)
+{
+    my $f = shift;
+    my $found;
+    foreach my $i ( 0 .. $#_ )
+    {
+        local *_ = \$_[$i];
+	$f->() or next;
+	defined $found and return -1;
+	$found = $i;
+    }
+    return defined $found ? $found : -1;
+}
+
+sub onlyval (&@) {
+    my $test = shift;
+    my $result = undef;
+    my $found  = 0;
+    foreach ( @_ ) {
+        $test->() or next;
+	$result = $_;
+	$found++ and return undef;
+    }
+    return $result;
+}
+
+sub onlyres (&@) {
+    my $test = shift;
+    my $result = undef;
+    my $found  = 0;
+    foreach ( @_ ) {
+        my $rv = $test->() or next;
+	$result = $rv;
+	$found++ and return undef;
+    }
+    return $found ? $result : undef;
+}
+
 sub lastidx (&@)
 {
     my $f = shift;

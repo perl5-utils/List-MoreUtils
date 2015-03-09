@@ -30,11 +30,11 @@ EOLDR
     # ensure to catch even PP only subs
     my @pp_imp = map { "List::MoreUtils->can(\"$_\") or *$_ = \\&List::MoreUtils::PP::$_;" }
 	qw(any all none notall one any_u all_u none_u notall_u one_u true false
-           firstidx lastidx insert_after insert_after_string
-           apply indexes after after_incl before before_incl
-           firstval lastval each_array each_arrayref pairwise
-	   natatime mesh uniq minmax part bsearch
-	   firstres lastres
+           firstidx firstval firstres lastidx lastval lastres onlyidx onlyval onlyres
+	   insert_after insert_after_string
+           apply after after_incl before before_incl
+           each_array each_arrayref pairwise
+	   natatime mesh uniq minmax part indexes bsearch
 	   sort_by nsort_by _XScompiled);
     my $pp_stuff = join( "\n", "use List::MoreUtils::PP;", "package List::MoreUtils;", @pp_imp );
     eval $pp_stuff;

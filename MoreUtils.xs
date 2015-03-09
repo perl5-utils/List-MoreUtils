@@ -470,6 +470,45 @@ OUTPUT:
     RETVAL
 
 int
+onlyidx (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    int found = 0;
+    RETVAL = -1;
+    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { if (found++) {RETVAL = -1; break;} RETVAL = i-1; }}));
+}
+OUTPUT:
+    RETVAL
+
+SV *
+onlyval (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    int found = 0;
+    RETVAL = &PL_sv_undef;
+    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { if (found++) {SvREFCNT_dec(RETVAL); RETVAL = &PL_sv_undef; break;} SvREFCNT_inc(RETVAL = args[i]); }}));
+}
+OUTPUT:
+    RETVAL
+
+SV *
+onlyres (code, ...)
+    SV *code;
+PROTOTYPE: &@
+CODE:
+{
+    int found = 0;
+    RETVAL = &PL_sv_undef;
+    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { if (found++) {SvREFCNT_dec(RETVAL); RETVAL = &PL_sv_undef; break;}SvREFCNT_inc(RETVAL = *PL_stack_sp); }}));
+}
+OUTPUT:
+    RETVAL
+
+int
 lastidx (code, ...)
     SV *code;
 PROTOTYPE: &@

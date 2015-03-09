@@ -27,7 +27,7 @@ my @v0_22 = qw(
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
-my @v0_400 = qw(one any_u all_u none_u notall_u one_u firstres lastres);
+my @v0_400 = qw(one any_u all_u none_u notall_u one_u firstres onlyidx onlyval onlyres lastres);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
@@ -44,6 +44,9 @@ my %alias_list = (
     },
     v0_400 => {
         first_result => "firstres",
+        only_index => "onlyidx",
+        only_value => "onlyval",
+        only_result => "onlyres",
         last_result  => "lastres",
     },
 );
@@ -514,6 +517,16 @@ has been found.
 
 C<first_value> is an alias for C<firstval>.
 
+=head3 onlyval BLOCK LIST
+
+=head3 only_value BLOCK LIST
+
+Returns the only element in LIST for which BLOCK evaluates to true. Sets
+C<$_> for each item in LIST in turn. Returns C<undef> if no such element
+has been found.
+
+C<only_value> is an alias for C<onlyval>.
+
 =head3 lastval BLOCK LIST
 
 =head3 last_value BLOCK LIST
@@ -533,6 +546,16 @@ evaluates to true. Each element of LIST is set to C<$_> in turn. Returns
 C<undef> if no such element has been found.
 
 C<first_result> is an alias for C<firstres>.
+
+=head3 onlyres BLOCK LIST
+
+=head3 only_result BLOCK LIST
+
+Returns the result of BLOCK for the first element in LIST for which BLOCK
+evaluates to true. Sets C<$_> for each item in LIST in turn. Returns
+C<undef> if no such element has been found.
+
+C<only_result> is an alias for C<onlyres>.
 
 =head3 lastres BLOCK LIST
 
@@ -567,6 +590,23 @@ is true. Sets C<$_> for each item in LIST in turn:
 Returns C<-1> if no such item could be found.
 
 C<first_index> is an alias for C<firstidx>.
+
+=head3 onlyidx BLOCK LIST
+
+=head3 only_index BLOCK LIST
+
+Returns the index of the only element in LIST for which the criterion
+in BLOCK is true. Sets C<$_> for each item in LIST in turn:
+
+    my @list = (1, 3, 4, 3, 2, 4);
+    printf "uniqe index of item 2 in list is %i", onlyidx { $_ == 2 } @list;
+    __END__
+    unique index of item 2 in list is 4
+
+Returns C<-1> if either no such item or more than one of these
+has been found.
+
+C<only_index> is an alias for C<onlyidx>.
 
 =head3 lastidx BLOCK LIST
 

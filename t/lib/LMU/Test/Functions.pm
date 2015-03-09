@@ -28,6 +28,7 @@ sub run_tests {
     test_false();
     test_firstidx();
     test_lastidx();
+    test_onlyidx();
     test_insert_after();
     test_insert_after_string();
     test_apply();
@@ -38,8 +39,10 @@ sub run_tests {
     test_after_incl();
     test_firstval();
     test_lastval();
+    test_onlyval();
     test_firstres();
     test_lastres();
+    test_onlyres();
     test_each_array();
     test_pairwise();
     test_natatime();
@@ -220,6 +223,30 @@ sub test_lastidx {
         my $i2 = lastidx { $_ >= 5000 } 1 .. 10000;
     });
     is_dying( sub { &lastidx( 42, 4711 ); } );
+}
+
+sub test_onlyidx {
+    my @list = ( 1 .. 300 );
+    is(   0, onlyidx {    1 == $_  } @list );
+    is( 149, onlyidx {  150 == $_  } @list );
+    is( 299, onlyidx {  300 == $_  } @list );
+    is(  -1, onlyidx {    0 == $_  } @list );
+    is(  -1, onlyidx {    1 <= $_  } @list );
+    is(  -1, onlyidx { !(127 & $_) } @list );
+
+    # Test aliases
+    is(   0, only_index {    1 == $_  } @list );
+    is( 149, only_index {  150 == $_  } @list );
+    is( 299, only_index {  300 == $_  } @list );
+    is(  -1, only_index {    0 == $_  } @list );
+    is(  -1, only_index {    1 <= $_  } @list );
+    is(  -1, only_index { !(127 & $_) } @list );
+
+    leak_free_ok(onlyidx => sub {
+        my $ok  = onlyidx { 150 <= $_ } @list;
+        my $ok2 = onlyidx { 150 <= $_ } 1 .. 300;
+    });
+    is_dying( sub { &onlyidx( 42, 4711 ); } );
 }
 
 sub test_insert_after {
@@ -427,6 +454,30 @@ sub test_firstval {
     is_dying( sub { &firstval( 42, 4711 ); } );
 }
 
+sub test_onlyval {
+    my @list = ( 1 .. 300 );
+    is(     1, onlyval {    1 == $_  } @list );
+    is(   150, onlyval {  150 == $_  } @list );
+    is(   300, onlyval {  300 == $_  } @list );
+    is( undef, onlyval {    0 == $_  } @list );
+    is( undef, onlyval {    1 <= $_  } @list );
+    is( undef, onlyval { !(127 & $_) } @list );
+
+    # Test aliases
+    is(     1, only_value {    1 == $_  } @list );
+    is(   150, only_value {  150 == $_  } @list );
+    is(   300, only_value {  300 == $_  } @list );
+    is( undef, only_value {    0 == $_  } @list );
+    is( undef, only_value {    1 <= $_  } @list );
+    is( undef, only_value { !(127 & $_) } @list );
+
+    leak_free_ok(onlyval => sub {
+        my $ok  = onlyval { 150 <= $_ } @list;
+        my $ok2 = onlyval { 150 <= $_ } 1 .. 300;
+    });
+    is_dying( sub { &onlyval( 42, 4711 ); } );
+}
+
 sub test_lastval {
     my $x = lastval { $_ > 5 }  4..9;
     is( $x, 9 );
@@ -480,6 +531,28 @@ sub test_lastres {
         $x = lastres { $_ > 5 } 4 .. 9;
     });
     is_dying( sub { &lastres( 42, 4711 ); } );
+}
+
+sub test_onlyres {
+    my @list = ( 1 .. 300 );
+    is(   "Hallelujah", onlyres {  150 == $_ and "Hallelujah" } @list );
+    is(   1, onlyres {  300 == $_  } @list );
+    is( undef, onlyres {    0 == $_  } @list );
+    is( undef, onlyres {    1 <= $_  } @list );
+    is( undef, onlyres { !(127 & $_) } @list );
+
+    # Test aliases
+    is(   1, only_result {  150 == $_  } @list );
+    is(   "Hallelujah", only_result {  300 == $_ and "Hallelujah" } @list );
+    is( undef, only_result {    0 == $_  } @list );
+    is( undef, only_result {    1 <= $_  } @list );
+    is( undef, only_result { !(127 & $_) } @list );
+
+    leak_free_ok(onlyres => sub {
+        my $ok  = onlyres { 150 <= $_ } @list;
+        my $ok2 = onlyres { 150 <= $_ } 1 .. 300;
+    });
+    is_dying( sub { &onlyres( 42, 4711 ); } );
 }
 
 sub test_each_array {
