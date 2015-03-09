@@ -418,13 +418,15 @@ sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 sub uniq (@)
 {
     my %seen = ();
-    grep { not $seen{$_}++ } @_;
+    my $k;
+    grep { not $seen{$k = $_}++ } @_;
 }
 
 sub singleton (@)
 {
     my %seen = ();
-    grep { 1 == $seen{$_} } grep { not $seen{$_}++ } @_;
+    my $k;
+    grep { 1 == $seen{$k = $_} } grep { not $seen{$k = $_}++ } @_;
 }
 
 sub minmax (@)

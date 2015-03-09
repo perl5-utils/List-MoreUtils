@@ -10,7 +10,18 @@ use List::MoreUtils ':all';
 use Config;
 
 my $have_scalar_util;
-eval { use Scalar::Util; $have_scalar_util = 1; };
+eval "use Scalar::Util qw(); \$have_scalar_util = 1;";
+
+eval "use Storable qw();";
+$@ or Storable->import(qw(freeze));
+__PACKAGE__->can("freeze") or eval <<'EOFR';
+use inc::latest 'JSON::PP';
+use JSON::PP qw();
+sub freeze {
+    my $json = JSON::PP->new();
+    $json->encode($_[0]);
+}
+EOFR
 
 # Run all tests
 sub run_tests
@@ -1022,8 +1033,12 @@ sub test_uniq
   SCOPE:
     {
         my @a = ( ( map { ( 1 .. 1000 ) } 0 .. 1 ), ( map { ( "aa" .. "zz" ) } 0 .. 1 ) );
+        my $fa = freeze(\@a);
         my @u = uniq @a;
+        my $fu = freeze(\@u);
         is_deeply( \@u, [ 1 .. 1000, "aa" .. "zz" ] );
+        is( $fa, freeze(\@a) );
+        is( $fu, freeze([ 1 .. 1000, "aa" .. "zz" ]) );
         my $u = uniq @a;
         is( 1000 + 26 * 26, $u );
     }
@@ -1093,10 +1108,16 @@ sub test_usingleton
   SCOPE:
     {
         my @s = ( 1001 .. 1200, "AA" .. "ZZ" );
+        my $fs = freeze(\@s);
         my @d = map { ( 1 .. 1000, "aa" .. "zz" ) } 0 .. 1;
         my @a = ( @d, @s );
+        my $fa = freeze(\@a);
         my @u = singleton @a;
+        my $fu = freeze(\@u);
         is_deeply( \@u, [@s] );
+        is( $fs, freeze(\@s) );
+        is( $fa, freeze(\@a) );
+        is( $fu, $fs );
         my $u = singleton @a;
         is( scalar @s, $u );
 
