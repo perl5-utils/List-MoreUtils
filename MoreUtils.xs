@@ -425,7 +425,7 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
 
     if(!codelike(code))
        croak_xs_usage(cv,  "code, ...");
@@ -433,8 +433,8 @@ CODE:
     if (items <= 1)
 	XSRETURN_NO;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
@@ -611,7 +611,7 @@ CODE:
     GV *gv;
     I32 gimme = G_SCALAR;
     SV **args = &PL_stack_base[ax];
-    CV *cv;
+    CV *_cv;
 
     if(!codelike(code))
        croak_xs_usage(cv,  "code, ...");
@@ -619,8 +619,8 @@ CODE:
     if (items <= 1)
 	XSRETURN_UNDEF;
 
-    cv = sv_2cv(code, &stash, &gv, 0);
-    PUSH_MULTICALL(cv);
+    _cv = sv_2cv(code, &stash, &gv, 0);
+    PUSH_MULTICALL(_cv);
     SAVESPTR(GvSV(PL_defgv));
 
     for(i = 1 ; i < items ; ++i) {
