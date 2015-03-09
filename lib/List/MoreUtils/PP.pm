@@ -129,6 +129,27 @@ sub firstidx (&@)
     return -1;
 }
 
+sub firstval (&@)
+{
+    my $test = shift;
+    foreach (@_)
+    {
+        return $_ if $test->();
+    }
+    return undef;
+}
+
+sub firstres (&@)
+{
+    my $test = shift;
+    foreach (@_)
+    {
+        my $testval = $test->();
+	$testval and return $testval;
+    }
+    return undef;
+}
+
 sub lastidx (&@)
 {
     my $f = shift;
@@ -138,6 +159,38 @@ sub lastidx (&@)
         return $i if $f->();
     }
     return -1;
+}
+
+sub lastval (&@)
+{
+    my $test = shift;
+    my $ix;
+    for ( $ix = $#_; $ix >= 0; $ix-- )
+    {
+        local *_ = \$_[$ix];
+        my $testval = $test->();
+
+        # Simulate $_ as alias
+        $_[$ix] = $_;
+        return $_ if $testval;
+    }
+    return undef;
+}
+
+sub lastres (&@)
+{
+    my $test = shift;
+    my $ix;
+    for ( $ix = $#_; $ix >= 0; $ix-- )
+    {
+        local *_ = \$_[$ix];
+        my $testval = $test->();
+
+        # Simulate $_ as alias
+        $_[$ix] = $_;
+        return $testval if $testval;
+    }
+    return undef;
 }
 
 sub insert_after (&$\@)
@@ -210,59 +263,6 @@ sub indexes (&@)
         local *_ = \$_[$_];
         $test->()
     } 0 .. $#_;
-}
-
-sub lastres (&@)
-{
-    my $test = shift;
-    my $ix;
-    for ( $ix = $#_; $ix >= 0; $ix-- )
-    {
-        local *_ = \$_[$ix];
-        my $testval = $test->();
-
-        # Simulate $_ as alias
-        $_[$ix] = $_;
-        return $testval if $testval;
-    }
-    return undef;
-}
-
-sub lastval (&@)
-{
-    my $test = shift;
-    my $ix;
-    for ( $ix = $#_; $ix >= 0; $ix-- )
-    {
-        local *_ = \$_[$ix];
-        my $testval = $test->();
-
-        # Simulate $_ as alias
-        $_[$ix] = $_;
-        return $_ if $testval;
-    }
-    return undef;
-}
-
-sub firstres (&@)
-{
-    my $test = shift;
-    foreach (@_)
-    {
-        my $testval = $test->();
-	$testval and return $testval;
-    }
-    return undef;
-}
-
-sub firstval (&@)
-{
-    my $test = shift;
-    foreach (@_)
-    {
-        return $_ if $test->();
-    }
-    return undef;
 }
 
 sub pairwise (&\@\@)
