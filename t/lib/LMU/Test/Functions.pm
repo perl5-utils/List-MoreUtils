@@ -413,6 +413,7 @@ sub test_firstval {
     is( $x, 6 );
     $x = firstval { $_ > 5 }  1 .. 4;
     is( $x, undef );
+    is_undef( firstval { $_ > 5 } );
 
     # Test aliases
     $x = first_value { $_ > 5 }  4..9; 
@@ -431,6 +432,7 @@ sub test_lastval {
     is( $x, 9 );
     $x = lastval { $_ > 5 }  1..4;
     is( $x, undef );
+    is_undef( lastval { $_ > 5 } );
 
     # Test aliases
     $x = last_value { $_ > 5 }  4..9;  
