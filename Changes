@@ -6,6 +6,7 @@ Revision history for Perl extension List-MoreUtils
     - document how uniq/distinct deal with undef (RT#49800)
     - add bsearchidx to satisfy RT#63470
     - add singleton to satisfy RT#94382
+    - fix RT#82039 - uniq changes the type of its arguments
 
 0.406	2015-03-03
     - add new functions firstres and lastres in addition to firstidx, lastidx,
