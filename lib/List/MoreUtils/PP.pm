@@ -405,6 +405,12 @@ sub uniq (@)
     grep { not $seen{$_}++ } @_;
 }
 
+sub singleton (@)
+{
+    my %seen = ();
+    grep { 1 == $seen{$_} } grep { not $seen{$_}++ } @_;
+}
+
 sub minmax (@)
 {
     return unless @_;

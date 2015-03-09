@@ -27,7 +27,10 @@ my @v0_22 = qw(
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
-my @v0_400 = qw(one any_u all_u none_u notall_u one_u firstres onlyidx onlyval onlyres lastres bsearchidx);
+my @v0_400 = qw(one any_u all_u none_u notall_u one_u
+      firstres onlyidx onlyval onlyres lastres
+      singleton bsearchidx
+);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
@@ -389,18 +392,27 @@ elements in the returned list is the same as in LIST. In scalar context,
 returns the number of unique elements in LIST. C<undef> is handled as
 C<""> but it'll whine ...
 
-    my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
-    my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
-    # returns "Mike", "Michael", "Richard", "Rick"
-    my @n = distinct "Mike", "Michael", "Richard", "Rick", "Michael", "Rick"
-    # returns '', 'S1', A5' and complains about "Use of uninitialized value"
-    my @s = distinct '', undef, 'S1', 'A5'
-    # returns undef, 'S1', A5' and complains about "Use of uninitialized value"
-    my @w = uniq undef, '', 'S1', 'A5'
+  my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
+  my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
+  # returns "Mike", "Michael", "Richard", "Rick"
+  my @n = distinct "Mike", "Michael", "Richard", "Rick", "Michael", "Rick"
+  # returns '', 'S1', A5' and complains about "Use of uninitialized value"
+  my @s = distinct '', undef, 'S1', 'A5'
+  # returns undef, 'S1', A5' and complains about "Use of uninitialized value"
+  my @w = uniq undef, '', 'S1', 'A5'
 
 C<distinct> is an alias for C<uniq>.
 
 B<RT#49800> can be used to give feedback about this behavior.
+
+=head3 singleton
+
+Returns a new list by stripping values in LIST which occuring more than once.
+The order of elements in the returned list is the same as in LIST. In scalar
+context, returns the number of unique elements in LIST. C<undef> is handled as
+C<""> but it'll whine ...
+
+  my @x = singleton 1,1,2,2,3,4,5 # returns 3 4 5
 
 =head2 Partitioning
 

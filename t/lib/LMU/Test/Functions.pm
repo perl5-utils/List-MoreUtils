@@ -49,6 +49,7 @@ sub run_tests {
     test_zip();
     test_mesh();
     test_uniq();
+    test_usingleton();
     test_part();
     test_minmax();
     test_bsearch();
@@ -851,7 +852,7 @@ sub test_uniq {
     SCOPE: {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;
         my @u = uniq @a;
-        ok( is_deeply( \@u, [ 1 .. 1000 ] ) );
+        is_deeply( \@u, [ 1 .. 1000 ] );
         my $u = uniq @a;
         is( 1000, $u );
     }
@@ -860,7 +861,7 @@ sub test_uniq {
     SCOPE: {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;
         my @u = distinct @a;
-        ok( is_deeply( \@u, [ 1 .. 1000 ] ) );
+        is_deeply( \@u, [ 1 .. 1000 ] );
         my $u = distinct @a;
         is( 1000, $u );
     }
@@ -869,7 +870,7 @@ sub test_uniq {
     SCOPE: {
         my @a = map { ( "aa" .. "zz" ) } 0 .. 1;
         my @u = uniq @a;
-        ok( is_deeply( \@u, [ "aa" .. "zz" ] ) );
+        is_deeply( \@u, [ "aa" .. "zz" ] );
         my $u = uniq @a;
         is( 26*26, $u );
     }
@@ -878,7 +879,7 @@ sub test_uniq {
     SCOPE: {
         my @a = ((map { ( 1 .. 1000 ) } 0 .. 1),(map { ( "aa" .. "zz" ) } 0 .. 1));
         my @u = uniq @a;
-        ok( is_deeply( \@u, [ 1 .. 1000, "aa" .. "zz" ] ) );
+        is_deeply( \@u, [ 1 .. 1000, "aa" .. "zz" ] );
         my $u = uniq @a;
         is( 1000 + 26 * 26, $u );
     }
@@ -898,6 +899,7 @@ sub test_uniq {
     leak_free_ok(uniq => sub {
         my @a = map { ( 1 .. 1000 ) } 0 .. 1;
         my @u = uniq @a;
+        uniq @a[1 .. 100];
     });
 
     # This test (and the associated fix) are from Kevin Ryde; see RT#49796
@@ -909,6 +911,73 @@ sub test_uniq {
         eval {
             my $obj = DieOnStringify->new;
             my $u = uniq $obj, $obj;
+        };
+    });
+}
+
+sub test_usingleton {
+    SCOPE: {
+        my @s = (1001..1200);
+        my @d = map { ( 1 .. 1000 ) } 0 .. 1;
+        my @a = (@d, @s);
+        my @u = singleton @a;
+        is_deeply( \@u, [ @s ] );
+        my $u = singleton @a;
+        is( 200, $u );
+    }
+
+    # Test strings
+    SCOPE: {
+        my @s = ("AA".."ZZ");
+        my @d = map { ( "aa" .. "zz" ) } 0 .. 1;
+        my @a = (@d, @s);
+        my @u = singleton @a;
+        is_deeply( \@u, [ @s ] );
+        my $u = singleton @a;
+        is( scalar @s, $u );
+    }
+
+    # Test mixing strings and numbers
+    SCOPE: {
+        my @s = (1001..1200, "AA".."ZZ");
+        my @d = map { ( 1 .. 1000, "aa" .. "zz" ) } 0 .. 1;
+        my @a = (@d, @s);
+        my @u = singleton @a;
+        is_deeply( \@u, [ @s ] );
+        my $u = singleton @a;
+        is( scalar @s, $u );
+
+    }
+
+    # Test support for undef values without warnings
+    #SCOPE: {
+    #    my @warnings  = ();
+    #    local $SIG{__WARN__} = sub {
+    #        push @warnings, @_;
+    #    };
+    #    my @foo = ('a','b', '', undef, 'b', 'c', '');
+    #    diag(explain([ uniq @foo ]));
+    #    is_deeply( [ uniq @foo ], \@foo, 'undef is supported correctly' );
+    #    is_deeply( \@warnings, [ ], 'No warnings during uniq check' );
+    #}
+
+    leak_free_ok(uniq => sub {
+        my @s = (1001..1200, "AA".."ZZ");
+        my @d = map { ( 1 .. 1000, "aa" .. "zz" ) } 0 .. 1;
+        my @a = (@d, @s);
+        my @u = singleton @a;
+        scalar singleton @a;
+    });
+
+    # This test (and the associated fix) are from Kevin Ryde; see RT#49796
+    leak_free_ok('singleton with exception in overloading stringify', sub {
+        eval {
+            my $obj = DieOnStringify->new;
+            my @u = singleton $obj, $obj;
+        };
+        eval {
+            my $obj = DieOnStringify->new;
+            my $u = singleton $obj, $obj;
         };
     });
 }
