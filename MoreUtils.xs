@@ -103,6 +103,62 @@ ncmp(SV* left, SV * right)
     }
 }
 
+#define FUNC_NAME GvNAME(GvEGV(ST(items)))
+
+/* shameless stolen from PadWalker */
+#ifndef PadARRAY
+typedef AV PADNAMELIST;
+typedef SV PADNAME;
+# if PERL_VERSION < 8 || (PERL_VERSION == 8 && !PERL_SUBVERSION)
+typedef AV PADLIST;
+typedef AV PAD;
+# endif
+# define PadlistARRAY(pl)       ((PAD **)AvARRAY(pl))
+# define PadlistMAX(pl)         AvFILLp(pl)
+# define PadlistNAMES(pl)       (*PadlistARRAY(pl))
+# define PadnamelistARRAY(pnl)  ((PADNAME **)AvARRAY(pnl))
+# define PadnamelistMAX(pnl)    AvFILLp(pnl)
+# define PadARRAY               AvARRAY
+# define PadnameIsOUR(pn)       !!(SvFLAGS(pn) & SVpad_OUR)
+# define PadnameOURSTASH(pn)    SvOURSTASH(pn)
+# define PadnameOUTER(pn)       !!SvFAKE(pn)
+# define PadnamePV(pn)          (SvPOKp(pn) ? SvPVX(pn) : NULL)
+#endif
+
+static int 
+in_pad (SV *code)
+{
+    GV *gv;
+    HV *stash;
+    CV *cv = sv_2cv(code, &stash, &gv, 0);
+    PADLIST *pad_list = (CvPADLIST(cv));
+    PADNAMELIST *pad_namelist = PadlistNAMES(pad_list);
+    PADNAME **pad_names = PadnamelistARRAY(pad_namelist);
+    int i;
+
+    for (i=PadnamelistMAX(pad_namelist); i>=0; --i) {
+	PADNAME* name_sv = PadnamelistARRAY(pad_namelist)[i];
+	if (name_sv) {
+	    char *name_str = PadnamePV(name_sv);
+	    if (name_str) {
+
+		/* perl < 5.6.0 does not yet have our */
+#               ifdef SVpad_OUR
+		if(PadnameIsOUR(name_sv))
+		    continue;
+#               endif
+
+		if (!SvOK(name_sv))
+		    continue;
+
+		if (strEQ(name_str, "$a") || strEQ(name_str, "$b"))
+		    return 1;
+	    }
+	}
+    }
+    return 0;
+}
+
 #define WARN_OFF \
     SV *oldwarn = PL_curcop->cop_warnings; \
     PL_curcop->cop_warnings = pWARN_NONE;
@@ -1112,6 +1168,10 @@ pairwise (code, ...)
 	   croak_xs_usage(cv,  "code, list, list");
 	if(!arraylike(ST(2)))
 	   croak_xs_usage(cv,  "code, list, list");
+
+	if (in_pad(code)) {
+	    croak("Can't use lexical $a or $b in pairwise code block");
+	}
 
 	/* deref AV's for convenience and
 	 * get maximum items */

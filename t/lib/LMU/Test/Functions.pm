@@ -862,6 +862,26 @@ sub test_pairwise
     @a = qw/a b c/;
     @b = qw/1 2 3/;
 
+  SKIP:
+    {
+        List::MoreUtils::_XScompiled or skip "PurePerl will warn here ...", 1;
+	my ($a, $b, @t);
+	eval { my @l1 = (1..10); @t = pairwise { $a + $b } @l1, @l1; };
+	my $err = $@;
+	like( $err, qr/Can't use lexical \$a or \$b in pairwise code block/, "pairwise die's on broken caller");
+    }
+
+  SKIP:
+    {
+        List::MoreUtils::_XScompiled and skip "XS will die on purpose here ...", 1;
+        my @warns = ();
+        local $SIG{__WARN__} = sub { push @warns, @_ };
+	my ($a, $b, @t);
+	my @l1 = (1..10);
+	@t = pairwise { $a + $b } @l1, @l1;
+        like( join("", @warns[0,1]), qr/Use of uninitialized value \$(?:a|b) in addition/, "warning on broken caller" );
+    }
+
     is_dying( sub { &pairwise( 42, \@a, \@b ); } );
   SKIP:
     {
@@ -1185,13 +1205,14 @@ sub test_part
     @part = part { $i++ == 0 ? 0 : -1 } @list;
     is_deeply( $part[0], [ 1 .. 12 ], "part with negative indices" );
 
+    SKIP:
     {
-        local $TODO = "needs to be spit out in XS";
+        List::MoreUtils::_XScompiled and skip "Only PurePerl will warn here ...", 1;
         my @warns = ();
         local $SIG{__WARN__} = sub { push @warns, [@_] };
         @part = part { undef } @list;
         is_deeply( $part[0], [ 1 .. 12 ], "part with undef" );
-        like( $warns[0], qr/Use of uninitialized value in array element.*line\s+\d+\.$/, "warning of undef" );
+        like( join("\n", @{$warns[0]}), qr/Use of uninitialized value in array element.*line\s+\d+\.$/, "warning of undef" );
         is_deeply( \@warns, [ ( $warns[0] ) x 12 ], "amount of similar undef warnings" );
     }
 
