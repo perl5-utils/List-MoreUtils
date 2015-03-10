@@ -1,12 +1,13 @@
 Revision history for Perl extension List-MoreUtils
 
-0.407	2015-03-09
+0.407	2015-03-10
     - Added one(), onlyidx(), onlyval() (RT#73134, MHASCH) and onlyres()
     - improve XS maintainability
     - document how uniq/distinct deal with undef (RT#49800)
     - add bsearchidx to satisfy RT#63470
     - add singleton to satisfy RT#94382
     - fix RT#82039 - uniq changes the type of its arguments
+    - fix RT#44518 again
 
 0.406	2015-03-03
     - add new functions firstres and lastres in addition to firstidx, lastidx,
