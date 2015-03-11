@@ -419,14 +419,17 @@ sub uniq (@)
 {
     my %seen = ();
     my $k;
-    grep { not $seen{$k = $_}++ } @_;
+    my $seen_undef;
+    grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
 }
 
 sub singleton (@)
 {
     my %seen = ();
     my $k;
-    grep { 1 == $seen{$k = $_} } grep { not $seen{$k = $_}++ } @_;
+    my $seen_undef;
+    grep { 1 == ( defined $_ ? $seen{ $k = $_ } : $seen_undef ) }
+      grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
 }
 
 sub minmax (@)

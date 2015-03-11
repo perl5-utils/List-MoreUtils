@@ -1328,14 +1328,20 @@ uniq (...)
         SV **args = &PL_stack_base[ax];
 	SV *tmp = sv_newmortal();
 	sv_2mortal(newRV_noinc((SV*)hv));
+	int seen_undef = 0;
 
 	/* don't build return list in scalar context */
 	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < items; i++) {
-		sv_setsv_mg(tmp, args[i]);
-		if (!hv_exists_ent(hv, tmp, 0)) {
+		if(SvOK(args[i])) {
+		    sv_setsv_mg(tmp, args[i]);
+		    if (!hv_exists_ent(hv, tmp, 0)) {
+			++count;
+			hv_store_ent(hv, tmp, &PL_sv_yes, 0);
+		    }
+		}
+		else if(0 == seen_undef++) {
 		    ++count;
-		    hv_store_ent(hv, tmp, &PL_sv_yes, 0);
 		}
 	    }
 	    ST(0) = sv_2mortal(newSViv(count));
@@ -1344,11 +1350,16 @@ uniq (...)
 
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < items; i++) {
-	    sv_setsv_mg(tmp, args[i]);
-	    if (!hv_exists_ent(hv, tmp, 0)) {
-		/* ST(count) = sv_2mortal(newSVsv(ST(i))); */
+	    if(SvOK(args[i])) {
+		sv_setsv_mg(tmp, args[i]);
+		if (!hv_exists_ent(hv, tmp, 0)) {
+		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
+		    args[count++] = args[i];
+		    hv_store_ent(hv, tmp, &PL_sv_yes, 0);
+		}
+	    }
+	    else if(0 == seen_undef++) {
 		args[count++] = args[i];
-		hv_store_ent(hv, tmp, &PL_sv_yes, 0);
 	    }
 	}
 
@@ -1364,34 +1375,45 @@ singleton (...)
 	HV *hv = newHV();
         SV **args = &PL_stack_base[ax];
 	SV *tmp = sv_newmortal();
+	int seen_undef = 0;
 
 	sv_2mortal(newRV_noinc((SV*)hv));
 
 	for (i = 0; i < items; i++) {
-	    sv_setsv_mg(tmp, args[i]);
-	    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
-	    if (NULL == he) {
-		/* ST(count) = sv_2mortal(newSVsv(ST(i))); */
-		args[count++] = args[i];
-		hv_store_ent(hv, tmp, newSViv(1), 0);
+	    if(SvOK(args[i])) {
+		sv_setsv_mg(tmp, args[i]);
+		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
+		if (NULL == he) {
+		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
+		    args[count++] = args[i];
+		    hv_store_ent(hv, tmp, newSViv(1), 0);
+		}
+		else {
+		    SV *v = he->he_valu.hent_val;
+		    int how_many = SvIVX(v);
+		    sv_setiv(v, ++how_many);
+		}
 	    }
-	    else {
-		SV *v = he->he_valu.hent_val;
-		int how_many = SvIVX(v);
-		sv_setiv(v, ++how_many);
+	    else if(0 == seen_undef++) {
+		args[count++] = args[i];
 	    }
 	}
 
 	/* don't build return list in scalar context */
 	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < count; i++) {
-		sv_setsv_mg(tmp, args[i]);
-		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
-		if (he) {
-		    SV *v = he->he_valu.hent_val;
-		    int how_many = SvIVX(v);
-		    if( 1 == how_many )
-			++cnt;
+		if(SvOK(args[i])) {
+		    sv_setsv_mg(tmp, args[i]);
+		    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
+		    if (he) {
+			SV *v = he->he_valu.hent_val;
+			int how_many = SvIVX(v);
+			if( 1 == how_many )
+			    ++cnt;
+		    }
+		}
+		else if(1 == seen_undef) {
+		    ++cnt;
 		}
 	    }
 	    ST(0) = sv_2mortal(newSViv(cnt));
@@ -1400,13 +1422,18 @@ singleton (...)
 
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < count; i++) {
-	    sv_setsv_mg(tmp, args[i]);
-	    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
-	    if (he) {
-		SV *v = he->he_valu.hent_val;
-		int how_many = SvIVX(v);
-		if( 1 == how_many )
-		    args[cnt++] = args[i];
+	    if(SvOK(args[i])) {
+		sv_setsv_mg(tmp, args[i]);
+		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
+		if (he) {
+		    SV *v = he->he_valu.hent_val;
+		    int how_many = SvIVX(v);
+		    if( 1 == how_many )
+			args[cnt++] = args[i];
+		}
+	    }
+	    else if(1 == seen_undef) {
+		args[cnt++] = args[i];
 	    }
 	}
 

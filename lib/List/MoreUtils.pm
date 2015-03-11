@@ -389,10 +389,10 @@ C<zip> is an alias for C<mesh>.
 
 =head3 distinct LIST
 
-Returns a new list by stripping duplicate values in LIST. The order of
-elements in the returned list is the same as in LIST. In scalar context,
-returns the number of unique elements in LIST. C<undef> is handled as
-C<""> but it'll whine ...
+Returns a new list by stripping duplicate values in LIST by comparing
+the values as hash keys, except that undef is considered separate from ''.
+The order of elements in the returned list is the same as in LIST. In
+scalar context, returns the number of unique elements in LIST.
 
   my @x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 1 2 3 5 4
   my $x = uniq 1, 1, 2, 2, 3, 5, 3, 4; # returns 5
@@ -409,10 +409,11 @@ B<RT#49800> can be used to give feedback about this behavior.
 
 =head3 singleton
 
-Returns a new list by stripping values in LIST which occuring more than once.
-The order of elements in the returned list is the same as in LIST. In scalar
-context, returns the number of unique elements in LIST. C<undef> is handled as
-C<""> but it'll whine ...
+Returns a new list by stripping values in LIST which occuring more than
+once by comparing the values as hash keys, except that undef is considered
+separate from ''.  The order of elements in the returned list is the same
+as in LIST. In scalar context, returns the number of elements oocuring only
+once in LIST.
 
   my @x = singleton 1,1,2,2,3,4,5 # returns 3 4 5
 
