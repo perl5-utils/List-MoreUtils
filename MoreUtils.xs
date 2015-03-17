@@ -1323,12 +1323,12 @@ uniq (...)
     PROTOTYPE: @
     CODE:
     {
-	int i, count = 0;
+	I32 i;
+	IV count = 0, seen_undef = 0;
 	HV *hv = newHV();
         SV **args = &PL_stack_base[ax];
 	SV *tmp = sv_newmortal();
 	sv_2mortal(newRV_noinc((SV*)hv));
-	int seen_undef = 0;
 
 	/* don't build return list in scalar context */
 	if (GIMME_V == G_SCALAR) {
@@ -1344,7 +1344,7 @@ uniq (...)
 		    ++count;
 		}
 	    }
-	    ST(0) = sv_2mortal(newSViv(count));
+	    ST(0) = sv_2mortal(newSVuv(count));
 	    XSRETURN(1);
 	}
 
@@ -1371,11 +1371,11 @@ singleton (...)
     PROTOTYPE: @
     CODE:
     {
-	int i, cnt = 0, count = 0;
+	I32 i;
+	IV cnt = 0, count = 0, seen_undef = 0;
 	HV *hv = newHV();
         SV **args = &PL_stack_base[ax];
 	SV *tmp = sv_newmortal();
-	int seen_undef = 0;
 
 	sv_2mortal(newRV_noinc((SV*)hv));
 
@@ -1390,7 +1390,7 @@ singleton (...)
 		}
 		else {
 		    SV *v = he->he_valu.hent_val;
-		    int how_many = SvIVX(v);
+		    IV how_many = SvIVX(v);
 		    sv_setiv(v, ++how_many);
 		}
 	    }
@@ -1407,7 +1407,7 @@ singleton (...)
 		    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		    if (he) {
 			SV *v = he->he_valu.hent_val;
-			int how_many = SvIVX(v);
+			IV how_many = SvIVX(v);
 			if( 1 == how_many )
 			    ++cnt;
 		    }
@@ -1427,7 +1427,7 @@ singleton (...)
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (he) {
 		    SV *v = he->he_valu.hent_val;
-		    int how_many = SvIVX(v);
+		    IV how_many = SvIVX(v);
 		    if( 1 == how_many )
 			args[cnt++] = args[i];
 		}
