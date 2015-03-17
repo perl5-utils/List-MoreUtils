@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.407';
+our $VERSION = '0.408';
 
 =pod
 
