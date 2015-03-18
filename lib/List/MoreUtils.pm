@@ -6,7 +6,7 @@ use warnings;
 
 BEGIN
 {
-    our $VERSION = '0.408';
+    our $VERSION = '0.409';
 }
 
 use Exporter::Tiny qw();
