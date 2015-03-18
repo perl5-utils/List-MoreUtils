@@ -883,7 +883,7 @@ sub test_pairwise
         my ( $a, $b, @t );
         my @l1 = ( 1 .. 10 );
         @t = pairwise { $a + $b } @l1, @l1;
-        like( join( "", @warns[ 0, 1 ] ), qr/Use of uninitialized value \$(?:a|b) in addition/, "warning on broken caller" );
+        like( join( "", @warns[ 0, 1 ] ), qr/Use of uninitialized value.*? in addition/, "warning on broken caller" );
     }
 
     is_dying( sub { &pairwise( 42, \@a, \@b ); } );
@@ -1139,7 +1139,6 @@ sub test_singleton
         is( $fu, $fs );
         my $u = singleton @a;
         is( scalar @s, $u );
-
     }
 
   SCOPE:
