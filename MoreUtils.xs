@@ -124,6 +124,12 @@ typedef AV PAD;
 # define PadnameOUTER(pn)       !!SvFAKE(pn)
 # define PadnamePV(pn)          (SvPOKp(pn) ? SvPVX(pn) : NULL)
 #endif
+#ifndef PadnameSV
+# define PadnameSV(pn)          pn
+#endif
+#ifndef PadnameFLAGS
+# define PadnameFLAGS(pn)       (SvFLAGS(PadnameSV(pn)))
+#endif
 
 static int 
 in_pad (SV *code)
@@ -148,7 +154,7 @@ in_pad (SV *code)
 		    continue;
 #               endif
 
-		if (!SvOK(name_sv))
+		if (!(PadnameFLAGS(name_sv)) & SVf_OK)
 		    continue;
 
 		if (strEQ(name_str, "$a") || strEQ(name_str, "$b"))
