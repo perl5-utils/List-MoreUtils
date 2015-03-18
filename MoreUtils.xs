@@ -1351,9 +1351,15 @@ uniq (...)
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < items; i++) {
 	    if(SvOK(args[i])) {
-		sv_setsv_mg(tmp, args[i]);
+#if defined(SvSetMagicSV_nosteal)
+		if(SvTEMP(args[i]))
+		    SvSetMagicSV_nosteal(tmp, args[i]);
+		else
+#endif
+		    sv_setsv_mg(tmp, args[i]);
 		if (!hv_exists_ent(hv, tmp, 0)) {
-		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
+		    /*ST(count) = sv_2mortal(newSVsv(ST(i)));
+		    ++count;*/
 		    args[count++] = args[i];
 		    hv_store_ent(hv, tmp, &PL_sv_yes, 0);
 		}
@@ -1381,7 +1387,12 @@ singleton (...)
 
 	for (i = 0; i < items; i++) {
 	    if(SvOK(args[i])) {
-		sv_setsv_mg(tmp, args[i]);
+#if defined(SvSetMagicSV_nosteal)
+		if(SvTEMP(args[i]))
+		    SvSetMagicSV_nosteal(tmp, args[i]);
+		else
+#endif
+		    sv_setsv_mg(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (NULL == he) {
 		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
@@ -1423,7 +1434,12 @@ singleton (...)
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < count; i++) {
 	    if(SvOK(args[i])) {
-		sv_setsv_mg(tmp, args[i]);
+#if defined(SvSetMagicSV_nosteal)
+		if(SvTEMP(args[i]))
+		    SvSetMagicSV_nosteal(tmp, args[i]);
+		else
+#endif
+		    sv_setsv_mg(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (he) {
 		    SV *v = he->he_valu.hent_val;
