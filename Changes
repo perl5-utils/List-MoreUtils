@@ -1,5 +1,14 @@
 Revision history for Perl extension List-MoreUtils
 
+0.408	2015-03-18
+    - fix RT#102840: uniq broken for call-by-function-return (reported by
+      Jean-Damien Durand), with a new test case thanks to Thomas Sibley
+    - fix RT#102853: hent_val accesses (reported by Brad Forschinger with
+      a reasonable patch)
+    - fix RT#102833: Compilation error with perl 5.21.7+ (reported by
+      Slaven Rezic)
+    - fix regex for RT#44518 test
+
 0.407	2015-03-17
     - Added one(), onlyidx(), onlyval() (RT#73134, MHASCH) and onlyres()
     - improve XS maintainability
