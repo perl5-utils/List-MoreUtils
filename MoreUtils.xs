@@ -1400,7 +1400,7 @@ singleton (...)
 		    hv_store_ent(hv, tmp, newSViv(1), 0);
 		}
 		else {
-		    SV *v = he->he_valu.hent_val;
+		    SV *v = HeVAL(he);
 		    IV how_many = SvIVX(v);
 		    sv_setiv(v, ++how_many);
 		}
@@ -1417,7 +1417,7 @@ singleton (...)
 		    sv_setsv_mg(tmp, args[i]);
 		    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		    if (he) {
-			SV *v = he->he_valu.hent_val;
+			SV *v = HeVAL(he);
 			IV how_many = SvIVX(v);
 			if( 1 == how_many )
 			    ++cnt;
@@ -1442,7 +1442,7 @@ singleton (...)
 		    sv_setsv_mg(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (he) {
-		    SV *v = he->he_valu.hent_val;
+		    SV *v = HeVAL(he);
 		    IV how_many = SvIVX(v);
 		    if( 1 == how_many )
 			args[cnt++] = args[i];
