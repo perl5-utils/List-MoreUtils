@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 use Test::LMU;
+use Tie::Array ();
 use List::MoreUtils ':all';
 
 use Config;
@@ -1069,6 +1070,18 @@ sub test_uniq
 
   SCOPE:
     {
+        my @a;
+	tie @a, "Tie::StdArray";
+	@a = ( ( map { ( 1 .. 10 ) } 0 .. 1 ), ( map { ( "a" .. "z" ) } 0 .. 1 ) );
+        my @u  = uniq @a;
+        is_deeply( \@u, [ 1 .. 10, "a" .. "z" ] );
+	@a = ( ( map { ( 1 .. 10 ) } 0 .. 1 ), ( map { ( "a" .. "z" ) } 0 .. 1 ) );
+        my $u = uniq @a;
+        is( 10 + 26, $u );
+    }
+
+  SCOPE:
+    {
         my @foo = ( 'a', 'b', '', undef, 'b', 'c', '' );
         my @ufoo = ( 'a', 'b', '', undef, 'c' );
         is_deeply( [ uniq @foo ], \@ufoo, 'undef is supported correctly' );
@@ -1137,6 +1150,20 @@ sub test_singleton
         is( $fs, freeze( \@s ) );
         is( $fa, freeze( \@a ) );
         is( $fu, $fs );
+        my $u = singleton @a;
+        is( scalar @s, $u );
+    }
+
+  SCOPE:
+    {
+	my @a;
+	tie @a, "Tie::StdArray";
+	my @s  = ( 1001 .. 1200, "AA" .. "ZZ" );
+        my @d  = map { ( 1 .. 1000, "aa" .. "zz" ) } 0 .. 1;
+        @a  = ( @d, @s );
+        my @u  = singleton map { $_ } @a;
+        is_deeply( \@u, [@s] );
+        @a  = ( @d, @s );
         my $u = singleton @a;
         is( scalar @s, $u );
     }

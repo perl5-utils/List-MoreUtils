@@ -1339,6 +1339,8 @@ uniq (...)
 	/* don't build return list in scalar context */
 	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < items; i++) {
+		if( SvMAGICAL(args[i]) )
+		    mg_get(args[i]);
 		if(SvOK(args[i])) {
 		    sv_setsv_mg(tmp, args[i]);
 		    if (!hv_exists_ent(hv, tmp, 0)) {
@@ -1356,6 +1358,8 @@ uniq (...)
 
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < items; i++) {
+	    if( SvMAGICAL(args[i]) )
+		mg_get(args[i]);
 	    if(SvOK(args[i])) {
 #if defined(SvSetMagicSV_nosteal)
 		if(SvTEMP(args[i]))
@@ -1392,6 +1396,8 @@ singleton (...)
 	sv_2mortal(newRV_noinc((SV*)hv));
 
 	for (i = 0; i < items; i++) {
+	    if( SvMAGICAL(args[i]) )
+		mg_get(args[i]);
 	    if(SvOK(args[i])) {
 #if defined(SvSetMagicSV_nosteal)
 		if(SvTEMP(args[i]))
