@@ -224,13 +224,13 @@ in_pad (SV *code)
         POP_MULTICALL;				\
     }
 
-#define TRUE_JUNCTION(on_empty, on_true)	\
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) on_true; })) \
-    else on_empty;
+#define TRUE_JUNCTION	\
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) ON_TRUE) \
+    else ON_EMPTY;
 
-#define FALSE_JUNCTION(on_empty, on_false)	\
-    FOR_EACH(({if (!SvTRUE(*PL_stack_sp)) on_false; })) \
-    else on_empty;
+#define FALSE_JUNCTION	\
+    FOR_EACH(if (!SvTRUE(*PL_stack_sp)) ON_FALSE) \
+    else ON_EMPTY;
 
 /* #include "dhash.h" */
 
@@ -367,8 +367,12 @@ any (code,...)
 PROTOTYPE: &@
 CODE:
 {
-    TRUE_JUNCTION(XSRETURN_NO, ({ POP_MULTICALL; XSRETURN_YES; }));
+#define ON_TRUE { POP_MULTICALL; XSRETURN_YES; }
+#define ON_EMPTY XSRETURN_NO
+    TRUE_JUNCTION;
     XSRETURN_NO;
+#undef ON_EMPTY
+#undef ON_TRUE
 }
 
 void
@@ -377,8 +381,12 @@ all (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    FALSE_JUNCTION(XSRETURN_YES, ({ POP_MULTICALL; XSRETURN_NO; }));
+#define ON_FALSE { POP_MULTICALL; XSRETURN_NO; }
+#define ON_EMPTY XSRETURN_YES
+    FALSE_JUNCTION;
     XSRETURN_YES;
+#undef ON_EMPTY
+#undef ON_FALSE
 }
 
 
@@ -388,8 +396,12 @@ none (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    TRUE_JUNCTION(XSRETURN_YES, ({ POP_MULTICALL; XSRETURN_NO; }));
+#define ON_TRUE { POP_MULTICALL; XSRETURN_NO; }
+#define ON_EMPTY XSRETURN_YES
+    TRUE_JUNCTION;
     XSRETURN_YES;
+#undef ON_EMPTY
+#undef ON_TRUE
 }
 
 void
@@ -398,8 +410,12 @@ notall (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    FALSE_JUNCTION(XSRETURN_NO, ({ POP_MULTICALL; XSRETURN_YES; }));
+#define ON_FALSE { POP_MULTICALL; XSRETURN_YES; }
+#define ON_EMPTY XSRETURN_NO
+    FALSE_JUNCTION;
     XSRETURN_NO;
+#undef ON_EMPTY
+#undef ON_FALSE
 }
 
 void
@@ -409,10 +425,14 @@ PROTOTYPE: &@
 CODE:
 {
     int found = 0;
-    TRUE_JUNCTION(XSRETURN_NO, ({ if (found++) { POP_MULTICALL; XSRETURN_NO; }; }));
+#define ON_TRUE { if (found++) { POP_MULTICALL; XSRETURN_NO; }; }
+#define ON_EMPTY XSRETURN_YES
+    TRUE_JUNCTION;
     if (found)
         XSRETURN_YES;
     XSRETURN_NO;
+#undef ON_EMPTY
+#undef ON_TRUE
 }
 
 void
@@ -421,8 +441,12 @@ any_u (code,...)
 PROTOTYPE: &@
 CODE:
 {
-    TRUE_JUNCTION(XSRETURN_UNDEF, ({ POP_MULTICALL; XSRETURN_YES; }));
+#define ON_TRUE { POP_MULTICALL; XSRETURN_YES; }
+#define ON_EMPTY XSRETURN_UNDEF
+    TRUE_JUNCTION;
     XSRETURN_NO;
+#undef ON_EMPTY
+#undef ON_TRUE
 }
 
 void
@@ -431,8 +455,12 @@ all_u (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    FALSE_JUNCTION(XSRETURN_UNDEF, ({ POP_MULTICALL; XSRETURN_NO; }));
+#define ON_FALSE { POP_MULTICALL; XSRETURN_NO; }
+#define ON_EMPTY XSRETURN_UNDEF
+    FALSE_JUNCTION;
     XSRETURN_YES;
+#undef ON_EMPTY
+#undef ON_FALSE
 }
 
 
@@ -442,8 +470,12 @@ none_u (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    TRUE_JUNCTION(XSRETURN_UNDEF, ({ POP_MULTICALL; XSRETURN_NO; }));
+#define ON_TRUE { POP_MULTICALL; XSRETURN_NO; }
+#define ON_EMPTY XSRETURN_UNDEF
+    TRUE_JUNCTION;
     XSRETURN_YES;
+#undef ON_EMPTY
+#undef ON_TRUE
 }
 
 void
@@ -452,8 +484,12 @@ notall_u (code, ...)
 PROTOTYPE: &@
 CODE:
 {
-    FALSE_JUNCTION(XSRETURN_UNDEF, ({ POP_MULTICALL; XSRETURN_YES; }));
+#define ON_FALSE { POP_MULTICALL; XSRETURN_YES; }
+#define ON_EMPTY XSRETURN_UNDEF
+    FALSE_JUNCTION;
     XSRETURN_NO;
+#undef ON_EMPTY
+#undef ON_FALSE
 }
 
 void
@@ -463,10 +499,14 @@ PROTOTYPE: &@
 CODE:
 {
     int found = 0;
-    TRUE_JUNCTION(XSRETURN_UNDEF, ({ if (found++) { POP_MULTICALL; XSRETURN_NO; }; }));
+#define ON_TRUE { if (found++) { POP_MULTICALL; XSRETURN_NO; }; }
+#define ON_EMPTY XSRETURN_UNDEF
+    TRUE_JUNCTION;
     if (found)
         XSRETURN_YES;
     XSRETURN_NO;
+#undef ON_EMPTY
+#undef ON_TRUE
 }
 
 int
@@ -476,7 +516,7 @@ PROTOTYPE: &@
 CODE:
 {
     I32 count = 0;
-    FOR_EACH(({ if (SvTRUE(*PL_stack_sp)) count++; }));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) count++);
     RETVAL = count;
 }
 OUTPUT:
@@ -489,7 +529,7 @@ PROTOTYPE: &@
 CODE:
 {
     I32 count = 0;
-    FOR_EACH(({ if (!SvTRUE(*PL_stack_sp)) count++; }));
+    FOR_EACH(if (!SvTRUE(*PL_stack_sp)) count++);
     RETVAL = count;
 }
 OUTPUT:
@@ -502,7 +542,7 @@ PROTOTYPE: &@
 CODE:
 {
     RETVAL = -1;
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { RETVAL = i-1; break; }}));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) { RETVAL = i-1; break; });
 }
 OUTPUT:
     RETVAL
@@ -514,7 +554,7 @@ PROTOTYPE: &@
 CODE:
 {
     RETVAL = &PL_sv_undef;
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { SvREFCNT_inc(RETVAL = args[i]); break; }}));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) { SvREFCNT_inc(RETVAL = args[i]); break; });
 }
 OUTPUT:
     RETVAL
@@ -526,7 +566,7 @@ PROTOTYPE: &@
 CODE:
 {
     RETVAL = &PL_sv_undef;
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { SvREFCNT_inc(RETVAL = *PL_stack_sp); break; }}));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) { SvREFCNT_inc(RETVAL = *PL_stack_sp); break; });
 }
 OUTPUT:
     RETVAL
@@ -539,7 +579,7 @@ CODE:
 {
     int found = 0;
     RETVAL = -1;
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { if (found++) {RETVAL = -1; break;} RETVAL = i-1; }}));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) { if (found++) {RETVAL = -1; break;} RETVAL = i-1; });
 }
 OUTPUT:
     RETVAL
@@ -552,7 +592,7 @@ CODE:
 {
     int found = 0;
     RETVAL = &PL_sv_undef;
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { if (found++) {SvREFCNT_dec(RETVAL); RETVAL = &PL_sv_undef; break;} SvREFCNT_inc(RETVAL = args[i]); }}));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) { if (found++) {SvREFCNT_dec(RETVAL); RETVAL = &PL_sv_undef; break;} SvREFCNT_inc(RETVAL = args[i]); });
 }
 OUTPUT:
     RETVAL
@@ -565,7 +605,7 @@ CODE:
 {
     int found = 0;
     RETVAL = &PL_sv_undef;
-    FOR_EACH(({if (SvTRUE(*PL_stack_sp)) { if (found++) {SvREFCNT_dec(RETVAL); RETVAL = &PL_sv_undef; break;}SvREFCNT_inc(RETVAL = *PL_stack_sp); }}));
+    FOR_EACH(if (SvTRUE(*PL_stack_sp)) { if (found++) {SvREFCNT_dec(RETVAL); RETVAL = &PL_sv_undef; break;}SvREFCNT_inc(RETVAL = *PL_stack_sp); });
 }
 OUTPUT:
     RETVAL
