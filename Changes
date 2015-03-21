@@ -4,6 +4,7 @@ Revision history for Perl extension List-MoreUtils
     - fix RT#102885: uniq bug broke tied array (reported by louying@pwrd.com)
     - fix issue/8: Macros introduced in dfd851147f cause problems with MSVC
       (reported by A. Sinan Unur)
+    - Update ppport.h from 3.25 to 3.31
 
 0.408	2015-03-18
     - fix RT#102840: uniq broken for call-by-function-return (reported by
