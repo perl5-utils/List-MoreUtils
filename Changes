@@ -1,6 +1,6 @@
 Revision history for Perl extension List-MoreUtils
 
-0.409	2015-03-21
+0.409_001	2015-03-21
     - fix RT#102885: uniq bug broke tied array (reported by louying@pwrd.com)
     - fix issue/8: Macros introduced in dfd851147f cause problems with MSVC
       (reported by A. Sinan Unur)
