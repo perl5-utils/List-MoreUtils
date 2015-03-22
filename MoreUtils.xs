@@ -299,7 +299,7 @@ is_like(SV *sv, const char *like)
 }
 
 static int
-is_array( SV *sv )
+is_array(SV *sv)
 {
     return SvROK(sv) && ( SVt_PVAV == SvTYPE(SvRV(sv) ) );
 }
@@ -307,16 +307,14 @@ is_array( SV *sv )
 static int
 codelike(SV *code)
 {
-    if( SvMAGICAL(code) )
-        mg_get(code);
+    SvGETMAGIC(code);
     return SvROK(code) && ( ( SVt_PVCV == SvTYPE(SvRV(code)) ) || ( is_like(code, "&{}" ) ) );
 }
 
 static int
 arraylike(SV *array)
 {
-    if( SvMAGICAL(array) )
-        mg_get(array);
+    SvGETMAGIC(array);
     return is_array(array) || is_like( array, "@{}" );
 }
 
@@ -1379,10 +1377,9 @@ uniq (...)
 	/* don't build return list in scalar context */
 	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < items; i++) {
-		if( SvMAGICAL(args[i]) )
-		    mg_get(args[i]);
+		SvGETMAGIC(args[i]);
 		if(SvOK(args[i])) {
-		    sv_setsv_mg(tmp, args[i]);
+		    sv_setsv_nomg(tmp, args[i]);
 		    if (!hv_exists_ent(hv, tmp, 0)) {
 			++count;
 			hv_store_ent(hv, tmp, &PL_sv_yes, 0);
@@ -1398,12 +1395,11 @@ uniq (...)
 
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < items; i++) {
-	    if( SvMAGICAL(args[i]) )
-		mg_get(args[i]);
+	    SvGETMAGIC(args[i]);
 	    if(SvOK(args[i])) {
-#if defined(SvSetMagicSV_nosteal)
+#if defined(SV_NOSTEAL)
 		if(SvTEMP(args[i]))
-		    SvSetMagicSV_nosteal(tmp, args[i]);
+		    sv_setsv_flags(tmp, args[i], SV_NOSTEAL | SV_DO_COW_SVSETSV);
 		else
 #endif
 		    sv_setsv_mg(tmp, args[i]);
@@ -1436,15 +1432,14 @@ singleton (...)
 	sv_2mortal(newRV_noinc((SV*)hv));
 
 	for (i = 0; i < items; i++) {
-	    if( SvMAGICAL(args[i]) )
-		mg_get(args[i]);
+	    SvGETMAGIC(args[i]);
 	    if(SvOK(args[i])) {
-#if defined(SvSetMagicSV_nosteal)
+#if defined(SV_NOSTEAL)
 		if(SvTEMP(args[i]))
-		    SvSetMagicSV_nosteal(tmp, args[i]);
+		    sv_setsv_flags(tmp, args[i], SV_NOSTEAL | SV_DO_COW_SVSETSV);
 		else
 #endif
-		    sv_setsv_mg(tmp, args[i]);
+		    sv_setsv_nomg(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (NULL == he) {
 		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
@@ -1466,7 +1461,7 @@ singleton (...)
 	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < count; i++) {
 		if(SvOK(args[i])) {
-		    sv_setsv_mg(tmp, args[i]);
+		    sv_setsv_nomg(tmp, args[i]);
 		    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		    if (he) {
 			SV *v = HeVAL(he);
@@ -1486,12 +1481,12 @@ singleton (...)
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < count; i++) {
 	    if(SvOK(args[i])) {
-#if defined(SvSetMagicSV_nosteal)
+#if defined(SV_NOSTEAL)
 		if(SvTEMP(args[i]))
-		    SvSetMagicSV_nosteal(tmp, args[i]);
+		    sv_setsv_flags(tmp, args[i], SV_NOSTEAL | SV_DO_COW_SVSETSV);
 		else
 #endif
-		    sv_setsv_mg(tmp, args[i]);
+		    sv_setsv_nomg(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (he) {
 		    SV *v = HeVAL(he);
