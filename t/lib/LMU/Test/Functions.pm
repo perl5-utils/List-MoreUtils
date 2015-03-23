@@ -847,11 +847,15 @@ sub test_pairwise
     @c = pairwise { ( $a, $b ) } @a, @b;
     ok( is_deeply( \@c, [qw/a 1 b 2 c 3/] ) );    # 88
 
-    # Test that a die inside the code-reference will not be trapped
-    eval {
-        pairwise { die "I died\n" } @a, @b;
-    };
-    is( $@, "I died\n" );
+  SKIP:
+    {
+        $ENV{PERL5OPT} and skip 'A defined PERL5OPT may inject extra deps crashing this test', 1;
+        # Test that a die inside the code-reference will not be trapped
+        eval {
+            pairwise { die "I died\n" } @a, @b;
+        };
+        is( $@, "I died\n" );
+    }
 
     leak_free_ok(
         pairwise => sub {
@@ -867,8 +871,7 @@ sub test_pairwise
     {
         List::MoreUtils::_XScompiled or skip "PurePerl will warn here ...", 1;
         my ( $a, $b, @t );
-        eval
-        {
+        eval {
             my @l1 = ( 1 .. 10 );
             @t = pairwise { $a + $b } @l1, @l1;
         };
@@ -1071,11 +1074,11 @@ sub test_uniq
   SCOPE:
     {
         my @a;
-	tie @a, "Tie::StdArray";
-	@a = ( ( map { ( 1 .. 10 ) } 0 .. 1 ), ( map { ( "a" .. "z" ) } 0 .. 1 ) );
-        my @u  = uniq @a;
+        tie @a, "Tie::StdArray";
+        @a = ( ( map { ( 1 .. 10 ) } 0 .. 1 ), ( map { ( "a" .. "z" ) } 0 .. 1 ) );
+        my @u = uniq @a;
         is_deeply( \@u, [ 1 .. 10, "a" .. "z" ] );
-	@a = ( ( map { ( 1 .. 10 ) } 0 .. 1 ), ( map { ( "a" .. "z" ) } 0 .. 1 ) );
+        @a = ( ( map { ( 1 .. 10 ) } 0 .. 1 ), ( map { ( "a" .. "z" ) } 0 .. 1 ) );
         my $u = uniq @a;
         is( 10 + 26, $u );
     }
@@ -1156,14 +1159,14 @@ sub test_singleton
 
   SCOPE:
     {
-	my @a;
-	tie @a, "Tie::StdArray";
-	my @s  = ( 1001 .. 1200, "AA" .. "ZZ" );
-        my @d  = map { ( 1 .. 1000, "aa" .. "zz" ) } 0 .. 1;
-        @a  = ( @d, @s );
-        my @u  = singleton map { $_ } @a;
+        my @a;
+        tie @a, "Tie::StdArray";
+        my @s = ( 1001 .. 1200, "AA" .. "ZZ" );
+        my @d = map { ( 1 .. 1000, "aa" .. "zz" ) } 0 .. 1;
+        @a = ( @d, @s );
+        my @u = singleton map { $_ } @a;
         is_deeply( \@u, [@s] );
-        @a  = ( @d, @s );
+        @a = ( @d, @s );
         my $u = singleton @a;
         is( scalar @s, $u );
     }
