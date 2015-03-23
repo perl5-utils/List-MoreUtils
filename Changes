@@ -1,5 +1,13 @@
 Revision history for Perl extension List-MoreUtils
 
+0.409_002	2015-03-23
+    - fix multiple mg_get can break weird tie's (thanks to leont)
+    - fix test run using PERL5OPT=d:Confess (thanks kentl & ribasushi)
+    - use base instead of parent, cause parent isn't bundled before 5.10.1
+      (smoke report from SREZIC)
+    - update bundled modules (for bootstrapping) and ppport.h (from 3.25
+      to 3.31)
+
 0.409_001	2015-03-21
     - fix RT#102885: uniq bug broke tied array (reported by louying@pwrd.com)
     - fix issue/8: Macros introduced in dfd851147f cause problems with MSVC
