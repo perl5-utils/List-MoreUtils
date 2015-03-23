@@ -409,10 +409,10 @@ B<RT#49800> can be used to give feedback about this behavior.
 
 =head3 singleton
 
-Returns a new list by stripping values in LIST occuring more than once by
+Returns a new list by stripping values in LIST occurring more than once by
 comparing the values as hash keys, except that undef is considered separate
 from ''.  The order of elements in the returned list is the same as in LIST.
-In scalar context, returns the number of elements oocuring only once in LIST.
+In scalar context, returns the number of elements occurring only once in LIST.
 
   my @x = singleton 1,1,2,2,3,4,5 # returns 3 4 5
 
