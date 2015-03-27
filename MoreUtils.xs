@@ -1397,12 +1397,7 @@ uniq (...)
 	for (i = 0; i < items; i++) {
 	    SvGETMAGIC(args[i]);
 	    if(SvOK(args[i])) {
-#if defined(SV_NOSTEAL)
-		if(SvTEMP(args[i]))
-		    sv_setsv_flags(tmp, args[i], SV_NOSTEAL | SV_DO_COW_SVSETSV);
-		else
-#endif
-		    sv_setsv_mg(tmp, args[i]);
+		SvSetSV_nosteal(tmp, args[i]);
 		if (!hv_exists_ent(hv, tmp, 0)) {
 		    /*ST(count) = sv_2mortal(newSVsv(ST(i)));
 		    ++count;*/
@@ -1434,12 +1429,7 @@ singleton (...)
 	for (i = 0; i < items; i++) {
 	    SvGETMAGIC(args[i]);
 	    if(SvOK(args[i])) {
-#if defined(SV_NOSTEAL)
-		if(SvTEMP(args[i]))
-		    sv_setsv_flags(tmp, args[i], SV_NOSTEAL | SV_DO_COW_SVSETSV);
-		else
-#endif
-		    sv_setsv_nomg(tmp, args[i]);
+		SvSetSV_nosteal(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (NULL == he) {
 		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
@@ -1481,12 +1471,7 @@ singleton (...)
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < count; i++) {
 	    if(SvOK(args[i])) {
-#if defined(SV_NOSTEAL)
-		if(SvTEMP(args[i]))
-		    sv_setsv_flags(tmp, args[i], SV_NOSTEAL | SV_DO_COW_SVSETSV);
-		else
-#endif
-		    sv_setsv_nomg(tmp, args[i]);
+		SvSetSV_nosteal(tmp, args[i]);
 		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (he) {
 		    SV *v = HeVAL(he);
