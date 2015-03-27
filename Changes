@@ -1,5 +1,12 @@
 Revision history for Perl extension List-MoreUtils
 
+0.409_003	2015-03-27
+    - update bundled bootstrap modules
+      * Data::Tumbler to 0.010
+      * Test::WriteVariants to 0.012
+      * Config::AutoConf to 0.311
+    - fix spelling (and add stop-words for names etc. in author tests)
+
 0.409_002	2015-03-23
     - fix multiple mg_get can break weird tie's (thanks to leont)
     - fix test run using PERL5OPT=d:Confess (thanks kentl & ribasushi)
