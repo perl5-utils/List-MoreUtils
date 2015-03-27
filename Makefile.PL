@@ -95,6 +95,8 @@ use Tumble                ();
 
 Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
+my $loadable_xs = Config::AutoConf::LMU->check_produce_loadable_xs_build();
+
 -d "gt" and rmtree("gt");
 Tumble->tumble("gt");
 
@@ -184,7 +186,7 @@ WriteMakefile1(
     BUILD_REQUIRES     => \%BUILD_DEPS,
     TEST_REQUIRES      => \%TEST_DEPS,
     (
-        Config::AutoConf::LMU->check_produce_loadable_xs_build
+        $loadable_xs
         ? (
             XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
             MAGICXS => 1,
