@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.410	2015-03-30
+    - release 0.409_003 after no further issues came up
+
 0.409_003	2015-03-27
     - update bundled bootstrap modules
       * Data::Tumbler to 0.010
