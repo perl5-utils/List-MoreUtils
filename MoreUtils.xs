@@ -1429,8 +1429,9 @@ singleton (...)
 	for (i = 0; i < items; i++) {
 	    SvGETMAGIC(args[i]);
 	    if(SvOK(args[i])) {
+		HE *he;
 		SvSetSV_nosteal(tmp, args[i]);
-		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
+		he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (NULL == he) {
 		    /* ST(count) = sv_2mortal(newSVsv(ST(i))); */
 		    args[count++] = args[i];
@@ -1451,8 +1452,9 @@ singleton (...)
 	if (GIMME_V == G_SCALAR) {
 	    for (i = 0; i < count; i++) {
 		if(SvOK(args[i])) {
-		    sv_setsv_nomg(tmp, args[i]);
-		    HE *he = hv_fetch_ent(hv, tmp, 0, 0);
+		    HE *he;
+			sv_setsv_nomg(tmp, args[i]);
+		    he = hv_fetch_ent(hv, tmp, 0, 0);
 		    if (he) {
 			SV *v = HeVAL(he);
 			IV how_many = SvIVX(v);
@@ -1471,8 +1473,9 @@ singleton (...)
 	/* list context: populate SP with mortal copies */
 	for (i = 0; i < count; i++) {
 	    if(SvOK(args[i])) {
+		HE *he;
 		SvSetSV_nosteal(tmp, args[i]);
-		HE *he = hv_fetch_ent(hv, tmp, 0, 0);
+		he = hv_fetch_ent(hv, tmp, 0, 0);
 		if (he) {
 		    SV *v = HeVAL(he);
 		    IV how_many = SvIVX(v);
