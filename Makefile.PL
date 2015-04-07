@@ -196,9 +196,9 @@ WriteMakefile1(
           )
         : ()
     ),
-    clean  => { FILES               => "inc/latest* inc/inc_* gt" },
-    depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => 'xt/*.t gt/*/*.t gt/*/*/*.t' },
+    realclean => { FILES               => "inc/latest* inc/inc_* gt" },
+    depend    => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
+    test      => { TESTS               => 'xt/*.t gt/*/*.t gt/*/*/*.t' },
     # Otherwise 'cxinc' isn't defined
     ( $] < 5.012 ? ( DEFINE => '-DPERL_EXT' ) : (), ),
 );
