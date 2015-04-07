@@ -1,12 +1,3 @@
----
-os:
-  - linux
-  - osx
-install:
-  - cpanm --notest Test::WriteVariants Config::AutoConf Carp App::mymeta_requires inc::latest JSON::PP
-  - perl Makefile.PL
-  - make manifest
-  - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm
 language: perl
 perl:
   - "5.21"

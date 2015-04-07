@@ -5,128 +5,24 @@ use warnings;
 
 require 5.006;
 
-use File::Basename qw(dirname);
-use File::Copy qw(copy move);
-use File::Spec ();
-
-BEGIN
-{
-    use inc::latest 'JSON::PP';
-
-    eval "use Storable qw();";
-    $@ and eval <<'EODC';
-$INC{'Storable.pm'} = 'faked';
-package Storable;
-use base "Exporter";
-use JSON::PP qw();
-our @EXPORT = qw(dclone);
-sub dclone {
-    my $json = JSON::PP->new();
-    $json->decode($json->encode($_[0]));
-}
-1;
-EODC
-
-    eval "use Scalar::Util qw();";
-    $@ and eval <<'EOSU';
-$INC{'Scalar/Util.pm'} = 'faked';
-package Scalar::Util;
-use base "Exporter";
-# from PP part of Params::Util
-our @EXPORT = qw(reftype blessed looks_like_number);
-sub reftype { ref $_[0] }
-my %types = (
-    CODE   => 1,
-    GLOB   => 1,
-    REF    => 1,
-    SCALAR => 1,
-    HASH   => 1,
-    ARRAY  => 1
-);
-sub blessed {
-    my $t = ref $_[0];
-    defined $t or return;
-    defined $types{$t} or return;
-    $t;
-}
-# from PP part of Params::Util
-sub looks_like_number {
-    local $_ = shift;
-
-    # checks from perlfaq4
-    return 0 if !defined($_);
-    if (ref($_)) {
-        return overload::Overloaded($_) ? defined(0 + $_) : 0;
-    }
-    return 1 if (/^[+-]?[0-9]+$/); # is a +/- integer
-    return 1 if (/^([+-]?)(?=[0-9]|\.[0-9])[0-9]*(\.[0-9]*)?([Ee]([+-]?[0-9]+))?$/); # a C float
-    return 1 if ($] >= 5.008 and /^(Inf(inity)?|NaN)$/i) or ($] >= 5.006001 and /^Inf$/i);
-
-    0;
-}
-EOSU
-}
-
-use inc::latest 'Data::Tumbler';
-use inc::latest 'Module::Pluggable';
-use inc::latest 'Test::WriteVariants';
-use inc::latest 'Capture::Tiny';
-use inc::latest 'Config::AutoConf';
-
-if ( inc::latest->can("write") )
-{
-    inc::latest->write("inc");
-    for my $mod ( inc::latest->loaded_modules )
-    {
-        inc::latest->bundle_module( $mod, "inc" );
-    }
-    my $src = $INC{"JSON/PP.pm"};
-    $src = dirname($src);
-    $src = File::Spec->catfile( $src, qw(backportPP Compat5006.pm) );
-    -f $src and copy( $src, "inc/inc_JSON-PP/JSON/PP/" );
-}
-
-use lib 'inc';
 use ExtUtils::MakeMaker;
-use File::Path;
 
-use Config::AutoConf::LMU ();
-use Tumble                ();
+my $have_compiler
+  = ! parse_args()->{PUREPERL_ONLY}
+  && can_xs();
 
-Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
-
-my $loadable_xs = Config::AutoConf::LMU->check_produce_loadable_xs_build();
-
--d "gt" and rmtree("gt");
-Tumble->tumble("gt");
-
-# Should we build the XS version?
 my %RUN_DEPS = (
     'XSLoader'       => 0,
     'Exporter::Tiny' => '0.038',
 );
-my %BUNDLE_CONFIGURE_DEPS = (
-    'inc::latest'         => '0.500',
-    'JSON::PP'            => 0,
-    'Test::WriteVariants' => '0.010',
-    'Config::AutoConf'    => '0.308',
-);
 my %CONFIGURE_DEPS = (
-    'Carp'                => 0,
     'ExtUtils::MakeMaker' => 0,
-    'File::Basename'      => 0,
-    'File::Copy'          => 0,
-    'File::Path'          => 0,
-    'File::Spec'          => 0,
-    'IPC::Cmd'            => 0,
-    'base'                => 0,
 );
 my %BUILD_DEPS = ();
 
 my %TEST_DEPS = (
     'Test::More' => 0.96,
 );
-my @XS_FILES = qw(MoreUtils.xs);
 
 WriteMakefile1(
     META_MERGE => {
@@ -155,12 +51,10 @@ WriteMakefile1(
                     'Test::Pod::Coverage'                 => 0,
                     'Test::Pod::Spelling::CommonMistakes' => 0,
                     'Test::Spelling'                      => 0,
-                    %BUNDLE_CONFIGURE_DEPS,
                 },
             },
             configure => {
                 requires   => {%CONFIGURE_DEPS},
-                recommends => {%BUNDLE_CONFIGURE_DEPS},
             },
             build => { requires => {%BUILD_DEPS} },
             test  => {
@@ -185,23 +79,138 @@ WriteMakefile1(
     PREREQ_PM          => \%RUN_DEPS,
     BUILD_REQUIRES     => \%BUILD_DEPS,
     TEST_REQUIRES      => \%TEST_DEPS,
-    (
-        $loadable_xs
-        ? (
-            XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
-            MAGICXS => 1,
-            #OBJECT => [ map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ],
-            #OBJECT => join(" ", map { $_ =~ s/\.xs/\.o/; $_ } @XS_FILES ),
-            INC => "-I."
-          )
-        : ()
-    ),
-    clean  => { FILES               => "inc/latest* inc/inc_* gt" },
-    depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => 'xt/*.t gt/*/*.t gt/*/*/*.t' },
-    # Otherwise 'cxinc' isn't defined
+    test   => { TESTS => join(' ',
+        't/pureperl/*.t',
+        ( $have_compiler ? 't/xs/*.t' : () ),
+    ) },
     ( $] < 5.012 ? ( DEFINE => '-DPERL_EXT' ) : (), ),
 );
+
+sub parse_args {
+  # copied from EUMM
+  require ExtUtils::MakeMaker;
+  require Text::ParseWords;
+  ExtUtils::MakeMaker::parse_args(
+    my $tmp = {},
+    Text::ParseWords::shellwords($ENV{PERL_MM_OPT} || ''),
+    @ARGV,
+  );
+  return $tmp->{ARGS} || {};
+}
+
+BEGIN { if ( $^O eq 'cygwin' ) {
+  require ExtUtils::MM_Cygwin;
+  require ExtUtils::MM_Win32;
+  if ( ! defined(&ExtUtils::MM_Cygwin::maybe_command) ) {
+    *ExtUtils::MM_Cygwin::maybe_command = sub {
+      my ($self, $file) = @_;
+      if ($file =~ m{^/cygdrive/}i and ExtUtils::MM_Win32->can('maybe_command')) {
+        ExtUtils::MM_Win32->maybe_command($file);
+      } else {
+        ExtUtils::MM_Unix->maybe_command($file);
+      }
+    }
+  }
+}}
+
+# can we locate a (the) C compiler
+sub can_cc {
+  my @chunks = split(/ /, $Config::Config{cc}) or return;
+
+  # $Config{cc} may contain args; try to find out the program part
+  while (@chunks) {
+    return can_run("@chunks") || (pop(@chunks), next);
+  }
+
+  return;
+}
+
+# check if we can run some command
+sub can_run {
+  my ($cmd) = @_;
+
+  return $cmd if -x $cmd;
+  if (my $found_cmd = MM->maybe_command($cmd)) {
+    return $found_cmd;
+  }
+
+  require File::Spec;
+  for my $dir ((split /$Config::Config{path_sep}/, $ENV{PATH}), '.') {
+    next if $dir eq '';
+    my $abs = File::Spec->catfile($dir, $cmd);
+    return $abs if (-x $abs or $abs = MM->maybe_command($abs));
+  }
+
+  return;
+}
+
+# Can our C compiler environment build XS files
+sub can_xs {
+  # Do we have the configure_requires checker?
+  local $@;
+  eval "require ExtUtils::CBuilder; ExtUtils::CBuilder->VERSION(0.27)";
+  if ( $@ ) {
+    # They don't obey configure_requires, so it is
+    # someone old and delicate. Try to avoid hurting
+    # them by falling back to an older simpler test.
+    return can_cc();
+  }
+
+  # Do we have a working C compiler
+  my $builder = ExtUtils::CBuilder->new(
+    quiet => 1,
+  );
+  unless ( $builder->have_compiler ) {
+    # No working C compiler
+    return 0;
+  }
+
+  # Write a C file representative of what XS becomes
+  require File::Temp;
+  my ( $FH, $tmpfile ) = File::Temp::tempfile(
+    "compilexs-XXXXX",
+    SUFFIX => '.c',
+  );
+  binmode $FH;
+  print $FH <<'END_C';
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+
+int main(int argc, char **argv) {
+    return 0;
+}
+
+int boot_sanexs() {
+    return 1;
+}
+
+END_C
+  close $FH;
+
+  # Can the C compiler access the same headers XS does
+  my @libs   = ();
+  my $object = undef;
+  eval {
+    local $^W = 0;
+    $object = $builder->compile(
+      source => $tmpfile,
+    );
+    @libs = $builder->link(
+      objects     => $object,
+      module_name => 'sanexs',
+    );
+  };
+  my $result = $@ ? 0 : 1;
+
+  # Clean up all the build files
+  foreach ( $tmpfile, $object, @libs ) {
+    next unless defined $_;
+    1 while unlink;
+  }
+
+  return $result;
+}
 
 sub WriteMakefile1
 {    # originally written by Alexandr Ciornii, version 0.21. Added by eumm-upgrade.
