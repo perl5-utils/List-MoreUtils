@@ -735,6 +735,14 @@ configuration and testing modules will be bundled when reasonable;
 run-time dependencies will be added only if they deliver substantial
 benefit.
 
+=head1 CONTRIBUTING
+
+While contributions are appreciated, a contribution should not cause more
+effort for the maintainer than the contribution itself saves (see
+L<Open Source Contribution Etiquette|http://tirania.org/blog/archive/2010/Dec-31.html>).
+
+To get more familiar where help could be needed - see L<List::MoreUtils::Contributing>.
+
 =head1 BUGS
 
 There is a problem with a bug in 5.6.x perls. It is a syntax error to write
