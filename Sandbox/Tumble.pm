@@ -1,4 +1,4 @@
-package Tumble;
+package Sandbox::Tumble;
 
 use strict;
 use warnings;
@@ -11,17 +11,17 @@ use File::Basename;
 use Data::Dumper 0.002;
 use Test::WriteVariants 0.005;
 
-use Config::AutoConf::LMU ();
 use FindBin qw();
 
 $| = 1;
 
 sub tumble
 {
-    my ( $class ) = @_;
+    my ( $class, $output_dir ) = @_;
 
     my $plug_dir = Cwd::abs_path( File::Spec->catdir( $FindBin::RealBin, "t", "lib" ) );
     my $test_writer = Test::WriteVariants->new();
+    $test_writer->allow_dir_overwrite( 1 );
 
     $test_writer->write_test_variants(
 	input_tests => $test_writer->find_input_test_modules(
@@ -32,11 +32,11 @@ sub tumble
 	variant_providers => [
 	    "LMU::TestVariants",
 	],
-	output_dir => "gt",
+	output_dir => $output_dir,
     );
 }
 
-package Tumble::WriteTestVariants;
+package Sandbox::Tumble::WriteTestVariants;
 
 use base "Test::WriteVariants";
 
@@ -134,7 +134,7 @@ sub process_template
     return $tpl;
 }
 
-package LMU::TestVariants::CanXS;
+package LMU::TestVariants::Dist;
 
 use strict;
 use warnings;
@@ -143,15 +143,9 @@ sub provider {
     my ($self, $path, $context, $tests, $variants) = @_;
     my $mod_ctx = $context->new_module_use( lib => [ File::Spec->catdir(qw(t lib)) ] );
 
-    if(Config::AutoConf::LMU->check_produce_xs_build)
-    {
-	$variants->{pureperl} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 1,), $mod_ctx );
-	$variants->{xs} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 0,), $mod_ctx );
-    }
-    else
-    {
-	$variants->{Default} = $context->new( $mod_ctx );
-    }
+    # statically generate both at dist authoring stage and decide about tests to run at configure stage
+    $variants->{pureperl} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 1,), $mod_ctx );
+    $variants->{xs} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 0,), $mod_ctx );
 }
 
 1;

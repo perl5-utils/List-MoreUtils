@@ -1,4 +1,4 @@
-package Config::AutoConf::LMU;
+package inc::Config::AutoConf::LMU;
 
 use strict;
 use warnings;
