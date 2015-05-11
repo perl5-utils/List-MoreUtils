@@ -173,9 +173,9 @@ WriteMakefile1(
           )
         : ()
     ),
-    ( -d ".git" ? ( realclean => { FILES => "inc/latest* inc/inc_* gt" } ) : () ),
+    ( -d ".git" ? ( realclean => { FILES => "inc/latest* inc/inc_* t/pureperl t/xs" } ) : () ),
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => join( ' ', 't/pureperl/*.t', ( $loadable_xs ? 't/xs/*.t' : () ), ) },
+    test   => { TESTS               => join( ' ', 't/*.t', 't/pureperl/*.t', ( $loadable_xs ? 't/xs/*.t' : () ), 'xt/*.t' ) },
     # Otherwise 'cxinc' isn't defined
     ( $] < 5.012 ? ( DEFINE => '-DPERL_EXT' ) : (), ),
 );
