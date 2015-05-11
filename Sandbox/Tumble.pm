@@ -21,18 +21,16 @@ sub tumble
 
     my $plug_dir = Cwd::abs_path( File::Spec->catdir( $FindBin::RealBin, "t", "lib" ) );
     my $test_writer = Test::WriteVariants->new();
-    $test_writer->allow_dir_overwrite( 1 );
+    $test_writer->allow_dir_overwrite(1);
 
     $test_writer->write_test_variants(
-	input_tests => $test_writer->find_input_test_modules(
-	    search_path => [ 'LMU::Test' ],
-	    search_dirs => [ $plug_dir ],
-	    test_prefix => '',
-	),
-	variant_providers => [
-	    "LMU::TestVariants",
-	],
-	output_dir => $output_dir,
+        input_tests => $test_writer->find_input_test_modules(
+            search_path => ['LMU::Test'],
+            search_dirs => [$plug_dir],
+            test_prefix => '',
+        ),
+        variant_providers => [ "LMU::TestVariants", ],
+        output_dir        => $output_dir,
     );
 }
 
@@ -66,10 +64,10 @@ sub write_test_file
         mkpath( $full_dir_path, 0 ) unless -d $full_dir_path;
 
         open my $fh, ">", $full_path
-	  or croak "Can't write $full_path: $!";
+          or croak "Can't write $full_path: $!";
         print $fh $test_script;
         close $fh
-	  or croak "Error writing to $full_path: $!";
+          or croak "Error writing to $full_path: $!";
     }
 
     return;
@@ -98,11 +96,11 @@ sub get_test_file_body
     my ( $self, $context, $testinfo ) = @_;
 
     my %vars = (
-                 PERL    => $^X,
-                 PRE     => $context->pre_code,
-                 POST    => $context->post_code,
-                 REQUIRE => ""
-               );
+        PERL    => $^X,
+        PRE     => $context->pre_code,
+        POST    => $context->post_code,
+        REQUIRE => ""
+    );
 
     $testinfo->{require}
       and $vars{REQUIRE} = join( "\n", map { "require '$_';" } @{ $testinfo->{require} } );
@@ -110,9 +108,9 @@ sub get_test_file_body
     if ( $testinfo->{module} )
     {
         my %cv = (
-                   TESTCASE => $testinfo->{module},
-                   LIB      => ""
-                 );
+            TESTCASE => $testinfo->{module},
+            LIB      => ""
+        );
         $testinfo->{lib} and $cv{LIB} = "use lib '$testinfo->{lib}';\n";
         $vars{CODE} = $self->process_template( $tc_code_tpc, \%cv );
     }
@@ -139,13 +137,24 @@ package LMU::TestVariants::Dist;
 use strict;
 use warnings;
 
-sub provider {
-    my ($self, $path, $context, $tests, $variants) = @_;
+sub provider
+{
+    my ( $self, $path, $context, $tests, $variants ) = @_;
     my $mod_ctx = $context->new_module_use( lib => [ File::Spec->catdir(qw(t lib)) ] );
 
     # statically generate both at dist authoring stage and decide about tests to run at configure stage
-    $variants->{pureperl} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 1,), $mod_ctx );
-    $variants->{xs} = $context->new( $context->new_env_var( LIST_MOREUTILS_PP => 0,), $mod_ctx );
+    $variants->{pureperl} = $context->new(
+        $context->new_env_var(
+            LIST_MOREUTILS_PP => 1,
+        ),
+        $mod_ctx
+    );
+    $variants->{xs} = $context->new(
+        $context->new_env_var(
+            LIST_MOREUTILS_PP => 0,
+        ),
+        $mod_ctx
+    );
 }
 
 1;
