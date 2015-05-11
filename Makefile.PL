@@ -55,6 +55,15 @@ EOSU
 use inc::latest 'Capture::Tiny';
 use inc::latest 'Config::AutoConf';
 
+if ( inc::latest->can("write") )
+{
+    inc::latest->write("inc");
+    for my $mod ( inc::latest->loaded_modules )
+    {
+        inc::latest->bundle_module( $mod, "inc" );
+    }
+}
+
 use ExtUtils::MakeMaker;
 use File::Path;
 
