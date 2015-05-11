@@ -5,10 +5,6 @@ use warnings;
 
 require 5.006;
 
-use File::Basename qw(dirname);
-use File::Copy qw(copy move);
-use File::Spec ();
-
 BEGIN
 {
     # to operate Capture::Tiny under perl 5.6
@@ -65,11 +61,19 @@ if ( inc::latest->can("write") )
 }
 
 use ExtUtils::MakeMaker;
-use File::Path;
 
 use inc::Config::AutoConf::LMU ();
 
-eval "use Sandbox::Tumble (); -d 't/xs' and rmtree('t/xs'); -d 't/pureperl' and rmtree('t/pureperl'); Sandbox::Tumble->tumble(qw(t));";
+if ( -d ".git" )
+{
+    eval "use Sandbox::Tumble ();";
+    $@ and die $@;
+    eval "use File::Path ();";
+    File::Path->import;
+    -d 't/xs'       and rmtree('t/xs');
+    -d 't/pureperl' and rmtree('t/pureperl');
+    Sandbox::Tumble->tumble(qw(t));
+}
 
 inc::Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
 
@@ -81,8 +85,8 @@ my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
 );
 my %BUNDLE_CONFIGURE_DEPS = (
-    'inc::latest'         => '0.500',
-    'Config::AutoConf'    => '0.308',
+    'inc::latest'      => '0.500',
+    'Config::AutoConf' => '0.308',
 );
 my %CONFIGURE_DEPS = (
     'Carp'                => 0,
@@ -128,8 +132,8 @@ WriteMakefile1(
                     'Test::Pod::Coverage'                 => 0,
                     'Test::Pod::Spelling::CommonMistakes' => 0,
                     'Test::Spelling'                      => 0,
-		    'JSON::PP'            => 0,
-		    'Test::WriteVariants' => '0.010',
+                    'JSON::PP'                            => 0,
+                    'Test::WriteVariants'                 => '0.010',
                     %BUNDLE_CONFIGURE_DEPS,
                 },
             },
@@ -165,16 +169,13 @@ WriteMakefile1(
         ? (
             XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
             MAGICXS => 1,
-            INC => "-I."
+            INC     => "-I."
           )
         : ()
     ),
-    realclean => { FILES               => "inc/latest* inc/inc_* gt" },
-    depend    => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS => join(' ',
-        't/pureperl/*.t',
-        ( $loadable_xs ? 't/xs/*.t' : () ),
-    ) },
+    ( -d ".git" ? ( realclean => { FILES => "inc/latest* inc/inc_* gt" } ) : () ),
+    depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
+    test   => { TESTS               => join( ' ', 't/pureperl/*.t', ( $loadable_xs ? 't/xs/*.t' : () ), ) },
     # Otherwise 'cxinc' isn't defined
     ( $] < 5.012 ? ( DEFINE => '-DPERL_EXT' ) : (), ),
 );
