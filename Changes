@@ -1,5 +1,11 @@
 Revision history for Perl extension List-MoreUtils
 
+0.411_001	2015-05-11
+    - move generation of test endpoints to author stage as requested per issue/#9
+    - add a rough guide for contributors
+    - fix rt#103251 to avoid removing bundled stuff by accident
+    - Fix compilation errors under cl (Thanks to jddurand)
+
 0.410	2015-03-30
     - release 0.409_003 after no further issues came up
 
