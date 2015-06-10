@@ -1,5 +1,9 @@
 Revision history for Perl extension List-MoreUtils
 
+0.413	2015-06-10
+    - Fix compiling in c++ mode (depreciated, but some people seem to
+      require it). Solves RT#104690
+
 0.412	2015-05-19
     - release 0.411_001 without further changes
 
