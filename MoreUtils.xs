@@ -327,7 +327,7 @@ DESTROY(sv)
     {
 	int i;
 	CV *code = (CV*)SvRV(sv);
-	arrayeach_args *args = CvXSUBANY(code).any_ptr;
+	arrayeach_args *args = (arrayeach_args *)(CvXSUBANY(code).any_ptr);
 	if (args) {
 	    for (i = 0; i < args->navs; ++i)
 		SvREFCNT_dec(args->avs[i]);
@@ -347,7 +347,7 @@ DESTROY(sv)
     {
 	int i;
 	CV *code = (CV*)SvRV(sv);
-	natatime_args *args = CvXSUBANY(code).any_ptr;
+	natatime_args *args = (natatime_args *)(CvXSUBANY(code).any_ptr);
 	if (args) {
 	    for (i = 0; i < args->nsvs; ++i)
 		SvREFCNT_dec(args->svs[i]);
@@ -1061,7 +1061,7 @@ CODE:
 
 void
 _array_iterator (method = "")
-    char *method;
+    const char *method;
     PROTOTYPE: ;$
     CODE:
     {
@@ -1071,7 +1071,7 @@ _array_iterator (method = "")
 	/* 'cv' is the hidden argument with which XS_List__MoreUtils__array_iterator (this XSUB)
 	 * is called. The closure_arg struct is stored in this CV. */
 
-	arrayeach_args *args = (arrayeach_args*)CvXSUBANY(cv).any_ptr;
+	arrayeach_args *args = (arrayeach_args *)(CvXSUBANY(cv).any_ptr);
 
 	if (strEQ(method, "index")) {
 	    EXTEND(SP, 1);
