@@ -8,7 +8,7 @@ use vars qw{$VERSION @ISA};
 
 BEGIN
 {
-    $VERSION = '0.412';
+    $VERSION = '0.413';
 
     # Load the XS at compile-time so that redefinition warnings will be
     # thrown correctly if the XS versions of part or indexes loaded
