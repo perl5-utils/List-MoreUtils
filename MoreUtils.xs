@@ -897,7 +897,8 @@ CODE:
     for (j = i + 1; j < items; ++j)
 	args[j-i-1] = args[j];
 
-    XSRETURN(items-i-1);
+    j = items-i-1;
+    XSRETURN(j > 0 ? j : 0);
 }
 
 void
