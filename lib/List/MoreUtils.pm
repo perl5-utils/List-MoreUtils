@@ -32,7 +32,7 @@ my @v0_400 = qw(one any_u all_u none_u notall_u one_u
   singleton bsearchidx
 );
 
-my @all_functions = ( @junctions, @v0_22, @v0_24, @v0_33, @v0_400 );
+my @all_functions = ( @junctions, @v0_22, @v0_24, @v0_33, @v0_400, 'part_hash' );
 
 my %alias_list = (
     v0_22 => {
@@ -465,6 +465,14 @@ Negative values are only ok when they refer to a partition previously created:
   my @idx  = ( 0, 1, -1 );
   my $i    = 0;
   my @part = part { $idx[$++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
+
+=head3 part_hash BLOCK LIST
+
+Same as C<part> but uses the value returned by BLOCK to build a hash 
+rather than an array.
+
+  my %by_first_letter = part_hash { substr $_, 0, 1 } qw/ one two three /;
+    # returns ( o => [ 'one' ], t => [ 'two', 'three' ] )
 
 =head2 Iteration
 

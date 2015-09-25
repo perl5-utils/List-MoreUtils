@@ -477,6 +477,14 @@ sub part (&@)
     return @parts;
 }
 
+sub part_hash (&@)
+{
+    my ( $code, @list ) = @_;
+    my %parts;
+    push @{ $parts{ $code->($_) } }, $_ foreach @list;
+    return %parts;
+}
+
 sub bsearch(&@)
 {
     my $code = shift;

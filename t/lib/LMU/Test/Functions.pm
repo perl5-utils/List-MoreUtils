@@ -64,6 +64,7 @@ sub run_tests
     test_uniq();
     test_singleton();
     test_part();
+    test_part_hash();
     test_minmax();
     test_bsearch();
     test_bsearchidx();
@@ -1272,6 +1273,15 @@ sub test_part
             my @part = part { grow_stack(); 1024 } 'one', 'two';
         }
     );
+}
+
+sub test_part_hash {
+    my %r = part_hash { substr $_, 0, 1 } qw/ one two three /;
+
+    is_deeply \%r => {
+        o => [ 'one' ],
+        t => [ 'two', 'three' ],
+    };
 }
 
 sub test_minmax
