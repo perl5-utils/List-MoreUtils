@@ -249,7 +249,7 @@ typedef struct {
     int natatime;
 } natatime_args;
 
-void
+static void
 insert_after (int idx, SV *what, AV *av) {
     int i, len;
     av_extend(av, (len = av_len(av) + 1));
