@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -33,7 +34,7 @@
  *  2: left or right was a NaN
  */
 static I32
-ncmp(SV* left, SV * right)
+LMUncmp(pTHX_ SV* left, SV * right)
 {
     /* Fortunately it seems NaN isn't IOK */
     if(SvAMAGIC(left) || SvAMAGIC(right))
@@ -103,6 +104,8 @@ ncmp(SV* left, SV * right)
     }
 }
 
+#define ncmp(left,right) LMUncmp(aTHX_ left,right)
+
 #define FUNC_NAME GvNAME(GvEGV(ST(items)))
 
 /* shameless stolen from PadWalker */
@@ -132,7 +135,7 @@ typedef AV PAD;
 #endif
 
 static int 
-in_pad (SV *code)
+in_pad (pTHX_ SV *code)
 {
     GV *gv;
     HV *stash;
@@ -250,7 +253,7 @@ typedef struct {
 } natatime_args;
 
 static void
-insert_after (int idx, SV *what, AV *av) {
+insert_after (pTHX_ int idx, SV *what, AV *av) {
     int i, len;
     av_extend(av, (len = av_len(av) + 1));
 
@@ -264,7 +267,7 @@ insert_after (int idx, SV *what, AV *av) {
 }
 
 static int
-is_like(SV *sv, const char *like)
+is_like(pTHX_ SV *sv, const char *like)
 {
     int likely = 0;
     if( sv_isobject( sv ) )
@@ -305,18 +308,22 @@ is_array(SV *sv)
 }
 
 static int
-codelike(SV *code)
+LMUcodelike(pTHX_ SV *code)
 {
     SvGETMAGIC(code);
-    return SvROK(code) && ( ( SVt_PVCV == SvTYPE(SvRV(code)) ) || ( is_like(code, "&{}" ) ) );
+    return SvROK(code) && ( ( SVt_PVCV == SvTYPE(SvRV(code)) ) || ( is_like(aTHX_ code, "&{}" ) ) );
 }
 
+#define codelike(code) LMUcodelike(aTHX_ code)
+
 static int
-arraylike(SV *array)
+LMUarraylike(pTHX_ SV *array)
 {
     SvGETMAGIC(array);
-    return is_array(array) || is_like( array, "@{}" );
+    return is_array(array) || is_like(aTHX_ array, "@{}" );
 }
+
+#define arraylike(array) LMUarraylike(aTHX_ array)
 
 MODULE = List::MoreUtils_ea             PACKAGE = List::MoreUtils_ea
 
@@ -767,7 +774,7 @@ CODE:
 
     if (RETVAL) {
 	SvREFCNT_inc(val);
-	insert_after(i, val, av);
+	insert_after(aTHX_ i, val, av);
     }
 }
 OUTPUT:
@@ -816,7 +823,7 @@ insert_after_string (string, val, avref)
 	}
 	if (RETVAL) {
 	    SvREFCNT_inc(val);
-	    insert_after(i, val, av);
+	    insert_after(aTHX_ i, val, av);
 	}
 
     }
@@ -1213,7 +1220,7 @@ pairwise (code, ...)
 	if(!arraylike(ST(2)))
 	   croak_xs_usage(cv,  "code, list, list");
 
-	if (in_pad(code)) {
+	if (in_pad(aTHX_ code)) {
 	    croak("Can't use lexical $a or $b in pairwise code block");
 	}
 
