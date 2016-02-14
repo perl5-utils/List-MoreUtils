@@ -499,6 +499,9 @@ sub test_after
         }
     );
     is_dying( sub { &after( 42, 4711 ); } );
+
+    @x = ( 1, after { /foo/ } qw(abc def) );
+    is_deeply(\@x, [ 1 ], "check XS implementation doesn't mess up stack");
 }
 
 # In the following, the @dummy variable is needed to circumvent
