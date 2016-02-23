@@ -423,6 +423,14 @@ sub uniq (@)
     grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
 }
 
+sub uniq_by (&@)
+{
+    my $comparator_func = shift;
+    
+    my %seen;
+    grep { local $_ = $_; !$seen{$comparator_func->()}++ } @_;
+}
+
 sub singleton (@)
 {
     my %seen = ();

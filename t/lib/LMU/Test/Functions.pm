@@ -62,6 +62,7 @@ sub run_tests
     test_zip();
     test_mesh();
     test_uniq();
+    test_uniq_by();
     test_singleton();
     test_part();
     test_minmax();
@@ -1024,6 +1025,11 @@ sub test_mesh
         }
     );
     is_dying( sub { &mesh( 1, 2 ); } );
+}
+
+sub test_uniq_by
+{
+    ok(0, "no tests for uniq_by yet");
 }
 
 sub test_uniq
