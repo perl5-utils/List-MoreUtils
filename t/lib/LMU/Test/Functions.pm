@@ -1216,7 +1216,7 @@ sub test_part
     eval {
         @part = part { -1 } @list;
     };
-    ok( $@ =~ /^Modification of non-creatable array value attempted, subscript -1/ );
+    like( $@, qr/^Modification of non-creatable array value attempted, subscript -1/ );
 
     $i = 0;
     @part = part { $i++ == 0 ? 0 : -1 } @list;
