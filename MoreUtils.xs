@@ -1503,13 +1503,13 @@ minmax (...)
 	if (!items)
 	    XSRETURN_EMPTY;
 
-	minsv = maxsv = ST(0);
-
         if (items == 1) {
             EXTEND(SP, 1);
-            ST(0) = ST(1) = minsv;
+	    ST(1) = sv_2mortal(newSVsv(ST(0)));
             XSRETURN(2);
         }
+
+	minsv = maxsv = ST(0);
 
 	for (i = 1; i < items; i += 2) {
 	    SV *asv = ST(i-1);
@@ -1545,6 +1545,7 @@ minmax (...)
 		maxsv = rsv;
 	    }
 	}
+
 	ST(0) = minsv;
 	ST(1) = maxsv;
 
