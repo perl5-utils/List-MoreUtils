@@ -1287,6 +1287,10 @@ sub test_minmax
     is( $min, -1 );
     is( $max, -1 );
 
+    # COW causes missing max when optimization for 1 argument is applied
+    @list = grep {defined $_ } map { my ($min, $max) = minmax(sprintf("%.3g", rand)); ($min, $max) } (0..19);
+    is( scalar @list, 40, "minmax swallows max on COW" );
+
     # Confirm output are independant copies of input
     $input = 1;
     is( $min, -1 );
