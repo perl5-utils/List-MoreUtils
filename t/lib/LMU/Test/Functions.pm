@@ -1203,6 +1203,10 @@ sub test_part
     ok( is_deeply( $part[1], [ 2, 5, 8, 11 ] ) );
     ok( is_deeply( $part[2], [ 3, 6, 9, 12 ] ) );
 
+    $list[2] = 0;
+    is( $part[2][0], 3, 'Values are not aliases' );
+
+    @list = 1 .. 12;
     @part = part { 3 } @list;
     is( $part[0], undef );
     is( $part[1], undef );
@@ -1272,6 +1276,7 @@ sub test_minmax
     ( $min, $max ) = minmax @list;
     is( $min, 0 );
     is( $max, 10001 );
+    $list[0] = 17;
 
     # Some floats
     @list = ( 0, -1.1, 3.14, 1 / 7, 10000, -10 / 3 );
