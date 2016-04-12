@@ -1596,8 +1596,7 @@ CODE:
 	}
 	if (!tmp[idx])
 	    tmp[idx] = newAV();
-	av_push(tmp[idx], args[i]);
-	SvREFCNT_inc(args[i]);
+	av_push(tmp[idx], newSVsv( args[i] ));
     }
     POP_MULTICALL;
 
