@@ -64,7 +64,7 @@ use ExtUtils::MakeMaker;
 
 use inc::Config::AutoConf::LMU ();
 
-if ( -d ".git" )
+if ( -d "Sandbox" )
 {
     eval "use Sandbox::Tumble ();";
     $@ and die $@;
