@@ -79,7 +79,7 @@ Jens Rehsack E<lt>rehsack AT cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2015 by Jens Rehsack
+Copyright 2015,2016 by Jens Rehsack
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,
