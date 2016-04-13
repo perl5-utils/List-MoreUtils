@@ -783,7 +783,7 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=List-MoreUtils>
+L<https://rt.cpan.org/Dist/Display.html?Name=List-MoreUtils>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
@@ -791,7 +791,11 @@ L<http://annocpan.org/dist/List-MoreUtils>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/l/List-MoreUtils>
+L<http://cpanratings.perl.org/dist/List-MoreUtils>
+
+=item * MetaCPAN
+
+L<https://metacpan.org/release/List-MoreUtils>
 
 =item * CPAN Search
 

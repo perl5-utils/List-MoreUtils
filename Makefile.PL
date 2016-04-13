@@ -116,7 +116,7 @@ WriteMakefile1(
                 type => 'git',
             },
             bugtracker => {
-                web    => 'http://rt.cpan.org/Public/Dist/Display.html?Name=List-MoreUtils',
+                web    => 'https://rt.cpan.org/Dist/Display.html?Name=List-MoreUtils',
                 mailto => 'bug-List-MoreUtils@rt.cpan.org',
             },
             license => 'http://dev.perl.org/licenses/',
