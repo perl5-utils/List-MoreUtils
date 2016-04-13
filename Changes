@@ -1,5 +1,19 @@
 Revision history for Perl extension List-MoreUtils
 
+0.414_001 2016-04-13
+    - fix RT#75727 - after's XS implementation call XSRETURN(-1) when it
+      doesn't find an element (2nd patch provided by Reini Urban,
+      regression test provided by Tony Cook)
+    - fix RT#113117 - XS's minmax() sometimes return undef (perl >= 5.20),
+      thanks PERLANCAR and SREZIC
+    - explicit test for thesis in RT#110998 - XS implementation of pairwise
+      fails with memory allocation error when there are more return values
+      than in original lists -- thesis is proven wrong
+    - efficiency improvements by bulk88
+    - improve some tests to get clearer reports
+    - distinguish between "Makefile.PL find's a .git directory" and
+      "Makefile.PL runs in maintainer mode"
+
 0.413	2015-06-10
     - Fix compiling in c++ mode (depreciated, but some people seem to
       require it). Solves RT#104690
