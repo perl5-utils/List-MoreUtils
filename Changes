@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.415	2016-05-01
+    - Release 0.414_001 as 0.415 without further changes
+
 0.414_001 2016-04-13
     - fix RT#75727 - after's XS implementation call XSRETURN(-1) when it
       doesn't find an element (2nd patch provided by Reini Urban,
