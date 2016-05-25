@@ -37,7 +37,7 @@ unnecessary complexity (while protecting the necessary).
 
 One example of removing unnecessary infrastructure could be to move
 L<Data::Tumbler> and L<Test::WriteVariants> into authoring mode, when
-imrpoved test for RT#93207 could be reasonably done by a module which
+improved test for RT#93207 could be reasonably done by a module which
 is recommended for test. The recommendation of
 L<Graham Knop's Makefile.PL#L82|https://github.com/haarg/List-MoreUtils/blob/dd877f963deead742fc90005636c72c6be9060fc/Makefile.PL#L82>
 in L<PR#9|https://github.com/perl5-utils/List-MoreUtils/pull/9> a desirable
@@ -53,7 +53,7 @@ C<Makefile.PL>.
 The reason for L<Config::AutoConf> is quite simple - the opportunities
 for checking the environment cover a much wider range than a simple test
 whether there is a working compiler. It requires a lot of improvements
-since it's fundament L<ExtUtils::CBuilder> was never designed to support
+since its base L<ExtUtils::CBuilder> was never designed to support
 that kind of solutions - but there is I<Work In Progress>. To finally
 solve issues as RT#75672 even in cross-compile environments - there is
 no way around such a checking tool.

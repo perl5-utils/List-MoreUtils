@@ -62,3 +62,5 @@ rehsackATcpan
 thusly
 uniq
 von
+Knop
+MetaCPAN
