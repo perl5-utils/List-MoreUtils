@@ -6,7 +6,7 @@ use warnings;
 
 BEGIN
 {
-    our $VERSION = '0.415';
+    our $VERSION = '0.416';
     eval { require List::MoreUtils::XS; } unless $ENV{LIST_MOREUTILS_PP};
 
     use List::MoreUtils::PP qw();
