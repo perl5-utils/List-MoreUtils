@@ -1,5 +1,10 @@
 Revision history for Perl extension List-MoreUtils
 
+0.416	2016-07-06
+    - Change the way how the XS part is loaded as a result of RT#115808
+    - Fix some spelling errors (fix RT#115807), thanks Salvatore Bonaccorso
+    - Requires XSLoader 0.22
+
 0.415	2016-05-01
     - Release 0.414_001 as 0.415 without further changes
 
