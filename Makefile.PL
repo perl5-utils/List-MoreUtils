@@ -81,7 +81,7 @@ my $loadable_xs = inc::Config::AutoConf::LMU->check_produce_loadable_xs_build();
 
 # Should we build the XS version?
 my %RUN_DEPS = (
-    'XSLoader'       => 0,
+    'XSLoader'       => "0.22",
     'Exporter::Tiny' => '0.038',
 );
 my %BUNDLE_CONFIGURE_DEPS = (
