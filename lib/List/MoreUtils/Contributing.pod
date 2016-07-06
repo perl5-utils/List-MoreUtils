@@ -11,7 +11,7 @@ and then come back.
 
 The current distribution is a balance between finishing the history and
 claiming for future requirements. Therefore some components will receive
-a rewrite on purpose - others wont.
+a rewrite on purpose - others won't.
 
 For the moment - it's not the primary goal to clean up the configuration
 stage, until the primary goals and prerequisites are done.
@@ -35,7 +35,7 @@ Secondary goals are harmonizing the function names and calling convention
 (see RT#102673), tidying the infrastructure of the distribution and remove
 unnecessary complexity (while protecting the necessary).
 
-One example of removing unnessesary infrastructure could be to move
+One example of removing unnecessary infrastructure could be to move
 L<Data::Tumbler> and L<Test::WriteVariants> into authoring mode, when
 imrpoved test for RT#93207 could be reasonably done by a module which
 is recommended for test. The recommendation of
