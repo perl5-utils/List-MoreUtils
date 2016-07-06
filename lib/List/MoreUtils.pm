@@ -7,10 +7,12 @@ use warnings;
 BEGIN
 {
     our $VERSION = '0.415';
+    eval { require List::MoreUtils::XS; } unless $ENV{LIST_MOREUTILS_PP};
+
+    use List::MoreUtils::PP qw();
 }
 
 use Exporter::Tiny qw();
-use List::MoreUtils::XS qw();    # try loading XS
 
 my @junctions = qw(any all none notall);
 my @v0_22     = qw(
@@ -24,6 +26,7 @@ my @v0_22     = qw(
   pairwise natatime
   mesh uniq
   minmax part
+  _XScompiled
 );
 my @v0_24  = qw(bsearch);
 my @v0_33  = qw(sort_by nsort_by);
@@ -33,6 +36,10 @@ my @v0_400 = qw(one any_u all_u none_u notall_u one_u
 );
 
 my @all_functions = ( @junctions, @v0_22, @v0_24, @v0_33, @v0_400 );
+
+no strict "refs";
+List::MoreUtils->can($_) or *$_ = List::MoreUtils::PP->can($_) for(@all_functions);
+use strict;
 
 my %alias_list = (
     v0_22 => {
