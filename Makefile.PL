@@ -5,6 +5,8 @@ use warnings;
 
 require 5.006;
 
+BEGIN { push @INC, '.' }
+
 BEGIN
 {
     # to operate Capture::Tiny under perl 5.6
