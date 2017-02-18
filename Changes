@@ -5,6 +5,8 @@ Revision history for Perl extension List-MoreUtils
     - Change license to Apache 2.0 to avoid code stealing without credits
     - Don't support Perl 5.6 out of the box anymore
     - fix RT#120235 - uniq examples are incorrect
+    - remove things which will be never done from TODO list as suggested
+      by Mark Aufflick in PR#18
 
 0.416	2016-07-06
     - Change the way how the XS part is loaded as a result of RT#115808

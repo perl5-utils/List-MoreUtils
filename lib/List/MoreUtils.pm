@@ -924,16 +924,6 @@ my mailbox. This includes:
 
 =over 4
 
-=item * List::Util export pass-through
-
-Allow B<List::MoreUtils> to pass-through the regular L<List::Util>
-functions to end users only need to C<use> the one module.
-
-=item * uniq_by(&@)
-
-Use code-reference to extract a key based on which the uniqueness is
-determined. Suggested by Aaron Crane.
-
 =item * delete_index
 
 =item * random_item
