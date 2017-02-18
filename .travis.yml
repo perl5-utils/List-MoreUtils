@@ -3,7 +3,7 @@ os:
   - linux
 install:
   - cpanm --notest Test::WriteVariants Config::AutoConf Carp App::mymeta_requires inc::latest JSON::PP
-  - perl Makefile.PL
+  - env PUREPERL_ONLY=1 perl Makefile.PL
   - make manifest
   - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm --notest --skip-satisfied
 language: perl
