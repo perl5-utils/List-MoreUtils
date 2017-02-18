@@ -3,66 +3,9 @@
 use strict;
 use warnings;
 
-require 5.006;
-
-BEGIN
-{
-    # to operate Capture::Tiny under perl 5.6
-    eval "use Scalar::Util qw();";
-    $@ and eval <<'EOSU';
-$INC{'Scalar/Util.pm'} = 'faked';
-package Scalar::Util;
-use base "Exporter";
-# from PP part of Params::Util
-our @EXPORT = qw(reftype blessed looks_like_number);
-sub reftype { ref $_[0] }
-my %types = (
-    CODE   => 1,
-    GLOB   => 1,
-    REF    => 1,
-    SCALAR => 1,
-    HASH   => 1,
-    ARRAY  => 1
-);
-sub blessed {
-    my $t = ref $_[0];
-    defined $t or return;
-    defined $types{$t} or return;
-    $t;
-}
-# from PP part of Params::Util
-sub looks_like_number {
-    local $_ = shift;
-
-    # checks from perlfaq4
-    return 0 if !defined($_);
-    if (ref($_)) {
-        return overload::Overloaded($_) ? defined(0 + $_) : 0;
-    }
-    return 1 if (/^[+-]?[0-9]+$/); # is a +/- integer
-    return 1 if (/^([+-]?)(?=[0-9]|\.[0-9])[0-9]*(\.[0-9]*)?([Ee]([+-]?[0-9]+))?$/); # a C float
-    return 1 if ($] >= 5.008 and /^(Inf(inity)?|NaN)$/i) or ($] >= 5.006001 and /^Inf$/i);
-
-    0;
-}
-EOSU
-}
-
-use inc::latest 'Capture::Tiny';
-use inc::latest 'Config::AutoConf';
-
-if ( inc::latest->can("write") )
-{
-    inc::latest->write("inc");
-    for my $mod ( inc::latest->loaded_modules )
-    {
-        inc::latest->bundle_module( $mod, "inc" );
-    }
-}
+use 5.008_001;
 
 use ExtUtils::MakeMaker;
-
-use inc::Config::AutoConf::LMU ();
 
 if ( -d "Sandbox" )
 {
@@ -70,40 +13,31 @@ if ( -d "Sandbox" )
     $@ and die $@;
     eval "use File::Path ();";
     File::Path->import;
-    -d 't/xs'       and rmtree('t/xs');
     -d 't/pureperl' and rmtree('t/pureperl');
     Sandbox::Tumble->tumble(qw(t));
 }
 
-inc::Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
+my @argv = @ARGV;
+defined $ENV{PERL_MM_OPT} and push @argv, split " ", $ENV{PERL_MM_OPT};
 
-my $loadable_xs = inc::Config::AutoConf::LMU->check_produce_loadable_xs_build();
+my $want_xs = { "List::MoreUtils::XS" => "0.416" };
+foreach ( @ARGV )
+{
+    /^-pm/ and warn "-pm is depreciated, please use PUREPERL_ONLY=1" and $want_xs = {};
+    /^-xs/ and warn "-xs is depreciated, building XS is default anyway" and $want_xs = { "List::MoreUtils::XS" => "0.416" };
+    /^PUREPERL_ONLY=(.*)$/ and $want_xs = int($1) ? {}: { "List::MoreUtils::XS" => "0.416" };
+}
 
 # Should we build the XS version?
 my %RUN_DEPS = (
-    'XSLoader'       => "0.22",
     'Exporter::Tiny' => '0.038',
 );
-my %BUNDLE_CONFIGURE_DEPS = (
-    'inc::latest'      => '0.500',
-    'Config::AutoConf' => '0.308',
-);
 my %CONFIGURE_DEPS = (
-    'Carp'                => 0,
     'ExtUtils::MakeMaker' => 0,
-    'File::Basename'      => 0,
-    'File::Copy'          => 0,
-    'File::Path'          => 0,
-    'File::Spec'          => 0,
-    'IPC::Cmd'            => 0,
-    'base'                => 0,
 );
-my %BUILD_DEPS = ();
-
 my %TEST_DEPS = (
     'Test::More' => 0.96,
 );
-my @XS_FILES = qw(MoreUtils.xs);
 
 WriteMakefile1(
     META_MERGE => {
@@ -119,7 +53,7 @@ WriteMakefile1(
                 web    => 'https://rt.cpan.org/Dist/Display.html?Name=List-MoreUtils',
                 mailto => 'bug-List-MoreUtils@rt.cpan.org',
             },
-            license => 'http://dev.perl.org/licenses/',
+            license => 'apache_2_0',
         },
         prereqs => {
             develop => {
@@ -134,20 +68,18 @@ WriteMakefile1(
                     'Test::Spelling'                      => 0,
                     'JSON::PP'                            => 0,
                     'Test::WriteVariants'                 => '0.010',
-                    %BUNDLE_CONFIGURE_DEPS,
                 },
             },
             configure => {
-                requires   => {%CONFIGURE_DEPS},
-                recommends => {%BUNDLE_CONFIGURE_DEPS},
+                requires   => {%CONFIGURE_DEPS}
             },
-            build => { requires => {%BUILD_DEPS} },
             test  => {
                 requires   => {%TEST_DEPS},
                 recommends => { 'Test::LeakTrace' => 0 }
             },
             runtime => {
-                requires => { %RUN_DEPS, },
+                requires => { %RUN_DEPS },
+		recommends => $want_xs
             },
         },
     },
@@ -162,20 +94,10 @@ WriteMakefile1(
     LICENSE            => 'perl',
     CONFIGURE_REQUIRES => \%CONFIGURE_DEPS,
     PREREQ_PM          => \%RUN_DEPS,
-    BUILD_REQUIRES     => \%BUILD_DEPS,
     TEST_REQUIRES      => \%TEST_DEPS,
-    (
-        $loadable_xs
-        ? (
-            XS => { map { ( my $tgt = $_ ) =~ s/\.xs$/\.c/; $_ => $tgt; } @XS_FILES },
-            MAGICXS => 1,
-            INC     => "-I."
-          )
-        : ()
-    ),
-    ( -d ".git" ? ( realclean => { FILES => "inc/latest* inc/inc_* t/pureperl t/xs" } ) : () ),
+    ( -d "Sandbox" ? ( realclean => { FILES => "t/pureperl" } ) : () ),
     depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' },
-    test   => { TESTS               => join( ' ', 't/*.t', 't/pureperl/*.t', ( $loadable_xs ? 't/xs/*.t' : () ), 'xt/*.t' ) },
+    test   => { TESTS               => join( ' ', 't/*.t', 't/pureperl/*.t', 'xt/*.t' ) },
     # Otherwise 'cxinc' isn't defined
     ( $] < 5.012 ? ( DEFINE => '-DPERL_EXT' ) : (), ),
 );

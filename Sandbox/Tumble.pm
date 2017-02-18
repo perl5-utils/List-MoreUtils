@@ -149,12 +149,6 @@ sub provider
         ),
         $mod_ctx
     );
-    $variants->{xs} = $context->new(
-        $context->new_env_var(
-            LIST_MOREUTILS_PP => 0,
-        ),
-        $mod_ctx
-    );
 }
 
 1;

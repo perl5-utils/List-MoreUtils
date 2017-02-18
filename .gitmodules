@@ -1,0 +1,3 @@
+[submodule "t"]
+	path = t
+	url = git@github.com:perl5-utils/Test-List-MoreUtils.git

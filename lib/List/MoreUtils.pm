@@ -1,12 +1,12 @@
 package List::MoreUtils;
 
-use 5.006;
+use 5.008_001;
 use strict;
 use warnings;
 
 BEGIN
 {
-    our $VERSION = '0.416';
+    our $VERSION = '0.417_001';
     eval { require List::MoreUtils::XS; } unless $ENV{LIST_MOREUTILS_PP};
 
     use List::MoreUtils::PP qw();
@@ -960,11 +960,19 @@ Some parts copyright 2011 Aaron Crane.
 
 Copyright 2004 - 2010 by Tassilo von Parseval
 
-Copyright 2013 - 2016 by Jens Rehsack
+Copyright 2013 - 2017 by Jens Rehsack
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.4 or,
-at your option, any later version of Perl 5 you may have available.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 =cut
 
