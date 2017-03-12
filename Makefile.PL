@@ -5,6 +5,7 @@ use warnings;
 
 use 5.008_001;
 
+use Config;
 use ExtUtils::MakeMaker;
 
 BEGIN
@@ -37,6 +38,29 @@ foreach (@ARGV)
       and warn "PUREPERL_ONLY=0|1 don't make sense, please install List::MoreUtils::XS when you need native speed";
 }
 
+my $conflictMsg = <<EOCM;
+***
+    This version of %s conflicts with
+    the version of module %s (%s) you have installed.
+
+    It's strongly recommended that you update it after
+    installing this version of %s.
+***
+EOCM
+
+my $selfConflictMsg = <<EOSCM;
+***
+    This version of %s conflicts with
+    the version of %s (%s) you have installed.
+
+    It's strongly recommended that you carefully read
+    the Changes file and test your application with
+    this version before finally upgrading.
+
+    See local::lib how to do it easily.
+***
+EOSCM
+
 # Should we build the XS version?
 my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
@@ -46,6 +70,11 @@ my %CONFIGURE_DEPS = (
 );
 my %TEST_DEPS = (
     'Test::More' => 0.96,
+);
+my %CONFLICTS = (
+    'List::MoreUtils'     => '0.416',
+    'List::MoreUtils::PP' => '0.416',
+    'List::MoreUtils::XS' => '0.416',
 );
 
 WriteMakefile1(
@@ -99,6 +128,7 @@ WriteMakefile1(
     ],
     LICENSE            => 'perl',
     CONFIGURE_REQUIRES => \%CONFIGURE_DEPS,
+    CONFLICTS          => \%CONFLICTS,
     PREREQ_PM          => \%RUN_DEPS,
     TEST_REQUIRES      => \%TEST_DEPS,
     (-d "Sandbox" ? (realclean => {FILES => "t/pureperl"}) : ()),
@@ -108,34 +138,12 @@ WriteMakefile1(
     ($] < 5.012 ? (DEFINE => '-DPERL_EXT') : (),),
 );
 
-my $conflictMsg = <<EOCM;
-***
-    This version of %s conflicts with
-    the version of module %s (%s) you have installed.
-
-    It's strongly recommended that you update it after
-    installing this version of %s.
-***
-EOCM
-
-my $selfConflictMsg = <<EOSCM;
-***
-    This version of %s conflicts with
-    the version of %s (%s) you have installed.
-
-    It's strongly recommended that you carefully read
-    the Changes file and test your application with
-    this version before finally upgrading.
-
-    See local::lib how to do it easily.
-***
-EOSCM
-
 sub CheckConflicts
 {
     my %params    = @_;
     my %conflicts = %{$params{CONFLICTS}};
     my $found     = 0;
+    my (@killsite, @killarch);
 
     while (my ($module, $version) = each(%conflicts))
     {
@@ -147,11 +155,35 @@ sub CheckConflicts
         {
             ++$found;
             my $warning =
-              $module eq $params{NAME}
+              (0 == index($module, $params{NAME}, 0))
               ? sprintf($selfConflictMsg, $params{NAME}, $module, $installed)
               : sprintf($conflictMsg, $params{NAME}, $module, $installed, $params{NAME});
             warn $warning;
+            (my $modfile = "${module}.pm") =~ s,::,/,g;
+            if ($INC{$modfile} =~ m,^$Config{installsitearch},)
+            {
+                push @killarch, $modfile;
+            }
+            elsif ($INC{$modfile} =~ m,^$Config{installsitelib},)
+            {
+                push @killsite, "${modfile}.pm";
+            }
         }
+    }
+
+    if (@killsite or @killarch)
+    {
+        package MY;
+        no warnings 'once';
+
+        *install = sub {
+            my $self = shift;
+            return join("\n",
+                "\npure_site_install ::",
+                (map { '	$(NOECHO) $(RM_F) ' . $self->quote_literal($self->catfile('$(DESTINSTALLSITELIB)',  $_)) } @killsite),
+                (map { '	$(NOECHO) $(RM_F) ' . $self->quote_literal($self->catfile('$(DESTINSTALLSITEARCH)', $_)) } @killarch),
+                $self->SUPER::install);
+        };
     }
 
     return !$found;
