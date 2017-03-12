@@ -27,12 +27,14 @@ BEGIN
 my @argv = @ARGV;
 defined $ENV{PERL_MM_OPT} and push @argv, split " ", $ENV{PERL_MM_OPT};
 
-my $want_xs = {"List::MoreUtils::XS" => "0.416"};
 foreach (@ARGV)
 {
-    /^-pm/ and warn "-pm is depreciated, please use PUREPERL_ONLY=1" and $want_xs = {};
-    /^-xs/ and warn "-xs is depreciated, building XS is default anyway" and $want_xs = {"List::MoreUtils::XS" => "0.416"};
-    /^PUREPERL_ONLY=(.*)$/ and $want_xs = int($1) ? {} : {"List::MoreUtils::XS" => "0.416"};
+    /^-pm/
+      and warn
+      "-pm is depreciated, please use PUREPERL_ONLY=1 where applicable. For List::MoreUtils, simply don't install List::MoreUtils::XS";
+    /^-xs/ and warn "-xs is depreciated, please install List::MoreUtils::XS";
+    /^PUREPERL_ONLY=(.*)$/
+      and warn "PUREPERL_ONLY=0|1 don't make sense, please install List::MoreUtils::XS when you need native speed";
 }
 
 # Should we build the XS version?
@@ -83,8 +85,7 @@ WriteMakefile1(
                 recommends => {'Test::LeakTrace' => 0}
             },
             runtime => {
-                requires   => {%RUN_DEPS},
-                recommends => $want_xs
+                requires => {%RUN_DEPS},
             },
         },
     },
