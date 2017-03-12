@@ -108,6 +108,55 @@ WriteMakefile1(
     ($] < 5.012 ? (DEFINE => '-DPERL_EXT') : (),),
 );
 
+my $conflictMsg = <<EOCM;
+***
+    This version of %s conflicts with
+    the version of module %s (%s) you have installed.
+
+    It's strongly recommended that you update it after
+    installing this version of %s.
+***
+EOCM
+
+my $selfConflictMsg = <<EOSCM;
+***
+    This version of %s conflicts with
+    the version of %s (%s) you have installed.
+
+    It's strongly recommended that you carefully read
+    the Changes file and test your application with
+    this version before finally upgrading.
+
+    See local::lib how to do it easily.
+***
+EOSCM
+
+sub CheckConflicts
+{
+    my %params    = @_;
+    my %conflicts = %{$params{CONFLICTS}};
+    my $found     = 0;
+
+    while (my ($module, $version) = each(%conflicts))
+    {
+        undef $@;
+        eval "require $module";
+        next if $@;
+        my $installed = eval "\$" . $module . "::VERSION";
+        if ($installed le $version)
+        {
+            ++$found;
+            my $warning =
+              $module eq $params{NAME}
+              ? sprintf($selfConflictMsg, $params{NAME}, $module, $installed)
+              : sprintf($conflictMsg, $params{NAME}, $module, $installed, $params{NAME});
+            warn $warning;
+        }
+    }
+
+    return !$found;
+}
+
 sub WriteMakefile1
 {    # originally written by Alexandr Ciornii, version 0.21. Added by eumm-upgrade.
     my %params       = @_;
@@ -137,7 +186,7 @@ sub WriteMakefile1
     delete $params{ABSTRACT_FROM}         if ($] < 5.005);
     delete $params{BINARY_LOCATION}       if ($] < 5.005);
 
-    # more or less taken from Moose' Makefile.PL
+    # more or less taken from SQL::Statement's Makefile.PL
     if ($params{CONFLICTS})
     {
         my $ok = CheckConflicts(%params);
