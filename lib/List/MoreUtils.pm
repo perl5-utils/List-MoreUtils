@@ -8,7 +8,7 @@ my $have_xs;
 
 BEGIN
 {
-    our $VERSION = '0.417_001';
+    our $VERSION = '0.418';
     unless (defined($have_xs))
     {
         eval { require List::MoreUtils::XS; } unless $ENV{LIST_MOREUTILS_PP};
