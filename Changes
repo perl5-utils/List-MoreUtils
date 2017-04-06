@@ -1,5 +1,9 @@
 Revision history for Perl extension List-MoreUtils
 
+0.419 2017-04-06
+    - Fix RT#120799: Makefile.PL fails due to unescaped paths interpolated
+      in regex pattern (thanks, A. Sinan Unur)
+
 0.418 2017-03-29
     - Clarify license conditions
     - fix Changes version/date of 0.417_001
