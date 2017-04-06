@@ -160,11 +160,11 @@ sub CheckConflicts
               : sprintf($conflictMsg, $params{NAME}, $module, $installed, $params{NAME});
             warn $warning;
             (my $modfile = "${module}.pm") =~ s,::,/,g;
-            if ($INC{$modfile} =~ m,^$Config{installsitearch},)
+            if (index($INC{$modfile}, $Config{installsitearch}) == 0)
             {
                 push @killarch, $modfile;
             }
-            elsif ($INC{$modfile} =~ m,^$Config{installsitelib},)
+            elsif (index($INC{$modfile}, $Config{installsitelib}) == 0)
             {
                 push @killsite, "${modfile}.pm";
             }
