@@ -41,6 +41,7 @@ my @v0_400 = qw(one any_u all_u none_u notall_u one_u
   firstres onlyidx onlyval onlyres lastres
   singleton bsearchidx
 );
+my @v0_420 = qw(qsort);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
 
@@ -429,6 +430,17 @@ C<distinct> is an alias for C<uniq>.
 
 B<RT#49800> can be used to give feedback about this behavior.
 
+=head3 listcmp ARRAY0 ARRAY1 [ ARRAY2 ... ]
+
+Returns a hash containing a list of array numbers for each item in each list.
+Undefined entries in any given array are skipped.
+
+  my @seq = (1, 2, 3);
+  my @prim = (undef, 2, 3, 5);
+  my @fib = (1, 1, 2);
+  my $cmp = listcmp @seq, @prim, @fib;
+  # returns { 1 => [0, 2], 2 => [0, 1, 2], 3 => [0, 1], 5 => [1] }
+
 =head3 singleton
 
 Returns a new list by stripping values in LIST occurring more than once by
@@ -534,27 +546,6 @@ This prints
   g
 
 =head2 Searching
-
-=head3 bsearch BLOCK LIST
-
-Performs a binary search on LIST which must be a sorted list of values. BLOCK
-must return a negative value if the current element (stored in C<$_>) is smaller,
-a positive value if it is bigger and zero if it matches.
-
-Returns a boolean value in scalar context. In list context, it returns the element
-if it was found, otherwise the empty list.
-
-=head3 bsearchidx BLOCK LIST
-
-=head3 bsearch_index BLOCK LIST
-
-Performs a binary search on LIST which must be a sorted list of values. BLOCK
-must return a negative value if the current element (stored in C<$_>) is smaller,
-a positive value if it is bigger and zero if it matches.
-
-Returns the index of found element, otherwise C<-1>.
-
-C<bsearch_index> is an alias for C<bsearchidx>.
 
 =head3 firstval BLOCK LIST
 
@@ -703,6 +694,104 @@ in the correct order.
 =head3 nsort_by BLOCK LIST
 
 Similar to sort_by but compares its key values numerically.
+
+=head3 qsort BLOCK ARRAY
+
+This sorts the given array B<in place> using the given compare code. Except for
+tiny compare code like C<< $a <=> $b >>, qsort is much faster than Perl's C<sort>
+depending on the version.
+
+Compared 5.8 and 5.26:
+
+  my @rl;
+  for(my $i = 0; $i < 1E6; ++$i) { push @rl, rand(1E5) }
+  my $idx;
+
+  sub ext_cmp { $_[0] <=> $_[1] }
+
+  cmpthese( -60, {
+      'qsort' => sub {
+	  my @qrl = @rl;
+	  qsort { ext_cmp($a, $b) } @qrl;
+	  $idx = bsearchidx { ext_cmp($_, $rl[0]) } @qrl
+      },
+      'reverse qsort' => sub {
+	  my @qrl = @rl;
+	  qsort { ext_cmp($b, $a) } @qrl;
+	  $idx = bsearchidx { ext_cmp($rl[0], $_) } @qrl
+      },
+      'sort' => sub {
+	  my @srl = @rl;
+	  @srl = sort { ext_cmp($a, $b) } @srl;
+	  $idx = bsearchidx { ext_cmp($_, $rl[0]) } @srl
+      },
+      'reverse sort' => sub {
+	  my @srl = @rl;
+	  @srl = sort { ext_cmp($b, $a) } @srl;
+	  $idx = bsearchidx { ext_cmp($rl[0], $_) } @srl
+      },
+  });
+
+5.8 results
+
+		  s/iter  reverse sort          sort reverse qsort         qsort
+  reverse sort    6.21            --           -0%           -8%          -10%
+  sort            6.19            0%            --           -7%          -10%
+  reverse qsort   5.73            8%            8%            --           -2%
+  qsort           5.60           11%           11%            2%            --
+
+5.26 results
+
+		s/iter  reverse sort          sort reverse qsort         qsort
+  reverse sort    4.54            --           -0%          -96%          -96%
+  sort            4.52            0%            --          -96%          -96%
+  reverse qsort  0.203         2139%         2131%            --          -19%
+  qsort          0.164         2666%         2656%           24%            --
+
+Use it where external data sources might have to be compared (think of L<Unix::Statgrab>
+"tables").
+
+=head2 Searching in sorted Lists
+
+=head3 bsearch BLOCK LIST
+
+Performs a binary search on LIST which must be a sorted list of values. BLOCK
+must return a negative value if the current element (stored in C<$_>) is smaller,
+a positive value if it is bigger and zero if it matches.
+
+Returns a boolean value in scalar context. In list context, it returns the element
+if it was found, otherwise the empty list.
+
+=head3 bsearchidx BLOCK LIST
+
+=head3 bsearch_index BLOCK LIST
+
+Performs a binary search on LIST which must be a sorted list of values. BLOCK
+must return a negative value if the current element (stored in C<$_>) is smaller,
+a positive value if it is bigger and zero if it matches.
+
+Returns the index of found element, otherwise C<-1>.
+
+C<bsearch_index> is an alias for C<bsearchidx>.
+
+=head2 Operations on sorted Lists
+
+=head3 btree_insert BLOCK ITEM LIST
+
+Performs a binary search on LIST which must be a sorted list of values. BLOCK
+must return a negative value if the current element (stored in C<$_>) is smaller,
+a positive value if it is bigger and zero if it matches.
+
+ITEM is inserted at the index where the ITEM should be placed (based on above
+search). That means, it's inserted before the next bigger element.
+
+=head3 btree_remove BLOCK LIST
+
+Performs a binary search on LIST which must be a sorted list of values. BLOCK
+must return a negative value if the current element (stored in C<$_>) is smaller,
+a positive value if it is bigger and zero if it matches.
+
+The item at the found position is removed and returned.
 
 =head2 Counting and calculation
 
