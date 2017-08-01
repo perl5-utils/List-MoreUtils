@@ -41,9 +41,11 @@ my @v0_400 = qw(one any_u all_u none_u notall_u one_u
   firstres onlyidx onlyval onlyres lastres
   singleton bsearchidx
 );
-my @v0_420 = qw(qsort);
+my @v0_420 = qw(arrayify duplicates minmaxstr samples zip6 reduce_0 reduce_1 reduce_u
+  listcmp frequency occurances mode
+  binsert bremove equal_range lower_bound upper_bound qsort);
 
-my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400);
+my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400, @v0_420);
 
 no strict "refs";
 if ($have_xs)
@@ -75,6 +77,11 @@ my %alias_list = (
         only_result   => "onlyres",
         last_result   => "lastres",
         bsearch_index => "bsearchidx",
+    },
+    v0_420 => {
+	bsearch_insert => "binsert",
+	bsearch_remove => "bremove",
+	zip_unflatten  => "zip6",
     },
 );
 
@@ -408,6 +415,50 @@ Examples:
 
 C<zip> is an alias for C<mesh>.
 
+=head3 zip6
+
+=head3 zip_unflatten
+
+Returns a list of arrays consisting of the first elements of each array,
+then the second, then the third, etc, until all arrays are exhausted.
+
+  @x = qw/a b c d/;
+  @y = qw/1 2 3 4/;
+  @z = zip6 @x, @y;         # returns [a, 1], [b, 2], [c, 3], [d, 4]
+
+  @a = ('x');
+  @b = ('1', '2');
+  @c = qw/zip zap zot/;
+  @d = zip6 @a, @b, @c;     # [x, 1, zip], [undef, 2, zap], [undef, undef, zot]
+
+C<zip_unflatten> is an alias for C<zip6>.
+
+=head3 listcmp ARRAY0 ARRAY1 [ ARRAY2 ... ]
+
+Returns an associative list of elements and every I<id> of the list it
+was found in. Allowes easy implementation of @a & @b, @a | @b, @a ^ @b and
+so on.
+Undefined entries in any given array are skipped.
+
+  my @a = qw(one two three four five six seven eight nine ten eleven twelve thirteen);
+  my @b = qw(two three five seven eleven thirteen seventeen);
+  my @c = qw(one one two three five eight thirteen twentyone);
+  my %cmp = listcmp @a, @b, @c; # returns (one => [0, 2], two => [0, 1, 2], three => [0, 1, 2], four => [0], ...)
+
+  my @seq = (1, 2, 3);
+  my @prim = (undef, 2, 3, 5);
+  my @fib = (1, 1, 2);
+  my $cmp = listcmp @seq, @prim, @fib;
+  # returns { 1 => [0, 2], 2 => [0, 1, 2], 3 => [0, 1], 5 => [1] }
+
+=head3 arrayify LIST[,LIST[,LIST...]]
+
+Returns a list costisting of each element of given arrays. Recursive arrays
+are flattened, too.
+
+  @a = (1, [[2], 3], 4, [5], 6, [7], 8, 9);
+  @l = arrayify @a;         # returns 1, 2, 3, 4, 5, 6, 7, 8, 9
+
 =head3 uniq LIST
 
 =head3 distinct LIST
@@ -430,18 +481,7 @@ C<distinct> is an alias for C<uniq>.
 
 B<RT#49800> can be used to give feedback about this behavior.
 
-=head3 listcmp ARRAY0 ARRAY1 [ ARRAY2 ... ]
-
-Returns a hash containing a list of array numbers for each item in each list.
-Undefined entries in any given array are skipped.
-
-  my @seq = (1, 2, 3);
-  my @prim = (undef, 2, 3, 5);
-  my @fib = (1, 1, 2);
-  my $cmp = listcmp @seq, @prim, @fib;
-  # returns { 1 => [0, 2], 2 => [0, 1, 2], 3 => [0, 1], 5 => [1] }
-
-=head3 singleton
+=head3 singleton LIST
 
 Returns a new list by stripping values in LIST occurring more than once by
 comparing the values as hash keys, except that undef is considered separate
@@ -449,6 +489,40 @@ from ''.  The order of elements in the returned list is the same as in LIST.
 In scalar context, returns the number of elements occurring only once in LIST.
 
   my @x = singleton 1,1,2,2,3,4,5 # returns 3 4 5
+
+=head3 duplicates LIST
+
+Returns a new list by stripping values in LIST occuring less than twice by
+comparing the values as hash keys, except that undef is considered separate
+from ''.  The order of elements in the returned list is the same as in LIST.
+In scalar context, returns the number of elements occurring only once in LIST.
+
+  my @y = duplicates 1,1,2,4,7,2,3,4,6,9; #returns 1,2,4
+
+=head3 frequency LIST
+
+Returns an associative list of distinct values and the corresponding frequency.
+
+  my @f = frequency values %radio_nrw; # returns (
+  #  'Deutschlandfunk (DLF)' => 9, 'WDR 3' => 10,
+  #  'WDR 4' => 11, 'WDR 5' => 14, 'WDR Eins Live' => 14,
+  #  'Deutschlandradio Kultur' => 8,...)
+
+=head3 occurances LIST
+
+Returns a new list of frequencies and the corresponding values from LIST.
+
+  my @o = occurances ((1) x 3, (2) x 4, (3) x 2, (4) x 7, (5) x 2, (6) x 4);
+  #  @o = (undef, undef, [3, 5], [1], [2, 6], undef, undef, [4]);
+
+=head3 mode LIST
+
+Returns the modal value of LIST. In scalar context, just the modal value
+is returned, in list context all probes occuring I<modal> times are returned,
+too.
+
+  my @m = mode ((1) x 3, (2) x 4, (3) x 2, (4) x 7, (5) x 2, (6) x 4, (7) x 3, (8) x 7);
+  #  @m = (7, 4, 8) - bimodal LIST
 
 =head2 Partitioning
 
@@ -499,6 +573,14 @@ Negative values are only ok when they refer to a partition previously created:
   my @idx  = ( 0, 1, -1 );
   my $i    = 0;
   my @part = part { $idx[$++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
+
+=head3 samples COUNT LIST
+
+Returns a new list containing COUNT random samples from LIST. Is similar to
+L<List::Util/shuffle>, but stops after COUNT.
+
+  @r  = samples 10, 1..10; # same as shuffle
+  @r2 = samples 5, 1..10; # gives 5 values from 1..10;
 
 =head2 Iteration
 
@@ -751,6 +833,10 @@ Compared 5.8 and 5.26:
 Use it where external data sources might have to be compared (think of L<Unix::Statgrab>
 "tables").
 
+C<qsort> is available from List::MoreUtils::XS only. It's insane to maintain
+a wrapper around Perl's sort nor having a pure Perl implementation. One could
+create a flip-book in same speed as PP runs a qsort.
+
 =head2 Searching in sorted Lists
 
 =head3 bsearch BLOCK LIST
@@ -774,9 +860,39 @@ Returns the index of found element, otherwise C<-1>.
 
 C<bsearch_index> is an alias for C<bsearchidx>.
 
+=head3 lower_bound BLOCK LIST
+
+Returns the index of the first element in LIST which does not compare
+I<less than val>. Technically it's the first element in LIST which does
+not return a value below zero when passed to BLOCK.
+
+  @ids = (1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 6, 7, 7, 7, 8, 8, 9, 9, 9, 9, 9, 11, 13, 13, 13, 17);
+  $lb = lower_bound { $_ <=> 2 } @ids; # returns 2
+  $lb = lower_bound { $_ <=> 4 } @ids; # returns 10
+
+lower_bound has a complexity of O(log n).
+
+=head3 upper_bound BLOCK LIST
+
+Returns the index of the first element in LIST which does not compare
+I<greater than val>. Technically it's the first element in LIST which does
+not return a value below or equal to zero when passed to BLOCK.
+
+  @ids = (1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 6, 7, 7, 7, 8, 8, 9, 9, 9, 9, 9, 11, 13, 13, 13, 17);
+  $lb = upper_bound { $_ <=> 2 } @ids; # returns 4
+  $lb = upper_bound { $_ <=> 4 } @ids; # returns 14
+
+upper_bound has a complexity of O(log n).
+
+=head3 equal_range BLOCK LIST
+
+Returns a pair of indices containing the lower_bound and the upper_bound.
+
 =head2 Operations on sorted Lists
 
-=head3 btree_insert BLOCK ITEM LIST
+=head3 binsert BLOCK ITEM LIST
+
+=head3 bsearch_insert BLOCK ITEM LIST
 
 Performs a binary search on LIST which must be a sorted list of values. BLOCK
 must return a negative value if the current element (stored in C<$_>) is smaller,
@@ -785,7 +901,9 @@ a positive value if it is bigger and zero if it matches.
 ITEM is inserted at the index where the ITEM should be placed (based on above
 search). That means, it's inserted before the next bigger element.
 
-=head3 btree_remove BLOCK LIST
+=head3 bremove BLOCK LIST
+
+=head3 bsearch_remove BLOCK LIST
 
 Performs a binary search on LIST which must be a sorted list of values. BLOCK
 must return a negative value if the current element (stored in C<$_>) is smaller,
@@ -809,6 +927,37 @@ Sets C<$_> for each item in LIST in turn:
 
   printf "%i item(s) are not defined", false { defined($_) } @list;
 
+=head3 reduce_0 BLOCK LIST
+
+Reduce LIST by calling BLOCK in scalar context for each element of LIST.
+C<$a> contains the progressional result and is initialized with 0.
+C<$b> contains the current processed element of LIST and C<$_> contains the
+index of the element in C<$b>.
+
+The idea behind reduce_0 is B<summation> (addition of a sequence of numbers).
+
+=head3 reduce_1 BLOCK LIST
+
+Reduce LIST by calling BLOCK in scalar context for each element of LIST.
+C<$a> contains the progressional result and is initialized with 1.
+C<$b> contains the current processed element of LIST and C<$_> contains the
+index of the element in C<$b>.
+
+The idea behind reduce_1 is product of a sequence of numbers.
+
+=head3 reduce_u BLOCK LIST
+
+Reduce LIST by calling BLOCK in scalar context for each element of LIST.
+C<$a> contains the progressional result and is initialized with 1.
+C<$b> contains the current processed element of LIST and C<$_> contains the
+index of the element in C<$b>.
+
+This function has been added if one might need the extra of the index
+value but need an individual initialization.
+
+B<Use with caution>: In most cases L<List::Util/reduce> will do the
+job better.
+
 =head3 minmax LIST
 
 Calculates the minimum and maximum of LIST and returns a two element list with
@@ -824,6 +973,14 @@ However, the Perl implementation of it has some overhead simply due to the fact
 that there are more lines of Perl code involved. Therefore, LIST needs to be
 fairly big in order for C<minmax> to win over a naive implementation. This
 limitation does not apply to the XS version.
+
+=head3 minmaxstr LIST
+
+Computes the minimum and maximum of LIST using string compare and returns a
+two element list with the first element being the minimum and the second the
+maximum. Returns the empty list if LIST was empty.
+
+The implementation is similar to C<minmax>.
 
 =head1 ENVIRONMENT
 
