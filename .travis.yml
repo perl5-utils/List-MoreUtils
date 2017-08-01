@@ -1,21 +1,24 @@
 ---
-os:
-  - linux
 install:
-  - cpanm --notest Test::WriteVariants Config::AutoConf Carp App::mymeta_requires inc::latest JSON::PP
-  - env PUREPERL_ONLY=1 perl Makefile.PL
+  - cpanm --notest --with-recommends --with-suggests Test::WriteVariants Carp
+  - perl Makefile.PL
   - make manifest
-  - mymeta-requires --runtime --build --test --configure --develop --recommends --suggests | cpanm --notest --skip-satisfied
+  - cpanm --notest --with-recommends --with-suggests --with-develop --installdeps .
 language: perl
 perl:
+  - "5.26"
+  - "5.24-shrplib"
   - "5.24"
+  - "5.22-shrplib"
   - "5.22"
-  - "5.21"
+  - "5.20-shrplib"
   - "5.20-extras"
   - "5.20"
+  - "5.18-shrplib"
   - "5.18-extras"
   - "5.18"
   - "5.16"
   - "5.14"
   - "5.12"
   - "5.10"
+  - "5.8"
