@@ -19,7 +19,7 @@ foreach (@ARGV)
       and warn "-pm is depreciated, please use PUREPERL_ONLY=1 where applicable." and $recommend_xs = 0;
     /^-xs/ and warn "-xs is depreciated" and $recommend_xs = 1;
     /^PUREPERL_ONLY=(.*)$/
-      and $recommend_xs = $1;
+      and $recommend_xs = !$1;
 }
 
 if (-d "Sandbox")
