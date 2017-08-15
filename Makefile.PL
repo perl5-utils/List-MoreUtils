@@ -131,7 +131,7 @@ WriteMakefile1(
     CONFLICTS          => \%CONFLICTS,
     PREREQ_PM          => \%RUN_DEPS,
     TEST_REQUIRES      => \%TEST_DEPS,
-    (-d "Sandbox" ? (realclean => {FILES => "t/pureperl"}) : ()),
+    (-d "Sandbox" ? (realclean => {FILES => "t/pureperl t/xs M*.bak"}) : ()),
     depend => {'$(FIRST_MAKEFILE)' => '$(VERSION_FROM)'},
     test   => {TESTS               => join(' ', 't/*.t', 't/pureperl/*.t', ($recommend_xs ?'t/xs/*.t':()), 'xt/*.t')},
     # Otherwise 'cxinc' isn't defined
