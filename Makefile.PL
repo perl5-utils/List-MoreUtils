@@ -114,7 +114,7 @@ WriteMakefile1(
             },
             runtime => {
                 requires => {%RUN_DEPS},
-		($recommend_xs ? (recommends => {'List::MoreUtils::XS' => '0.420'}) : ()),
+		($recommend_xs ? (recommends => {'List::MoreUtils::XS' => '0.422'}) : ()),
             },
         },
     },
@@ -126,7 +126,7 @@ WriteMakefile1(
         'Adam Kennedy <adamk@cpan.org>',
         'Jens Rehsack <rehsack@cpan.org>'
     ],
-    LICENSE            => 'perl',
+    LICENSE            => 'apache_2_0',
     CONFIGURE_REQUIRES => \%CONFIGURE_DEPS,
     CONFLICTS          => \%CONFLICTS,
     PREREQ_PM          => \%RUN_DEPS,
