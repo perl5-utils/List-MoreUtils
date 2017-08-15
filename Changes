@@ -1,5 +1,30 @@
 Revision history for Perl extension List-MoreUtils
 
+0.420_001	2017-08-15
+    - add some new functions:
+      * qsort (XS only)
+      * binsert
+      * bremove
+      * listcmp
+      * arrayify (RT#17230)
+      * samples (RT#77562)
+      * minmaxstr (RT#106401)
+      * lower_bound
+      * upper_bound
+      * equal_range
+      * frequencies
+      * occurrences
+      * mode (RT#91991)
+      * zip6 (RT#42921)
+      * reduce_0
+      * reduce_1
+      * reduce_u
+    - improve tests
+    - make List::MoreUtils::XS independent from List::MoreUtils
+      Note that List::MoreUtils::XS doesn't guarantee API stability - this
+      feature is only provided through List::MoreUtils as frontend.
+    - improve Makefile.PL regarding some build artifacts
+
 0.419 2017-04-06
     - Fix RT#120799: Makefile.PL fails due to unescaped paths interpolated
       in regex pattern (thanks, A. Sinan Unur)
