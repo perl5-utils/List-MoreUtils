@@ -42,7 +42,7 @@ my @v0_400 = qw(one any_u all_u none_u notall_u one_u
   singleton bsearchidx
 );
 my @v0_420 = qw(arrayify duplicates minmaxstr samples zip6 reduce_0 reduce_1 reduce_u
-  listcmp frequency occurances mode
+  listcmp frequency occurrences mode
   binsert bremove equal_range lower_bound upper_bound qsort);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400, @v0_420);
@@ -508,11 +508,11 @@ Returns an associative list of distinct values and the corresponding frequency.
   #  'WDR 4' => 11, 'WDR 5' => 14, 'WDR Eins Live' => 14,
   #  'Deutschlandradio Kultur' => 8,...)
 
-=head3 occurances LIST
+=head3 occurrences LIST
 
 Returns a new list of frequencies and the corresponding values from LIST.
 
-  my @o = occurances ((1) x 3, (2) x 4, (3) x 2, (4) x 7, (5) x 2, (6) x 4);
+  my @o = occurrences ((1) x 3, (2) x 4, (3) x 2, (4) x 7, (5) x 2, (6) x 4);
   #  @o = (undef, undef, [3, 5], [1], [2, 6], undef, undef, [4]);
 
 =head3 mode LIST

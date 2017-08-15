@@ -559,7 +559,7 @@ sub frequency (@)
     (%h, $seen_undef ? (\$k => $seen_undef) : ());
 }
 
-sub occurances (@)
+sub occurrences (@)
 {
     my %seen = ();
     my $k;
