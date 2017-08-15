@@ -4,7 +4,6 @@ install:
   - perl Makefile.PL
   - make manifest
   - cpanm --notest --with-recommends --with-suggests --with-develop --installdeps .
-  - echo "" | cpan REHSACK/List-MoreUtils-XS-0.420_001.tar.gz
 language: perl
 perl:
   - "5.26"
