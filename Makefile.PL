@@ -114,7 +114,7 @@ WriteMakefile1(
             },
             runtime => {
                 requires => {%RUN_DEPS},
-		($recommend_xs ? (recommends => {'List::MoreUtils::XS' => '0.422'}) : ()),
+		($recommend_xs ? (recommends => {'List::MoreUtils::XS' => '0.423'}) : ()),
             },
         },
     },
