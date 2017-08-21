@@ -13,7 +13,8 @@ defined $ENV{PERL_MM_OPT} and push @argv, split " ", $ENV{PERL_MM_OPT};
 
 my $recommend_xs = 1;
 
-foreach (@ARGV)
+# Should we build the XS version?
+foreach (@argv)
 {
     /^-pm/
       and warn "-pm is depreciated, please use PUREPERL_ONLY=1 where applicable." and $recommend_xs = 0;
@@ -60,7 +61,6 @@ my $selfConflictMsg = <<EOSCM;
 ***
 EOSCM
 
-# Should we build the XS version?
 my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
 );
