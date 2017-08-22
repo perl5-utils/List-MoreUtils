@@ -1,5 +1,11 @@
 Revision history for Perl extension List-MoreUtils
 
+0.423	2017-08-22
+    - sync version with List::MoreUtils::XS
+    - add examples for binsert/bremove (LMU::XS issue #1, Thanks to shawnlaffan)
+    - update tests to latest List::MoreUtils::XS
+    - recommend List::MoreUtils::XS 0.423
+
 0.420_001	2017-08-15
     - add some new functions:
       * qsort (XS only)
