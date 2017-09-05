@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.424_001	2017-09-05
+    - Makefile.PL: modify PREREQ_PM instead of recommend dynamically
+
 0.423	2017-08-22
     - sync version with List::MoreUtils::XS
     - add examples for binsert/bremove (LMU::XS issue #1, Thanks to shawnlaffan)
