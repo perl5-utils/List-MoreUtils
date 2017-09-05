@@ -11,16 +11,17 @@ use ExtUtils::MakeMaker;
 my @argv = @ARGV;
 defined $ENV{PERL_MM_OPT} and push @argv, split " ", $ENV{PERL_MM_OPT};
 
-my $recommend_xs = 1;
+my $require_xs = 1;
 
 # Should we build the XS version?
 foreach (@argv)
 {
     /^-pm/
-      and warn "-pm is depreciated, please use PUREPERL_ONLY=1 where applicable." and $recommend_xs = 0;
-    /^-xs/ and warn "-xs is depreciated" and $recommend_xs = 1;
+      and warn "-pm is depreciated, please use PUREPERL_ONLY=1 where applicable."
+      and $require_xs = 0;
+    /^-xs/ and warn "-xs is depreciated" and $require_xs = 1;
     /^PUREPERL_ONLY=(.*)$/
-      and $recommend_xs = !$1;
+      and $require_xs = !$1;
 }
 
 if (-d "Sandbox")
@@ -33,7 +34,7 @@ if (-d "Sandbox")
     $@ and die $@;
     eval "use File::Path ();";
     File::Path->import;
-    -d 't/xs' and rmtree('t/xs');
+    -d 't/xs'       and rmtree('t/xs');
     -d 't/pureperl' and rmtree('t/pureperl');
     Sandbox::Tumble->tumble(qw(t));
 }
@@ -63,6 +64,7 @@ EOSCM
 
 my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
+    ($require_xs ? ('List::MoreUtils::XS' => '0.423') : ())
 );
 my %CONFIGURE_DEPS = (
     'ExtUtils::MakeMaker' => 0,
@@ -109,13 +111,10 @@ WriteMakefile1(
             },
             configure => {requires => {%CONFIGURE_DEPS}},
             test      => {
-                requires   => {%TEST_DEPS},
-                recommends => {'Test::LeakTrace' => 0}
+                requires => {%TEST_DEPS},
+                requires => {'Test::LeakTrace' => 0}
             },
-            runtime => {
-                requires => {%RUN_DEPS},
-		($recommend_xs ? (recommends => {'List::MoreUtils::XS' => '0.423'}) : ()),
-            },
+            runtime => {requires => {%RUN_DEPS}},
         },
     },
     NAME         => 'List::MoreUtils',
@@ -133,7 +132,7 @@ WriteMakefile1(
     TEST_REQUIRES      => \%TEST_DEPS,
     (-d "Sandbox" ? (realclean => {FILES => "t/pureperl t/xs M*.bak"}) : ()),
     depend => {'$(FIRST_MAKEFILE)' => '$(VERSION_FROM)'},
-    test   => {TESTS               => join(' ', 't/*.t', 't/pureperl/*.t', ($recommend_xs ?'t/xs/*.t':()), 'xt/*.t')},
+    test   => {TESTS               => join(' ', 't/*.t', 't/pureperl/*.t', ($require_xs ? 't/xs/*.t' : ()), 'xt/*.t')},
     # Otherwise 'cxinc' isn't defined
     ($] < 5.012 ? (DEFINE => '-DPERL_EXT') : (),),
 );
