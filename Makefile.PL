@@ -142,7 +142,6 @@ sub CheckConflicts
     my %params    = @_;
     my %conflicts = %{$params{CONFLICTS}};
     my $found     = 0;
-    my (@killsite, @killarch);
 
     while (my ($module, $version) = each(%conflicts))
     {
@@ -158,31 +157,7 @@ sub CheckConflicts
               ? sprintf($selfConflictMsg, $params{NAME}, $module, $installed)
               : sprintf($conflictMsg, $params{NAME}, $module, $installed, $params{NAME});
             warn $warning;
-            (my $modfile = "${module}.pm") =~ s,::,/,g;
-            if (index($INC{$modfile}, $Config{installsitearch}) == 0)
-            {
-                push @killarch, $modfile;
-            }
-            elsif (index($INC{$modfile}, $Config{installsitelib}) == 0)
-            {
-                push @killsite, "${modfile}.pm";
-            }
         }
-    }
-
-    if (@killsite or @killarch)
-    {
-        package MY;
-        no warnings 'once';
-
-        *install = sub {
-            my $self = shift;
-            return join("\n",
-                "\npure_site_install ::",
-                (map { '	$(NOECHO) $(RM_F) ' . $self->quote_literal($self->catfile('$(DESTINSTALLSITELIB)',  $_)) } @killsite),
-                (map { '	$(NOECHO) $(RM_F) ' . $self->quote_literal($self->catfile('$(DESTINSTALLSITEARCH)', $_)) } @killarch),
-                $self->SUPER::install);
-        };
     }
 
     return !$found;
