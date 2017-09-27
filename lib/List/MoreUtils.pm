@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 my $have_xs;
-our $VERSION = '0.425';
+our $VERSION = '0.425_001';
 
 BEGIN
 {

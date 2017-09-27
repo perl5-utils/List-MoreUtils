@@ -1,5 +1,9 @@
 Revision history for Perl extension List-MoreUtils
 
+0.425_001 2017-09-27
+    - fix broken arrayify prototype
+    - revert removal of old List::MoreUtils::XS parts
+
 0.425	2017-09-06
     - release 0.424_001 as 0.425 with XS is META.* after 136:0 PASS:FAIL
       on CPAN Tester Matrix
