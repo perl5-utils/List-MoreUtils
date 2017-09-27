@@ -5,10 +5,10 @@ use strict;
 use warnings;
 
 my $have_xs;
+our $VERSION = '0.425';
 
 BEGIN
 {
-    our $VERSION = '0.425';
     unless (defined($have_xs))
     {
         eval { require List::MoreUtils::XS; } unless $ENV{LIST_MOREUTILS_PP};
