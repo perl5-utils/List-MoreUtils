@@ -119,19 +119,19 @@ sub reduce_u(&@)
     my $code = shift;
 
     # Localise $a, $b
-    my ( $caller_a, $caller_b ) = do
+    my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
         no strict 'refs';
-        \*{ $pkg . '::a' }, \*{ $pkg . '::b' };
+        \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
-    local ( *$caller_a, *$caller_b );
+    local (*$caller_a, *$caller_b);
     *$caller_a = \();
-    for (0..$#_)
+    for (0 .. $#_)
     {
         *$caller_b = \$_[$_];
-	*$caller_a = \($code->());
+        *$caller_a = \($code->());
     }
 
     ${*$caller_a};
@@ -142,19 +142,19 @@ sub reduce_0(&@)
     my $code = shift;
 
     # Localise $a, $b
-    my ( $caller_a, $caller_b ) = do
+    my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
         no strict 'refs';
-        \*{ $pkg . '::a' }, \*{ $pkg . '::b' };
+        \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
-    local ( *$caller_a, *$caller_b );
+    local (*$caller_a, *$caller_b);
     *$caller_a = \0;
-    for (0..$#_)
+    for (0 .. $#_)
     {
         *$caller_b = \$_[$_];
-	*$caller_a = \($code->());
+        *$caller_a = \($code->());
     }
 
     ${*$caller_a};
@@ -165,19 +165,19 @@ sub reduce_1(&@)
     my $code = shift;
 
     # Localise $a, $b
-    my ( $caller_a, $caller_b ) = do
+    my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
         no strict 'refs';
-        \*{ $pkg . '::a' }, \*{ $pkg . '::b' };
+        \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
-    local ( *$caller_a, *$caller_b );
+    local (*$caller_a, *$caller_b);
     *$caller_a = \1;
-    for (0..$#_)
+    for (0 .. $#_)
     {
         *$caller_b = \$_[$_];
-	*$caller_a = \($code->());
+        *$caller_a = \($code->());
     }
 
     ${*$caller_a};
@@ -202,7 +202,7 @@ sub false (&@)
 sub firstidx (&@)
 {
     my $f = shift;
-    foreach my $i ( 0 .. $#_ )
+    foreach my $i (0 .. $#_)
     {
         local *_ = \$_[$i];
         return $i if $f->();
@@ -235,7 +235,7 @@ sub onlyidx (&@)
 {
     my $f = shift;
     my $found;
-    foreach my $i ( 0 .. $#_ )
+    foreach my $i (0 .. $#_)
     {
         local *_ = \$_[$i];
         $f->() or next;
@@ -276,7 +276,7 @@ sub onlyres (&@)
 sub lastidx (&@)
 {
     my $f = shift;
-    foreach my $i ( reverse 0 .. $#_ )
+    foreach my $i (reverse 0 .. $#_)
     {
         local *_ = \$_[$i];
         return $i if $f->();
@@ -288,7 +288,7 @@ sub lastval (&@)
 {
     my $test = shift;
     my $ix;
-    for ( $ix = $#_; $ix >= 0; $ix-- )
+    for ($ix = $#_; $ix >= 0; $ix--)
     {
         local *_ = \$_[$ix];
         my $testval = $test->();
@@ -304,7 +304,7 @@ sub lastres (&@)
 {
     my $test = shift;
     my $ix;
-    for ( $ix = $#_; $ix >= 0; $ix-- )
+    for ($ix = $#_; $ix >= 0; $ix--)
     {
         local *_ = \$_[$ix];
         my $testval = $test->();
@@ -318,17 +318,17 @@ sub lastres (&@)
 
 sub insert_after (&$\@)
 {
-    my ( $f, $val, $list ) = @_;
-    my $c = &firstidx( $f, @$list );
-    @$list = ( @{$list}[ 0 .. $c ], $val, @{$list}[ $c + 1 .. $#$list ], ) and return 1 if $c != -1;
+    my ($f, $val, $list) = @_;
+    my $c = &firstidx($f, @$list);
+    @$list = (@{$list}[0 .. $c], $val, @{$list}[$c + 1 .. $#$list],) and return 1 if $c != -1;
     return 0;
 }
 
 sub insert_after_string ($$\@)
 {
-    my ( $string, $val, $list ) = @_;
+    my ($string, $val, $list) = @_;
     my $c = firstidx { defined $_ and $string eq $_ } @$list;
-    @$list = ( @{$list}[ 0 .. $c ], $val, @{$list}[ $c + 1 .. $#$list ], ) and return 1 if $c != -1;
+    @$list = (@{$list}[0 .. $c], $val, @{$list}[$c + 1 .. $#$list],) and return 1 if $c != -1;
     return 0;
 }
 
@@ -394,24 +394,24 @@ sub pairwise (&\@\@)
 
     # Symbols for caller's input arrays
     use vars qw{ @A @B };
-    local ( *A, *B ) = @_;
+    local (*A, *B) = @_;
 
     # Localise $a, $b
-    my ( $caller_a, $caller_b ) = do
+    my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
         no strict 'refs';
-        \*{ $pkg . '::a' }, \*{ $pkg . '::b' };
+        \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
     # Loop iteration limit
     my $limit = $#A > $#B ? $#A : $#B;
 
     # This map expression is also the return value
-    local ( *$caller_a, *$caller_b );
+    local (*$caller_a, *$caller_b);
     map {
         # Assign to $a, $b as refs to caller's array elements
-        ( *$caller_a, *$caller_b ) = \( $A[$_], $B[$_] );
+        (*$caller_a, *$caller_b) = \($A[$_], $B[$_]);
 
         # Perform the transformation
         $op->();
@@ -432,7 +432,7 @@ sub each_arrayref
     # Get the length of the longest input array
     foreach (@list)
     {
-        unless ( ref $_ eq 'ARRAY' )
+        unless (ref $_ eq 'ARRAY')
         {
             require Carp;
             Carp::croak("each_arrayref: argument is not an array reference\n");
@@ -445,7 +445,7 @@ sub each_arrayref
         if (@_)
         {
             my $method = shift;
-            unless ( $method eq 'index' )
+            unless ($method eq 'index')
             {
                 require Carp;
                 Carp::croak("each_array: unknown argument '$method' passed to iterator.");
@@ -477,10 +477,10 @@ sub natatime ($@)
 # "leaks" when lexically hidden in arrayify
 my $flatten;
 $flatten = sub {
-    map { (ref $_ and ("ARRAY" eq ref $_ or overload::Method($_, '@{}'))) ? ($flatten->(@{$_})) : ($_) } @_
+    map { (ref $_ and ("ARRAY" eq ref $_ or overload::Method($_, '@{}'))) ? ($flatten->(@{$_})) : ($_) } @_;
 };
 
-sub arrayify (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
+sub arrayify
 {
     map { $flatten->($_) } @_;
 }
@@ -488,7 +488,7 @@ sub arrayify (\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 {
     my $max = -1;
-    $max < $#$_ && ( $max = $#$_ ) foreach @_;
+    $max < $#$_ && ($max = $#$_) foreach @_;
     map {
         my $ix = $_;
         map $_->[$ix], @_;
@@ -498,25 +498,25 @@ sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 sub zip6 (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 {
     my $max = -1;
-    $max < $#$_ && ( $max = $#$_ ) foreach @_;
+    $max < $#$_ && ($max = $#$_) foreach @_;
     map {
         my $ix = $_;
-        [ map $_->[$ix], @_ ];
+        [map $_->[$ix], @_];
     } 0 .. $max;
 }
 
 sub listcmp (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 {
     my %ret;
-    for(my $i = 0; $i < scalar @_; ++$i)
+    for (my $i = 0; $i < scalar @_; ++$i)
     {
-	my %seen;
-	my $k;
-	foreach my $w (grep { defined $_ and not $seen{ $k = $_ }++ } @{$_[$i]})
-	{
-	    $ret{$w} ||= [];
-	    push @{$ret{$w}}, $i;
-	}
+        my %seen;
+        my $k;
+        foreach my $w (grep { defined $_ and not $seen{$k = $_}++ } @{$_[$i]})
+        {
+            $ret{$w} ||= [];
+            push @{$ret{$w}}, $i;
+        }
     }
     %ret;
 }
@@ -526,7 +526,7 @@ sub uniq (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
+    grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
 }
 
 sub singleton (@)
@@ -534,8 +534,8 @@ sub singleton (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    grep { 1 == ( defined $_ ? $seen{ $k = $_ } : $seen_undef ) }
-      grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
+    grep { 1 == (defined $_ ? $seen{$k = $_} : $seen_undef) }
+      grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
 }
 
 sub duplicates (@)
@@ -543,8 +543,8 @@ sub duplicates (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    grep { 1 < ( defined $_ ? $seen{ $k = $_ } : $seen_undef ) }
-      grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
+    grep { 1 < (defined $_ ? $seen{$k = $_} : $seen_undef) }
+      grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
 }
 
 sub frequency (@)
@@ -552,8 +552,8 @@ sub frequency (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    my %h = map { defined $_ ? ($_ => $seen{ $k = $_ }) : () }
-      grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_;
+    my %h = map { defined $_ ? ($_ => $seen{$k = $_}) : () }
+      grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
     wantarray or return (scalar keys %h) + ($seen_undef ? 1 : 0);
     undef $k;
     (%h, $seen_undef ? (\$k => $seen_undef) : ());
@@ -565,11 +565,11 @@ sub occurrences (@)
     my $k;
     my $seen_undef;
     my @ret;
-    foreach my $l (map {$_} grep { defined $_ ? not $seen{ $k = $_ }++ : not $seen_undef++ } @_)
+    foreach my $l (map { $_ } grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_)
     {
-	my $n = defined $l ? $seen{$l} : $seen_undef;
-	defined $ret[$n] or $ret[$n] = [];
-	push @{$ret[$n]}, $l;
+        my $n = defined $l ? $seen{$l} : $seen_undef;
+        defined $ret[$n] or $ret[$n] = [];
+        push @{$ret[$n]}, $l;
     }
     @ret;
 }
@@ -579,34 +579,34 @@ sub mode (@)
     my %seen = ();
     my ($max, $k, $seen_undef) = (1);
 
-    foreach (@_) { defined $_ ? ($max < ++$seen{ $k = $_ } and ++$max) : ($max < ++$seen_undef and ++$max) };
+    foreach (@_) { defined $_ ? ($max < ++$seen{$k = $_} and ++$max) : ($max < ++$seen_undef and ++$max) }
     wantarray or return $max;
 
     my @ret = ($max);
-    foreach my $l (grep {$seen{$_} == $max} keys %seen)
+    foreach my $l (grep { $seen{$_} == $max } keys %seen)
     {
-	push @ret, $l;
+        push @ret, $l;
     }
     $seen_undef and $seen_undef == $max and push @ret, undef;
-    @ret
+    @ret;
 }
 
 sub samples ($@)
 {
     my $n = shift;
-    if($n > @_)
+    if ($n > @_)
     {
-	require Carp;
-	Carp::croak(sprintf("Cannot get %d samples from %d elements", $n, scalar @_));
+        require Carp;
+        Carp::croak(sprintf("Cannot get %d samples from %d elements", $n, scalar @_));
     }
- 
-    for(my $i = @_; @_ - $i > $n; )
+
+    for (my $i = @_; @_ - $i > $n;)
     {
-	my $idx = @_ - $i;
-	my $swp = $idx + int(rand(--$i));
-	my $xchg = $_[$swp];
-	$_[$swp] = $_[$idx];
-	$_[$idx] = $xchg;
+        my $idx  = @_ - $i;
+        my $swp  = $idx + int(rand(--$i));
+        my $xchg = $_[$swp];
+        $_[$swp] = $_[$idx];
+        $_[$idx] = $xchg;
     }
 
     return splice @_, 0, $n;
@@ -617,36 +617,36 @@ sub minmax (@)
     return unless @_;
     my $min = my $max = $_[0];
 
-    for ( my $i = 1; $i < @_; $i += 2 )
+    for (my $i = 1; $i < @_; $i += 2)
     {
-        if ( $_[ $i - 1 ] <= $_[$i] )
+        if ($_[$i - 1] <= $_[$i])
         {
-            $min = $_[ $i - 1 ] if $min > $_[ $i - 1 ];
-            $max = $_[$i]       if $max < $_[$i];
+            $min = $_[$i - 1] if $min > $_[$i - 1];
+            $max = $_[$i]     if $max < $_[$i];
         }
         else
         {
-            $min = $_[$i]       if $min > $_[$i];
-            $max = $_[ $i - 1 ] if $max < $_[ $i - 1 ];
+            $min = $_[$i]     if $min > $_[$i];
+            $max = $_[$i - 1] if $max < $_[$i - 1];
         }
     }
 
-    if ( @_ & 1 )
+    if (@_ & 1)
     {
         my $i = $#_;
-        if ( $_[ $i - 1 ] <= $_[$i] )
+        if ($_[$i - 1] <= $_[$i])
         {
-            $min = $_[ $i - 1 ] if $min > $_[ $i - 1 ];
-            $max = $_[$i]       if $max < $_[$i];
+            $min = $_[$i - 1] if $min > $_[$i - 1];
+            $max = $_[$i]     if $max < $_[$i];
         }
         else
         {
-            $min = $_[$i]       if $min > $_[$i];
-            $max = $_[ $i - 1 ] if $max < $_[ $i - 1 ];
+            $min = $_[$i]     if $min > $_[$i];
+            $max = $_[$i - 1] if $max < $_[$i - 1];
         }
     }
 
-    return ( $min, $max );
+    return ($min, $max);
 }
 
 sub minmaxstr (@)
@@ -654,43 +654,43 @@ sub minmaxstr (@)
     return unless @_;
     my $min = my $max = $_[0];
 
-    for ( my $i = 1; $i < @_; $i += 2 )
+    for (my $i = 1; $i < @_; $i += 2)
     {
-        if ( $_[ $i - 1 ] le $_[$i] )
+        if ($_[$i - 1] le $_[$i])
         {
-            $min = $_[ $i - 1 ] if $min gt $_[ $i - 1 ];
-            $max = $_[$i]       if $max lt $_[$i];
+            $min = $_[$i - 1] if $min gt $_[$i - 1];
+            $max = $_[$i]     if $max lt $_[$i];
         }
         else
         {
-            $min = $_[$i]       if $min gt $_[$i];
-            $max = $_[ $i - 1 ] if $max lt $_[ $i - 1 ];
+            $min = $_[$i]     if $min gt $_[$i];
+            $max = $_[$i - 1] if $max lt $_[$i - 1];
         }
     }
 
-    if ( @_ & 1 )
+    if (@_ & 1)
     {
         my $i = $#_;
-        if ( $_[ $i - 1 ] le $_[$i] )
+        if ($_[$i - 1] le $_[$i])
         {
-            $min = $_[ $i - 1 ] if $min gt $_[ $i - 1 ];
-            $max = $_[$i]       if $max lt $_[$i];
+            $min = $_[$i - 1] if $min gt $_[$i - 1];
+            $max = $_[$i]     if $max lt $_[$i];
         }
         else
         {
-            $min = $_[$i]       if $min gt $_[$i];
-            $max = $_[ $i - 1 ] if $max lt $_[ $i - 1 ];
+            $min = $_[$i]     if $min gt $_[$i];
+            $max = $_[$i - 1] if $max lt $_[$i - 1];
         }
     }
 
-    return ( $min, $max );
+    return ($min, $max);
 }
 
 sub part (&@)
 {
-    my ( $code, @list ) = @_;
+    my ($code, @list) = @_;
     my @parts;
-    push @{ $parts[ $code->($_) ] }, $_ foreach @list;
+    push @{$parts[$code->($_)]}, $_ foreach @list;
     return @parts;
 }
 
@@ -703,7 +703,7 @@ sub bsearch(&@)
     my $j = @_;
     do
     {
-        my $k = int( ( $i + $j ) / 2 );
+        my $k = int(($i + $j) / 2);
 
         $k >= @_ and return;
 
@@ -713,7 +713,7 @@ sub bsearch(&@)
         $rc == 0
           and return wantarray ? $_ : 1;
 
-        if ( $rc < 0 )
+        if ($rc < 0)
         {
             $i = $k + 1;
         }
@@ -735,7 +735,7 @@ sub bsearchidx(&@)
     my $j = @_;
     do
     {
-        my $k = int( ( $i + $j ) / 2 );
+        my $k = int(($i + $j) / 2);
 
         $k >= @_ and return -1;
 
@@ -744,7 +744,7 @@ sub bsearchidx(&@)
 
         $rc == 0 and return $k;
 
-        if ( $rc < 0 )
+        if ($rc < 0)
         {
             $i = $k + 1;
         }
@@ -759,23 +759,23 @@ sub bsearchidx(&@)
 
 sub lower_bound(&@)
 {
-    my $code = shift;
+    my $code  = shift;
     my $count = @_;
     my $first = 0;
-    while($count > 0)
+    while ($count > 0)
     {
-	my $step = $count >> 1;
-	my $it = $first + $step;
+        my $step = $count >> 1;
+        my $it   = $first + $step;
         local *_ = \$_[$it];
-	if( $code->() < 0 )
-	{
-	    $first = ++$it;
-	    $count -= $step + 1;
-	}
-	else
-	{
-	    $count = $step;
-	}
+        if ($code->() < 0)
+        {
+            $first = ++$it;
+            $count -= $step + 1;
+        }
+        else
+        {
+            $count = $step;
+        }
     }
 
     $first;
@@ -783,23 +783,23 @@ sub lower_bound(&@)
 
 sub upper_bound(&@)
 {
-    my $code = shift;
+    my $code  = shift;
     my $count = @_;
     my $first = 0;
-    while($count > 0)
+    while ($count > 0)
     {
-	my $step = $count >> 1;
-	my $it = $first + $step;
+        my $step = $count >> 1;
+        my $it   = $first + $step;
         local *_ = \$_[$it];
-	if( $code->() <= 0 )
-	{
-	    $first = ++$it;
-	    $count -= $step + 1;
-	}
-	else
-	{
-	    $count = $step;
-	}
+        if ($code->() <= 0)
+        {
+            $first = ++$it;
+            $count -= $step + 1;
+        }
+        else
+        {
+            $count = $step;
+        }
     }
 
     $first;
@@ -809,14 +809,14 @@ sub equal_range(&@)
 {
     my $lb = &lower_bound(@_);
     my $ub = &upper_bound(@_);
-    ($lb,$ub);
+    ($lb, $ub);
 }
 
 sub binsert (&$\@)
 {
     my $lb = &lower_bound($_[0], @{$_[2]});
     splice @{$_[2]}, $lb, 0, $_[1];
-    $lb
+    $lb;
 }
 
 sub bremove (&\@)
@@ -833,18 +833,18 @@ sub qsort(&\@)
 
 sub sort_by(&@)
 {
-    my ( $code, @list ) = @_;
+    my ($code, @list) = @_;
     return map { $_->[0] }
       sort     { $a->[1] cmp $b->[1] }
-      map { [ $_, scalar( $code->() ) ] } @list;
+      map { [$_, scalar($code->())] } @list;
 }
 
 sub nsort_by(&@)
 {
-    my ( $code, @list ) = @_;
+    my ($code, @list) = @_;
     return map { $_->[0] }
       sort     { $a->[1] <=> $b->[1] }
-      map { [ $_, scalar( $code->() ) ] } @list;
+      map { [$_, scalar($code->())] } @list;
 }
 
 sub _XScompiled { 0 }
