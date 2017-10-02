@@ -8,21 +8,30 @@ use 5.008_001;
 use Config;
 use ExtUtils::MakeMaker;
 
-my @argv = @ARGV;
-defined $ENV{PERL_MM_OPT} and push @argv, split " ", $ENV{PERL_MM_OPT};
-
-my $require_xs = 1;
-
-# Should we build the XS version?
-foreach (@argv)
+BEGIN
 {
-    /^-pm/
-      and warn "-pm is depreciated, please use PUREPERL_ONLY=1 where applicable."
-      and $require_xs = 0;
-    /^-xs/ and warn "-xs is depreciated" and $require_xs = 1;
-    /^PUREPERL_ONLY=(.*)$/
-      and $require_xs = !$1;
+    unless (grep { $_ eq "." } @INC)
+    {
+        use lib ".";
+    }
 }
+
+use inc::latest 'Capture::Tiny';
+use inc::latest 'Config::AutoConf';
+
+if (inc::latest->can("write"))
+{
+    inc::latest->write("inc");
+    for my $mod (inc::latest->loaded_modules)
+    {
+        inc::latest->bundle_module($mod, "inc");
+    }
+}
+
+use inc::Config::AutoConf::LMU ();
+
+inc::Config::AutoConf::LMU->_set_argv(@ARGV);    # XXX hack because we cannot construct for global use
+my $loadable_xs = inc::Config::AutoConf::LMU->check_produce_loadable_xs_build();
 
 if (-d "Sandbox")
 {
@@ -64,7 +73,11 @@ EOSCM
 
 my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
-    ($require_xs ? ('List::MoreUtils::XS' => '0.423') : ())
+    ($loadable_xs ? ('List::MoreUtils::XS' => '0.423') : ())
+);
+my %BUNDLE_CONFIGURE_DEPS = (
+    'inc::latest'      => '0.500',
+    'Config::AutoConf' => '0.315',
 );
 my %CONFIGURE_DEPS = (
     'ExtUtils::MakeMaker' => 0,
@@ -98,6 +111,7 @@ WriteMakefile1(
         prereqs => {
             develop => {
                 requires => {
+                    %BUNDLE_CONFIGURE_DEPS,
                     'Test::CPAN::Changes'                 => 0,
                     'Test::CheckManifest'                 => 0,
                     'Module::CPANTS::Analyse'             => '0.96',
@@ -109,8 +123,11 @@ WriteMakefile1(
                     'Test::WriteVariants'                 => '0.014',
                 },
             },
-            configure => {requires => {%CONFIGURE_DEPS}},
-            test      => {
+            configure => {
+                requires   => {%CONFIGURE_DEPS},
+                recommends => {'Config::AutoConf' => '0.315'}
+            },
+            test => {
                 requires => {%TEST_DEPS},
                 requires => {'Test::LeakTrace' => 0}
             },
@@ -132,7 +149,7 @@ WriteMakefile1(
     TEST_REQUIRES      => \%TEST_DEPS,
     (-d "Sandbox" ? (realclean => {FILES => "t/pureperl t/xs M*.bak"}) : ()),
     depend => {'$(FIRST_MAKEFILE)' => '$(VERSION_FROM)'},
-    test   => {TESTS               => join(' ', 't/*.t', 't/pureperl/*.t', ($require_xs ? 't/xs/*.t' : ()), 'xt/*.t')},
+    test   => {TESTS               => join(' ', 't/*.t', 't/pureperl/*.t', ($loadable_xs ? 't/xs/*.t' : ()), 'xt/*.t')},
     # Otherwise 'cxinc' isn't defined
     ($] < 5.012 ? (DEFINE => '-DPERL_EXT') : (),),
 );

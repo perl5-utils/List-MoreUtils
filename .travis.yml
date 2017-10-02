@@ -1,6 +1,6 @@
 ---
 install:
-  - cpanm --notest --with-recommends --with-suggests Test::WriteVariants Carp
+  - cpanm --notest --with-recommends --with-suggests inc::latest Config::AutoConf Test::WriteVariants Carp
   - perl Makefile.PL
   - make manifest
   - cpanm --notest --with-recommends --with-suggests --with-develop --installdeps .
