@@ -1,6 +1,12 @@
 Revision history for Perl extension List-MoreUtils
 
-0.425_001 2017-09-27
+0.425_002	2017-10-05
+    - re-introduce Config::AutoConf
+      (https://rt.cpan.org/Ticket/Display.html?id=122875#txn-1745984)
+      for final satisfying RT#122875
+    - bump required version of List::MoreUtils::XS to 0.426, if XS is available
+
+0.425_001	2017-09-27
     - fix broken arrayify prototype
     - revert removal of old List::MoreUtils::XS parts
 
