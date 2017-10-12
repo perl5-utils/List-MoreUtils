@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.426	2017-10-12
+    - release 0.425_002 without further changes
+
 0.425_002	2017-10-05
     - re-introduce Config::AutoConf
       (https://rt.cpan.org/Ticket/Display.html?id=122875#txn-1745984)
