@@ -1,5 +1,12 @@
 Revision history for Perl extension List-MoreUtils
 
+0.427_001	2017-11-06
+    - fix Issue#22 (Upgrading from LMU 0.416 to split XS/PP version will fail)
+      reported by Graham Knop (haarg), this time hopefully the right way,
+      repeated in RT#123310.
+    - fix Issue#29 (pairwise() PP implementation add tail undefs if arrays
+      sizes differs) reported by 0x62ash
+
 0.426	2017-10-12
     - release 0.425_002 without further changes
 
