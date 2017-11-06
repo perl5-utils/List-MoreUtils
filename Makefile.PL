@@ -51,7 +51,7 @@ if (-d "Sandbox")
 my $conflictMsg = <<EOCM;
 ***
     This version of %s conflicts with
-    the version of module %s (%s) you have installed.
+    the version of module %s v%s you have installed.
 
     It's strongly recommended that you update it after
     installing this version of %s.
@@ -60,14 +60,14 @@ EOCM
 
 my $selfConflictMsg = <<EOSCM;
 ***
-    This version of %s conflicts with
-    the version of %s (%s) you have installed.
+    This version of %s conflicts with the version of
+    %s v%s at %s you have installed.
 
     It's strongly recommended that you carefully read
     the Changes file and test your application with
     this version before finally upgrading.
 
-    See local::lib how to do it easily.
+    The installed files will be removed when installing.
 ***
 EOSCM
 
@@ -159,6 +159,7 @@ sub CheckConflicts
     my %params    = @_;
     my %conflicts = %{$params{CONFLICTS}};
     my $found     = 0;
+    my @kill;
 
     while (my ($module, $version) = each(%conflicts))
     {
@@ -169,12 +170,34 @@ sub CheckConflicts
         if ($installed le $version)
         {
             ++$found;
-            my $warning =
-              (0 == index($module, $params{NAME}, 0))
-              ? sprintf($selfConflictMsg, $params{NAME}, $module, $installed)
-              : sprintf($conflictMsg, $params{NAME}, $module, $installed, $params{NAME});
-            warn $warning;
+            if ($module eq "List::MoreUtils" or $module eq "List::MoreUtils::PP")
+            {
+                (my $modfile = "${module}.pm") =~ s,::,/,g;
+                warn sprintf($selfConflictMsg, $params{NAME}, $module, $installed, $INC{$modfile});
+                push @kill, $modfile;
+            }
+            else
+            {
+                warn sprintf($conflictMsg, $params{NAME}, $module, $installed, $params{NAME});
+            }
+
         }
+    }
+
+    if (@kill)
+    {
+
+        package MY;
+        no warnings 'once';
+
+        *install = sub {
+            my $self = shift;
+            return "\npure_site_install ::\n"
+              . join("",
+                map { "\t\$(NOECHO) \$(RM_F) " . $self->quote_literal($self->catfile('$(DESTINSTALLSITEARCH)', $_)) . "\n" }
+                  @kill)
+              . $self->SUPER::install;
+        };
     }
 
     return !$found;
