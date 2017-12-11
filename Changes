@@ -1,5 +1,8 @@
 Revision history for Perl extension List-MoreUtils
 
+0.428	2017-12-11
+    - release 0.427_001 without further changes
+
 0.427_001	2017-11-06
     - fix Issue#22 (Upgrading from LMU 0.416 to split XS/PP version will fail)
       reported by Graham Knop (haarg), this time hopefully the right way,
