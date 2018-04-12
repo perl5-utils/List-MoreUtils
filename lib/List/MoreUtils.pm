@@ -436,7 +436,7 @@ C<zip_unflatten> is an alias for C<zip6>.
 =head3 listcmp ARRAY0 ARRAY1 [ ARRAY2 ... ]
 
 Returns an associative list of elements and every I<id> of the list it
-was found in. Allowes easy implementation of @a & @b, @a | @b, @a ^ @b and
+was found in. Allows easy implementation of @a & @b, @a | @b, @a ^ @b and
 so on.
 Undefined entries in any given array are skipped.
 
@@ -453,7 +453,7 @@ Undefined entries in any given array are skipped.
 
 =head3 arrayify LIST[,LIST[,LIST...]]
 
-Returns a list costisting of each element of given arrays. Recursive arrays
+Returns a list consisting of each element of given arrays. Recursive arrays
 are flattened, too.
 
   @a = (1, [[2], 3], 4, [5], 6, [7], 8, 9);
