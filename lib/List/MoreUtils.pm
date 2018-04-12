@@ -495,7 +495,8 @@ In scalar context, returns the number of elements occurring only once in LIST.
 Returns a new list by stripping values in LIST occuring less than twice by
 comparing the values as hash keys, except that undef is considered separate
 from ''.  The order of elements in the returned list is the same as in LIST.
-In scalar context, returns the number of elements occurring only once in LIST.
+In scalar context, returns the number of elements occurring more than once
+in LIST.
 
   my @y = duplicates 1,1,2,4,7,2,3,4,6,9; #returns 1,2,4
 
