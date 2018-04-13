@@ -573,7 +573,7 @@ Negative values are only ok when they refer to a partition previously created:
 
   my @idx  = ( 0, 1, -1 );
   my $i    = 0;
-  my @part = part { $idx[$++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
+  my @part = part { $idx[$i++ % 3] } 1 .. 8; # [1, 4, 7], [2, 3, 5, 6, 8]
 
 =head3 samples COUNT LIST
 
