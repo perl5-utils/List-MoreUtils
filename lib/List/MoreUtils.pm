@@ -456,8 +456,8 @@ Undefined entries in any given array are skipped.
   my @seq = (1, 2, 3);
   my @prim = (undef, 2, 3, 5);
   my @fib = (1, 1, 2);
-  my $cmp = listcmp @seq, @prim, @fib;
-  # returns { 1 => [0, 2], 2 => [0, 1, 2], 3 => [0, 1], 5 => [1] }
+  my %cmp = listcmp @seq, @prim, @fib;
+  # returns ( 1 => [0, 2], 2 => [0, 1, 2], 3 => [0, 1], 5 => [1] )
 
 =head3 arrayify LIST[,LIST[,LIST...]]
 
