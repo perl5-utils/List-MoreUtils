@@ -43,7 +43,8 @@ my @v0_400 = qw(one any_u all_u none_u notall_u one_u
 );
 my @v0_420 = qw(arrayify duplicates minmaxstr samples zip6 reduce_0 reduce_1 reduce_u
   listcmp frequency occurrences mode
-  binsert bremove equal_range lower_bound upper_bound qsort);
+  binsert bremove equal_range lower_bound upper_bound qsort
+  slide slideatatime);
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400, @v0_420);
 
@@ -525,6 +526,16 @@ too.
   my @m = mode ((1) x 3, (2) x 4, (3) x 2, (4) x 7, (5) x 2, (6) x 4, (7) x 3, (8) x 7);
   #  @m = (7, 4, 8) - bimodal LIST
 
+=head3 slide BLOCK LIST
+
+The function C<slide> operates on pairs of list elements like:
+
+  my @s = slide { "$a and $b" } (0..3);
+  # @s = ("0 and 1", "1 and 2", "2 and 3")
+
+The idea behind this function is a kind of magnifying glass that is moved
+along a list and calls C<BLOCK> every time the next list item is reached.
+
 =head2 Partitioning
 
 =head3 after BLOCK LIST
@@ -626,6 +637,30 @@ This prints
 
   a b c
   d e f
+  g
+
+=head3 slideatatime STEP, WINDOW, LIST
+
+Creates an array iterator, for looping over an array in chunks of
+C<$windows-size> items at a time.
+
+The idea behind this function is a kind of magnifying glass (finer
+controlable compared to L</slide>) that is moved along a list.
+
+Example:
+
+  my @x = ('a' .. 'g');
+  my $it = slideatatime 2, 3, @x;
+  while (my @vals = $it->())
+  {
+    print "@vals\n";
+  }
+
+This prints
+
+  a b c
+  c d e
+  e f g
   g
 
 =head2 Searching

@@ -462,16 +462,14 @@ sub each_arrayref
 
         # Return ith elements
         return map $_->[$i], @list;
-      }
+    }
 }
 
 sub natatime ($@)
 {
     my $n    = shift;
     my @list = @_;
-    return sub {
-        return splice @list, 0, $n;
-      }
+    return sub { return splice @list, 0, $n; }
 }
 
 # "leaks" when lexically hidden in arrayify
@@ -831,12 +829,45 @@ sub qsort(&\@)
     Carp::croak("It's insane to use a pure-perl qsort");
 }
 
+sub slide(&@)
+{
+    my $op = shift;
+    my @l  = @_;
+
+    # Localise $a, $b
+    my ($caller_a, $caller_b) = do
+    {
+        my $pkg = caller();
+        no strict 'refs';
+        \*{$pkg . '::a'}, \*{$pkg . '::b'};
+    };
+
+    # This map expression is also the return value
+    local (*$caller_a, *$caller_b);
+    map {
+        # Assign to $a, $b as refs to caller's array elements
+        (*$caller_a, *$caller_b) = \($l[$_], $l[$_ + 1]);
+
+        # Perform the transformation
+        $op->();
+    } 0 .. ($#l - 1);
+}
+
+sub slideatatime ($$@)
+{
+    my ($m, $w, @list) = @_;
+    my $n = $w - $m - 1;
+    return $n >= 0
+      ? sub { my @r = splice @list, 0, $m; $#list < $n and $n = $#list; @r and push @r, (@list ? @list[0 .. $n] : ()); return @r; }
+      : sub { return splice @list, 0, $m; };
+}
+
 sub sort_by(&@)
 {
     my ($code, @list) = @_;
     return map { $_->[0] }
       sort     { $a->[1] cmp $b->[1] }
-      map { [$_, scalar($code->())] } @list;
+      map      { [$_, scalar($code->())] } @list;
 }
 
 sub nsort_by(&@)
@@ -844,7 +875,7 @@ sub nsort_by(&@)
     my ($code, @list) = @_;
     return map { $_->[0] }
       sort     { $a->[1] <=> $b->[1] }
-      map { [$_, scalar($code->())] } @list;
+      map      { [$_, scalar($code->())] } @list;
 }
 
 sub _XScompiled { 0 }
