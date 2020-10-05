@@ -6,19 +6,14 @@ install:
   - cpanm --notest --with-recommends --with-suggests --with-develop --installdeps .
 language: perl
 perl:
+  - "5.30"
+  - "5.28"
+  - "5.26-shrplib"
   - "5.26"
   - "5.24-shrplib"
   - "5.24"
-  - "5.22-shrplib"
   - "5.22"
-  - "5.20-shrplib"
-  - "5.20-extras"
   - "5.20"
-  - "5.18-shrplib"
-  - "5.18-extras"
   - "5.18"
   - "5.16"
   - "5.14"
-  - "5.12"
-  - "5.10"
-  - "5.8"
