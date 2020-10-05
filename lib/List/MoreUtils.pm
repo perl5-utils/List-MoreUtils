@@ -493,7 +493,7 @@ In scalar context, returns the number of elements occurring only once in LIST.
 
 =head3 duplicates LIST
 
-Returns a new list by stripping values in LIST occuring less than twice by
+Returns a new list by stripping values in LIST occurring less than twice by
 comparing the values as hash keys, except that undef is considered separate
 from ''.  The order of elements in the returned list is the same as in LIST.
 In scalar context, returns the number of elements occurring more than once
@@ -520,7 +520,7 @@ Returns a new list of frequencies and the corresponding values from LIST.
 =head3 mode LIST
 
 Returns the modal value of LIST. In scalar context, just the modal value
-is returned, in list context all probes occuring I<modal> times are returned,
+is returned, in list context all probes occurring I<modal> times are returned,
 too.
 
   my @m = mode ((1) x 3, (2) x 4, (3) x 2, (4) x 7, (5) x 2, (6) x 4, (7) x 3, (8) x 7);
