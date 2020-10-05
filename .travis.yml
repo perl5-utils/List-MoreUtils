@@ -1,10 +1,17 @@
 ---
 install:
+  - git clone git://github.com/travis-perl/helpers.git travis-perl-helpers
+  - source travis-perl-helpers/init
   - cpanm --notest --with-recommends --with-suggests inc::latest Config::AutoConf Test::WriteVariants Carp
   - perl Makefile.PL
   - make manifest
   - cpanm --notest --with-recommends --with-suggests --with-develop --installdeps .
+  - cpan-install --coverage
 language: perl
+matrix:
+  include:
+    - perl: "5.30"
+      env: COVERAGE=1
 perl:
   - "5.30"
   - "5.28"
@@ -17,3 +24,7 @@ perl:
   - "5.18"
   - "5.16"
   - "5.14"
+before_script:
+  - coverage-setup
+after_success:
+  - coverage-report
