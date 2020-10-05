@@ -194,11 +194,12 @@ sub CheckConflicts
 
         *install = sub {
             my $self = shift;
-            return "\npure_site_install ::\n"
+            (my $targets = $self->SUPER::install) =~ s/^(pure_site_install\s+::?)/$1 delete_conflicting_files/m;
+            return "\ndelete_conflicting_files :\n"
               . join("",
                 map { "\t\$(NOECHO) \$(RM_F) " . $self->quote_literal($self->catfile('$(DESTINSTALLSITEARCH)', $_)) . "\n" }
                   @kill)
-              . $self->SUPER::install;
+              . $targets;
         };
     }
 
