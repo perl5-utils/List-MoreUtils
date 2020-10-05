@@ -12,7 +12,7 @@ sub _check_pureperl_required
     my $self = shift->_get_instance;
     foreach (@{$self->{_argv}})
     {
-        /^-pm/ and warn "-pm is depreciated, please use PUREPERL_ONLY=1" and return 1;
+        /^-pm/ and warn "-pm is depreciated, please use PUREPERL_ONLY=1"    and return 1;
         /^-xs/ and warn "-xs is depreciated, building XS is default anyway" and return !($self->{_force_xs} = 1);
     }
     return $self->SUPER::_check_pureperl_required(@_);

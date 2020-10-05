@@ -11,9 +11,11 @@ BEGIN
 {
     unless (defined($have_xs))
     {
+        ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
         eval { require List::MoreUtils::XS; } unless $ENV{LIST_MOREUTILS_PP};
+        ## no critic (ErrorHandling::RequireCarping)
         die $@ if $@ && defined $ENV{LIST_MOREUTILS_PP} && $ENV{LIST_MOREUTILS_PP} == 0;
-        $have_xs = 0+defined( $INC{'List/MoreUtils/XS.pm'});
+        $have_xs = 0 + defined($INC{'List/MoreUtils/XS.pm'});
     }
 
     use List::MoreUtils::PP qw();
@@ -48,6 +50,7 @@ my @v0_420 = qw(arrayify duplicates minmaxstr samples zip6 reduce_0 reduce_1 red
 
 my @all_functions = (@junctions, @v0_22, @v0_24, @v0_33, @v0_400, @v0_420);
 
+## no critic (TestingAndDebugging::ProhibitNoStrict)
 no strict "refs";
 if ($have_xs)
 {
@@ -59,6 +62,8 @@ if ($have_xs)
 }
 List::MoreUtils->can($_) or *$_ = List::MoreUtils::PP->can($_) for (@all_functions);
 use strict;
+## use critic (TestingAndDebugging::ProhibitNoStrict)
+use parent qw(Exporter::Tiny);
 
 my %alias_list = (
     v0_22 => {
@@ -80,13 +85,12 @@ my %alias_list = (
         bsearch_index => "bsearchidx",
     },
     v0_420 => {
-	bsearch_insert => "binsert",
-	bsearch_remove => "bremove",
-	zip_unflatten  => "zip6",
+        bsearch_insert => "binsert",
+        bsearch_remove => "bremove",
+        zip_unflatten  => "zip6",
     },
 );
 
-our @ISA         = qw(Exporter::Tiny);
 our @EXPORT_OK   = (@all_functions, map { keys %$_ } values %alias_list);
 our %EXPORT_TAGS = (
     all         => \@EXPORT_OK,
@@ -121,10 +125,13 @@ for my $set (values %alias_list)
 {
     for my $alias (keys %$set)
     {
+        ## no critic (TestingAndDebugging::ProhibitNoStrict)
         no strict qw(refs);
         *$alias = __PACKAGE__->can($set->{$alias});
+        ## use critic (TestingAndDebugging::ProhibitNoStrict)
     }
 }
+use strict;
 
 =pod
 

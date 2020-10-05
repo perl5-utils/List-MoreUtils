@@ -19,6 +19,9 @@ List::MoreUtils::PP - Provide List::MoreUtils pure Perl implementation
 
 =cut
 
+## no critic (Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
+## no critic (Subroutines::ProhibitManyArgs)
+
 sub any (&@)
 {
     my $f = shift;
@@ -67,7 +70,7 @@ sub one (&@)
     {
         $f->() and $found++ and return 0;
     }
-    $found;
+    return $found;
 }
 
 sub any_u (&@)
@@ -111,7 +114,7 @@ sub one_u (&@)
     {
         $f->() and $found++ and return 0;
     }
-    $found;
+    return $found;
 }
 
 sub reduce_u(&@)
@@ -122,10 +125,12 @@ sub reduce_u(&@)
     my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
+        ## no critic (TestingAndDebugging::ProhibitNoStrict, ValuesAndExpressions::ProhibitCommaSeparatedStatements)
         no strict 'refs';
         \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
+    ## no critic (Variables::RequireInitializationForLocalVars)
     local (*$caller_a, *$caller_b);
     *$caller_a = \();
     for (0 .. $#_)
@@ -134,7 +139,7 @@ sub reduce_u(&@)
         *$caller_a = \($code->());
     }
 
-    ${*$caller_a};
+    return ${*$caller_a};
 }
 
 sub reduce_0(&@)
@@ -145,10 +150,12 @@ sub reduce_0(&@)
     my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
+        ## no critic (TestingAndDebugging::ProhibitNoStrict, ValuesAndExpressions::ProhibitCommaSeparatedStatements)
         no strict 'refs';
         \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
+    ## no critic (Variables::RequireInitializationForLocalVars)
     local (*$caller_a, *$caller_b);
     *$caller_a = \0;
     for (0 .. $#_)
@@ -157,7 +164,7 @@ sub reduce_0(&@)
         *$caller_a = \($code->());
     }
 
-    ${*$caller_a};
+    return ${*$caller_a};
 }
 
 sub reduce_1(&@)
@@ -168,10 +175,12 @@ sub reduce_1(&@)
     my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
+        ## no critic (TestingAndDebugging::ProhibitNoStrict, ValuesAndExpressions::ProhibitCommaSeparatedStatements)
         no strict 'refs';
         \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
+    ## no critic (Variables::RequireInitializationForLocalVars)
     local (*$caller_a, *$caller_b);
     *$caller_a = \1;
     for (0 .. $#_)
@@ -180,7 +189,7 @@ sub reduce_1(&@)
         *$caller_a = \($code->());
     }
 
-    ${*$caller_a};
+    return ${*$caller_a};
 }
 
 sub true (&@)
@@ -217,6 +226,7 @@ sub firstval (&@)
     {
         return $_ if $test->();
     }
+    ## no critic (Subroutines::ProhibitExplicitReturnUndef)
     return undef;
 }
 
@@ -228,6 +238,7 @@ sub firstres (&@)
         my $testval = $test->();
         $testval and return $testval;
     }
+    ## no critic (Subroutines::ProhibitExplicitReturnUndef)
     return undef;
 }
 
@@ -254,6 +265,7 @@ sub onlyval (&@)
     {
         $test->() or next;
         $result = $_;
+        ## no critic (Subroutines::ProhibitExplicitReturnUndef)
         $found++ and return undef;
     }
     return $result;
@@ -268,6 +280,7 @@ sub onlyres (&@)
     {
         my $rv = $test->() or next;
         $result = $rv;
+        ## no critic (Subroutines::ProhibitExplicitReturnUndef)
         $found++ and return undef;
     }
     return $found ? $result : undef;
@@ -297,6 +310,7 @@ sub lastval (&@)
         $_[$ix] = $_;
         return $_ if $testval;
     }
+    ## no critic (Subroutines::ProhibitExplicitReturnUndef)
     return undef;
 }
 
@@ -313,6 +327,7 @@ sub lastres (&@)
         $_[$ix] = $_;
         return $testval if $testval;
     }
+    ## no critic (Subroutines::ProhibitExplicitReturnUndef)
     return undef;
 }
 
@@ -336,7 +351,7 @@ sub apply (&@)
 {
     my $action = shift;
     &$action foreach my @values = @_;
-    wantarray ? @values : $values[-1];
+    return wantarray ? @values : $values[-1];
 }
 
 sub after (&@)
@@ -344,7 +359,8 @@ sub after (&@)
     my $test = shift;
     my $started;
     my $lag;
-    grep $started ||= do
+    ## no critic (BuiltinFunctions::RequireBlockGrep)
+    return grep $started ||= do
     {
         my $x = $lag;
         $lag = $test->();
@@ -356,14 +372,14 @@ sub after_incl (&@)
 {
     my $test = shift;
     my $started;
-    grep $started ||= $test->(), @_;
+    return grep { $started ||= $test->() } @_;
 }
 
 sub before (&@)
 {
     my $test = shift;
     my $more = 1;
-    grep $more &&= !$test->(), @_;
+    return grep { $more &&= !$test->() } @_;
 }
 
 sub before_incl (&@)
@@ -371,7 +387,8 @@ sub before_incl (&@)
     my $test = shift;
     my $more = 1;
     my $lag  = 1;
-    grep $more &&= do
+    ## no critic (BuiltinFunctions::RequireBlockGrep)
+    return grep $more &&= do
     {
         my $x = $lag;
         $lag = !$test->();
@@ -382,7 +399,7 @@ sub before_incl (&@)
 sub indexes (&@)
 {
     my $test = shift;
-    grep {
+    return grep {
         local *_ = \$_[$_];
         $test->()
     } 0 .. $#_;
@@ -400,6 +417,7 @@ sub pairwise (&\@\@)
     my ($caller_a, $caller_b) = do
     {
         my $pkg = caller();
+        ## no critic (TestingAndDebugging::ProhibitNoStrict, ValuesAndExpressions::ProhibitCommaSeparatedStatements)
         no strict 'refs';
         \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
@@ -407,9 +425,11 @@ sub pairwise (&\@\@)
     # Loop iteration limit
     my $limit = $#A > $#B ? $#A : $#B;
 
+    ## no critic (Variables::RequireInitializationForLocalVars)
     # This map expression is also the return value
     local (*$caller_a, *$caller_b);
-    map {
+    ## no critic (BuiltinFunctions::ProhibitComplexMappings)
+    return map {
         # Assign to $a, $b as refs to caller's array elements
         (*$caller_a, *$caller_b) = \($#A < $_ ? undef : $A[$_], $#B < $_ ? undef : $B[$_]);
 
@@ -451,8 +471,9 @@ sub each_arrayref
                 Carp::croak("each_array: unknown argument '$method' passed to iterator.");
             }
 
-            # Return current (last fetched) index
+            ## no critic (Subroutines::ProhibitExplicitReturnUndef)
             return undef if $index == 0 || $index > $max;
+            # Return current (last fetched) index
             return $index - 1;
         }
 
@@ -461,6 +482,7 @@ sub each_arrayref
         my $i = $index++;
 
         # Return ith elements
+        ## no critic (BuiltinFunctions::RequireBlockMap)
         return map $_->[$i], @list;
     }
 }
@@ -475,20 +497,22 @@ sub natatime ($@)
 # "leaks" when lexically hidden in arrayify
 my $flatten;
 $flatten = sub {
-    map { (ref $_ and ("ARRAY" eq ref $_ or overload::Method($_, '@{}'))) ? ($flatten->(@{$_})) : ($_) } @_;
+    return map { (ref $_ and ("ARRAY" eq ref $_ or overload::Method($_, '@{}'))) ? ($flatten->(@{$_})) : ($_) } @_;
 };
 
 sub arrayify
 {
-    map { $flatten->($_) } @_;
+    return map { $flatten->($_) } @_;
 }
 
 sub mesh (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 {
     my $max = -1;
     $max < $#$_ && ($max = $#$_) foreach @_;
-    map {
+    ## no critic (BuiltinFunctions::ProhibitComplexMappings)
+    return map {
         my $ix = $_;
+        ## no critic (BuiltinFunctions::RequireBlockMap)
         map $_->[$ix], @_;
     } 0 .. $max;
 }
@@ -497,8 +521,10 @@ sub zip6 (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
 {
     my $max = -1;
     $max < $#$_ && ($max = $#$_) foreach @_;
-    map {
+    ## no critic (BuiltinFunctions::ProhibitComplexMappings)
+    return map {
         my $ix = $_;
+        ## no critic (BuiltinFunctions::RequireBlockMap)
         [map $_->[$ix], @_];
     } 0 .. $max;
 }
@@ -516,7 +542,7 @@ sub listcmp (\@\@;\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@)
             push @{$ret{$w}}, $i;
         }
     }
-    %ret;
+    return %ret;
 }
 
 sub uniq (@)
@@ -524,7 +550,7 @@ sub uniq (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
+    return grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
 }
 
 sub singleton (@)
@@ -532,7 +558,7 @@ sub singleton (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    grep { 1 == (defined $_ ? $seen{$k = $_} : $seen_undef) }
+    return grep { 1 == (defined $_ ? $seen{$k = $_} : $seen_undef) }
       grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
 }
 
@@ -541,7 +567,7 @@ sub duplicates (@)
     my %seen = ();
     my $k;
     my $seen_undef;
-    grep { 1 < (defined $_ ? $seen{$k = $_} : $seen_undef) }
+    return grep { 1 < (defined $_ ? $seen{$k = $_} : $seen_undef) }
       grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
 }
 
@@ -554,7 +580,7 @@ sub frequency (@)
       grep { defined $_ ? not $seen{$k = $_}++ : not $seen_undef++ } @_;
     wantarray or return (scalar keys %h) + ($seen_undef ? 1 : 0);
     undef $k;
-    (%h, $seen_undef ? (\$k => $seen_undef) : ());
+    return (%h, $seen_undef ? (\$k => $seen_undef) : ());
 }
 
 sub occurrences (@)
@@ -569,7 +595,7 @@ sub occurrences (@)
         defined $ret[$n] or $ret[$n] = [];
         push @{$ret[$n]}, $l;
     }
-    @ret;
+    return @ret;
 }
 
 sub mode (@)
@@ -586,7 +612,7 @@ sub mode (@)
         push @ret, $l;
     }
     $seen_undef and $seen_undef == $max and push @ret, undef;
-    @ret;
+    return @ret;
 }
 
 sub samples ($@)
@@ -699,6 +725,7 @@ sub bsearch(&@)
     my $rc;
     my $i = 0;
     my $j = @_;
+    ## no critic (ControlStructures::ProhibitNegativeExpressionsInUnlessAndUntilConditions)
     do
     {
         my $k = int(($i + $j) / 2);
@@ -731,6 +758,7 @@ sub bsearchidx(&@)
     my $rc;
     my $i = 0;
     my $j = @_;
+    ## no critic (ControlStructures::ProhibitNegativeExpressionsInUnlessAndUntilConditions)
     do
     {
         my $k = int(($i + $j) / 2);
@@ -776,7 +804,7 @@ sub lower_bound(&@)
         }
     }
 
-    $first;
+    return $first;
 }
 
 sub upper_bound(&@)
@@ -800,27 +828,27 @@ sub upper_bound(&@)
         }
     }
 
-    $first;
+    return $first;
 }
 
 sub equal_range(&@)
 {
     my $lb = &lower_bound(@_);
     my $ub = &upper_bound(@_);
-    ($lb, $ub);
+    return ($lb, $ub);
 }
 
 sub binsert (&$\@)
 {
     my $lb = &lower_bound($_[0], @{$_[2]});
     splice @{$_[2]}, $lb, 0, $_[1];
-    $lb;
+    return $lb;
 }
 
 sub bremove (&\@)
 {
     my $lb = &lower_bound($_[0], @{$_[1]});
-    splice @{$_[1]}, $lb, 1;
+    return splice @{$_[1]}, $lb, 1;
 }
 
 sub qsort(&\@)
@@ -834,6 +862,7 @@ sub slide(&@)
     my $op = shift;
     my @l  = @_;
 
+    ## no critic (TestingAndDebugging::ProhibitNoStrict, ValuesAndExpressions::ProhibitCommaSeparatedStatements)
     # Localise $a, $b
     my ($caller_a, $caller_b) = do
     {
@@ -842,9 +871,11 @@ sub slide(&@)
         \*{$pkg . '::a'}, \*{$pkg . '::b'};
     };
 
+    ## no critic (Variables::RequireInitializationForLocalVars)
     # This map expression is also the return value
     local (*$caller_a, *$caller_b);
-    map {
+    ## no critic (BuiltinFunctions::ProhibitComplexMappings)
+    return map {
         # Assign to $a, $b as refs to caller's array elements
         (*$caller_a, *$caller_b) = \($l[$_], $l[$_ + 1]);
 
@@ -878,7 +909,8 @@ sub nsort_by(&@)
       map      { [$_, scalar($code->())] } @list;
 }
 
-sub _XScompiled { 0 }
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
+sub _XScompiled { return 0 }
 
 =head1 SEE ALSO
 
