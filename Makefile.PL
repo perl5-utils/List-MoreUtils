@@ -73,7 +73,7 @@ EOSCM
 
 my %RUN_DEPS = (
     'Exporter::Tiny' => '0.038',
-    ($loadable_xs ? ('List::MoreUtils::XS' => '0.426') : ())
+    ($loadable_xs ? ('List::MoreUtils::XS' => '0.429_002') : ())
 );
 my %BUNDLE_CONFIGURE_DEPS = (
     'inc::latest'      => '0.500',
