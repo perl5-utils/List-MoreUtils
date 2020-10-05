@@ -1000,7 +1000,7 @@ The idea behind reduce_1 is product of a sequence of numbers.
 =head3 reduce_u BLOCK LIST
 
 Reduce LIST by calling BLOCK in scalar context for each element of LIST.
-C<$a> contains the progressional result and is initialized with 1.
+C<$a> contains the progressional result and is uninitialized.
 C<$b> contains the current processed element of LIST and C<$_> contains the
 index of the element in C<$b>.
 
