@@ -645,7 +645,7 @@ Creates an array iterator, for looping over an array in chunks of
 C<$windows-size> items at a time.
 
 The idea behind this function is a kind of magnifying glass (finer
-controlable compared to L</slide>) that is moved along a list.
+controllable compared to L</slide>) that is moved along a list.
 
 Example:
 
