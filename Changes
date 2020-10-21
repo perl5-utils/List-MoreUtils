@@ -1,5 +1,9 @@
 Revision history for Perl extension List-MoreUtils
 
+0.430	2020-10-21
+    - bump List::MoreUtils::XS requirement to 0.430
+    - release 0.429_001 without any further changes
+
 0.429_001	2020-10-05
     - fix failing installation in parallel make (Issue#38)
     - infrastructure improvements and tooling updates,
