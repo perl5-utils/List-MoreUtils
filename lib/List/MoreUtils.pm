@@ -512,10 +512,35 @@ in LIST.
 
 Returns an associative list of distinct values and the corresponding frequency.
 
-  my @f = frequency values %radio_nrw; # returns (
-  #  'Deutschlandfunk (DLF)' => 9, 'WDR 3' => 10,
-  #  'WDR 4' => 11, 'WDR 5' => 14, 'WDR Eins Live' => 14,
-  #  'Deutschlandradio Kultur' => 8,...)
+   use Data::Dumper;
+   use List::MoreUtils qw(frequency);
+
+   my @result = frequency 1, 2, 1, 3, 1, 4, 5;
+   print Dumper(\@result);
+
+   #$VAR1 = [
+   #          '1',
+   #          3,
+   #          '5',
+   #          1,
+   #          '2',
+   #          1,
+   #          '3',
+   #          1,
+   #          '4',
+   #          1
+   #        ];
+
+   my %result = frequency 1, 2, 1, 3, 1, 4, 5;
+   print Dumper(\%result);
+
+   #$VAR1 = {
+   #          '5' => 1,
+   #          '1' => 3,
+   #          '2' => 1,
+   #          '3' => 1,
+   #          '4' => 1
+   #        };
 
 =head3 occurrences LIST
 
