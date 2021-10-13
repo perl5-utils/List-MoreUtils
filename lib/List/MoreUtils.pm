@@ -349,10 +349,11 @@ Evaluation of BLOCK will immediately stop at the second true value.
 
 =head3 apply BLOCK LIST
 
-Applies BLOCK to each item in LIST and returns a list of the values after BLOCK
-has been applied. In scalar context, the last element is returned.  This
-function is similar to C<map> but will not modify the elements of the input
-list:
+Applies BLOCK to each item ($_) in LIST and returns a list of the updated
+value of $_. In scalar context, the last element is returned.
+
+This function is similar to C<map> but will not modify the elements of
+the input list:
 
   my @list = (1 .. 4);
   my @mult = apply { $_ *= 2 } @list;
